@@ -21,3 +21,8 @@ jobs:
         npm install @abaplint/cli
         npx abaplint --fix || true
         git status
+        git config user.email "ci@abapgit.org"
+        git config user.name "CI"
+        git add -A
+        git commit -m "automatic"
+        git push
