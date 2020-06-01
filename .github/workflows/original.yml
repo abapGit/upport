@@ -17,3 +17,6 @@ jobs:
         rm -rf src
         cp -rf /tmp/new/src src
         git status
+        git add -A
+        git commit -m "automatic"
+        git push
