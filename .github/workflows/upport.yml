@@ -19,5 +19,5 @@ jobs:
         rm -rf src
         cp -rf /tmp/new/src src
         npm install @abaplint/cli
-        npx abaplint --fix
+        npx abaplint --fix || true
         git status
