@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: 'original'
     - name: Run Commands
       run: |      
         git clone https://github.com/larshp/abapGit /tmp/new
-        git checkout original
-        cp -r /tmp/new/src src
+        rm -rf src
+        cp -rf /tmp/new/src src
         git status
