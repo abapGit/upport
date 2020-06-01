@@ -18,6 +18,6 @@ jobs:
         git clone https://github.com/larshp/abapGit /tmp/new
         rm -rf src
         cp -rf /tmp/new/src src
-        npm install @abaplint/cli -g
-        abaplint --fix
+        npm install @abaplint/cli
+        npx abaplint --fix
         git status
