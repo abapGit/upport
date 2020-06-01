@@ -1,0 +1,21 @@
+name: Upport
+
+on:
+  schedule: 
+    - cron: '0 */3 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: 'original'
+    - name: Run Commands
+      run: |      
+        git clone https://github.com/larshp/abapGit /tmp/new
+        rm -rf src
+        cp -rf /tmp/new/src src
+        npm install @abaplint/cli -g
+        abaplint --fix
+        git status
