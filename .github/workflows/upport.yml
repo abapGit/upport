@@ -15,14 +15,17 @@ jobs:
         node-version: '12.x'
     - name: Run Commands
       run: |      
+        git config user.email "ci@abapgit.org"
+        git config user.name "CI"
         git clone https://github.com/larshp/abapGit /tmp/new
         rm -rf src
         cp -rf /tmp/new/src src
+        git add -A
+        git commit -m "update base"
+        git push        
         npm install @abaplint/cli
         npx abaplint --fix || true
         git status
-        git config user.email "ci@abapgit.org"
-        git config user.name "CI"
         git add -A
-        git commit -m "automatic"
+        git commit -m "upport"
         git push
