@@ -93,10 +93,8 @@ CLASS ZCL_ABAPGIT_2FA_GITHUB_AUTH IMPLEMENTATION.
 
     " https://developer.github.com/v3/auth/#working-with-two-factor-authentication
     ri_client->propertytype_accept_cookie = if_http_client=>co_enabled.
-    ri_client->request->set_header_field( name = c_otp_header_name
-                                          value = iv_2fa_token ).
-    ri_client->authenticate( username = iv_username
-                             password = iv_password ).
+    ri_client->request->set_header_field( name = c_otp_header_name value = iv_2fa_token ).
+    ri_client->authenticate( username = iv_username password = iv_password ).
     ri_client->propertytype_logon_popup = if_http_client=>co_disabled.
 
     ri_client->send( EXCEPTIONS OTHERS = 1 ).
@@ -137,7 +135,9 @@ CLASS ZCL_ABAPGIT_2FA_GITHUB_AUTH IMPLEMENTATION.
 
     lv_response = cl_abap_codepage=>convert_from( ii_response->get_data( ) ).
 
-    lo_regex = NEW #( pattern = lc_search_regex ).
+    CREATE OBJECT lo_regex
+      EXPORTING
+        pattern = lc_search_regex.
 
     lo_matcher = lo_regex->create_matcher( text = lv_response ).
     WHILE lo_matcher->find_next( ) = abap_true.
@@ -154,7 +154,9 @@ CLASS ZCL_ABAPGIT_2FA_GITHUB_AUTH IMPLEMENTATION.
 
     lv_response = cl_abap_codepage=>convert_from( ii_response->get_data( ) ).
 
-    lo_regex = NEW #( pattern = lc_search_regex ).
+    CREATE OBJECT lo_regex
+      EXPORTING
+        pattern = lc_search_regex.
 
     lo_matcher = lo_regex->create_matcher( text = lv_response ).
     IF lo_matcher->match( ) = abap_true.
@@ -325,8 +327,7 @@ CLASS ZCL_ABAPGIT_2FA_GITHUB_AUTH IMPLEMENTATION.
     li_client->request->set_method( if_http_request=>co_request_method_post ).
 
     " Try to authenticate, if 2FA is required there will be a specific response header
-    li_client->authenticate( username = iv_username
-                             password = iv_password ).
+    li_client->authenticate( username = iv_username password = iv_password ).
 
     li_client->send( EXCEPTIONS OTHERS = 1 ).
     IF sy-subrc <> 0.
