@@ -92,7 +92,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_REPO_SETT IMPLEMENTATION.
 
   METHOD render_content.
 
-    ro_html = NEW #( ).
+    CREATE OBJECT ro_html.
     ro_html->add( '<div class="settings_container">' ).
     ro_html->add( |<form id="settings_form" method="post" action="sapevent:{ c_action-save_settings }">| ).
 
@@ -345,13 +345,11 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_REPO_SETT IMPLEMENTATION.
     DELETE lt_ignore WHERE table_line IS INITIAL.
     " Remove everything
     LOOP AT lo_dot->get_data( )-ignore INTO lv_ignore.
-      lo_dot->remove_ignore( iv_path = ''
-                             iv_filename = lv_ignore ).
+      lo_dot->remove_ignore( iv_path = '' iv_filename = lv_ignore ).
     ENDLOOP.
     " Add newly entered files
     LOOP AT lt_ignore INTO lv_ignore.
-      lo_dot->add_ignore( iv_path = ''
-                          iv_filename = lv_ignore ).
+      lo_dot->add_ignore( iv_path = '' iv_filename = lv_ignore ).
     ENDLOOP.
 
     lo_requirements = lcl_requirements=>new( ).
