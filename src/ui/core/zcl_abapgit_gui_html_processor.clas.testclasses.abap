@@ -75,14 +75,16 @@ CLASS ltcl_html_processor_test IMPLEMENTATION.
 
     DATA lo_asset_man TYPE REF TO zcl_abapgit_gui_asset_manager.
 
-    lo_asset_man = NEW #( ).
+    CREATE OBJECT lo_asset_man.
     lo_asset_man->register_asset( iv_url = 'css/style1.css' iv_type = 'text/css' iv_inline = 'dummy1' ).
     lo_asset_man->register_asset( iv_url = 'css/style2.css' iv_type = 'text/css' iv_inline = 'dummy2' ).
     lo_asset_man->register_asset( iv_url = 'css/style3.css' iv_type = 'text/css' iv_inline = 'dummy3' ).
 
-    mo_cut = NEW #( ii_asset_man = lo_asset_man ).
+    CREATE OBJECT mo_cut
+      EXPORTING
+        ii_asset_man = lo_asset_man.
 
-    mo_gui_mock = NEW #( ).
+    CREATE OBJECT mo_gui_mock.
 
     mv_source = render_html(
       `<html>\n` &&
