@@ -15,10 +15,8 @@ ENDCLASS.
 
 CLASS ltcl_test_base IMPLEMENTATION.
   METHOD setup.
-    CREATE OBJECT mo_asset_manager.
-    CREATE OBJECT mo_cut
-      EXPORTING
-        ii_asset_manager = mo_asset_manager.
+    mo_asset_manager = NEW #( ).
+    mo_cut = NEW #( ii_asset_manager = mo_asset_manager ).
   ENDMETHOD.
 
   METHOD teardown.
@@ -49,7 +47,8 @@ ENDCLASS.
 
 CLASS ltcl_single_file IMPLEMENTATION.
   METHOD test_file_exists.
-    add_file( iv_url = 'does/exist.css' iv_content = |body \{\}\n| ).
+    add_file( iv_url = 'does/exist.css'
+              iv_content = |body \{\}\n| ).
     mo_cut->add_file( 'does/exist.css' ).
     TRY.
         mo_cut->process( ).
@@ -86,10 +85,12 @@ CLASS ltcl_single_file IMPLEMENTATION.
       `  background: #000000;\n` &&
       `  color: #ffffff;\n` &&
       `}\n`.
-    add_file( iv_url = 'novars.css' iv_content = lv_content ).
+    add_file( iv_url = 'novars.css'
+              iv_content = lv_content ).
 
     mo_cut->add_file( 'novars.css' ).
-    cl_abap_unit_assert=>assert_equals( act = mo_cut->process( ) exp = lv_content ).
+    cl_abap_unit_assert=>assert_equals( act = mo_cut->process( )
+                                        exp = lv_content ).
   ENDMETHOD.
 
   METHOD test_simple_variables.
@@ -105,7 +106,8 @@ CLASS ltcl_single_file IMPLEMENTATION.
       `  background: var(--my-bg-color);\n` &&
       `  color: #ffffff;\n` &&
       `}\n`.
-    add_file( iv_url = 'simple.css' iv_content = lv_content ).
+    add_file( iv_url = 'simple.css'
+              iv_content = lv_content ).
 
     lv_expected =
       `:root {\n` &&
@@ -118,7 +120,8 @@ CLASS ltcl_single_file IMPLEMENTATION.
       `}\n`.
 
     mo_cut->add_file( 'simple.css' ).
-    cl_abap_unit_assert=>assert_equals( act = mo_cut->process( ) exp = lv_expected ).
+    cl_abap_unit_assert=>assert_equals( act = mo_cut->process( )
+                                        exp = lv_expected ).
   ENDMETHOD.
 
   METHOD test_complex_variables.
@@ -137,7 +140,8 @@ CLASS ltcl_single_file IMPLEMENTATION.
       `  background: var(--my-bg-color);\n` &&
       `  color: #ffffff;\n` &&
       `}\n`.
-    add_file( iv_url = 'complex.css' iv_content = lv_content ).
+    add_file( iv_url = 'complex.css'
+              iv_content = lv_content ).
 
     lv_expected =
       `:root {\n` &&
@@ -153,7 +157,8 @@ CLASS ltcl_single_file IMPLEMENTATION.
       `}\n`.
 
     mo_cut->add_file( 'complex.css' ).
-    cl_abap_unit_assert=>assert_equals( act = mo_cut->process( ) exp = lv_expected ).
+    cl_abap_unit_assert=>assert_equals( act = mo_cut->process( )
+                                        exp = lv_expected ).
   ENDMETHOD.
 
   METHOD test_overwrite.
@@ -170,7 +175,8 @@ CLASS ltcl_single_file IMPLEMENTATION.
       `body {\n` &&
       `  width: var(--var1);\n` &&
       `}\n`.
-    add_file( iv_url = 'overwrite.css' iv_content = lv_content ).
+    add_file( iv_url = 'overwrite.css'
+              iv_content = lv_content ).
 
     lv_expected =
       `:root {\n` &&
@@ -184,7 +190,8 @@ CLASS ltcl_single_file IMPLEMENTATION.
       `}\n`.
 
     mo_cut->add_file( 'overwrite.css' ).
-    cl_abap_unit_assert=>assert_equals( act = mo_cut->process( ) exp = lv_expected ).
+    cl_abap_unit_assert=>assert_equals( act = mo_cut->process( )
+                                        exp = lv_expected ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -213,7 +220,8 @@ CLASS ltcl_multiple_files IMPLEMENTATION.
       `  width: var(--var1);\n` &&
       `}\n`.
     REPLACE ALL OCCURRENCES OF '\n' IN lv_file1 WITH cl_abap_char_utilities=>newline.
-    add_file( iv_url = 'file1.css' iv_content = lv_file1 ).
+    add_file( iv_url = 'file1.css'
+              iv_content = lv_file1 ).
     mo_cut->add_file( 'file1.css' ).
 
     lv_file2 =
@@ -221,7 +229,8 @@ CLASS ltcl_multiple_files IMPLEMENTATION.
       `  --var3: 19;\n` &&
       `}\n`.
     REPLACE ALL OCCURRENCES OF '\n' IN lv_file2 WITH cl_abap_char_utilities=>newline.
-    add_file( iv_url = 'file2.css' iv_content = lv_file2 ).
+    add_file( iv_url = 'file2.css'
+              iv_content = lv_file2 ).
     mo_cut->add_file( 'file2.css' ).
 
     lv_expected =
@@ -240,6 +249,7 @@ CLASS ltcl_multiple_files IMPLEMENTATION.
       `}\n`.
     REPLACE ALL OCCURRENCES OF '\n' IN lv_expected WITH cl_abap_char_utilities=>newline.
 
-    cl_abap_unit_assert=>assert_equals( act = mo_cut->process( ) exp = lv_expected ).
+    cl_abap_unit_assert=>assert_equals( act = mo_cut->process( )
+                                        exp = lv_expected ).
   ENDMETHOD.
 ENDCLASS.
