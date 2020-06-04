@@ -66,8 +66,7 @@ CLASS ZCL_ABAPGIT_REPO_CONTENT_LIST IMPLEMENTATION.
       lv_index = sy-tabix.
       CHECK <ls_item>-path <> iv_cur_dir. " files in target dir - just leave them be
 
-      IF zcl_abapgit_path=>is_subdir( iv_path = <ls_item>-path
-                                      iv_parent = iv_cur_dir ) = abap_true.
+      IF zcl_abapgit_path=>is_subdir( iv_path = <ls_item>-path  iv_parent = iv_cur_dir ) = abap_true.
         ls_subitem-changes = <ls_item>-changes.
         ls_subitem-path    = <ls_item>-path.
         ls_subitem-lstate  = <ls_item>-lstate.
@@ -192,7 +191,7 @@ CLASS ZCL_ABAPGIT_REPO_CONTENT_LIST IMPLEMENTATION.
 
   METHOD constructor.
     mo_repo = io_repo.
-    mi_log = NEW zcl_abapgit_log( ).
+    CREATE OBJECT mi_log TYPE zcl_abapgit_log.
   ENDMETHOD.
 
 

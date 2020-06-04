@@ -70,7 +70,9 @@ CLASS ZCL_ABAPGIT_GUI_CSS_PROCESSOR IMPLEMENTATION.
 
     FIND FIRST OCCURRENCE OF REGEX lc_root_pattern IN iv_string SUBMATCHES lv_root.
     IF sy-subrc = 0 AND lv_root IS NOT INITIAL.
-      lo_regex = NEW #( pattern = lc_variable_pattern ).
+      CREATE OBJECT lo_regex
+        EXPORTING
+          pattern = lc_variable_pattern.
       lo_matcher = lo_regex->create_matcher( text = lv_root ).
       WHILE lo_matcher->find_next( ) = abap_true.
         ls_variable-name = lo_matcher->get_submatch( 1 ).
@@ -127,8 +129,7 @@ CLASS ZCL_ABAPGIT_GUI_CSS_PROCESSOR IMPLEMENTATION.
       ENDLOOP.
     ENDLOOP.
 
-    rv_result = concat_lines_of( table = lt_contents
-                                 sep = cl_abap_char_utilities=>newline ).
+    rv_result = concat_lines_of( table = lt_contents sep = cl_abap_char_utilities=>newline ).
   ENDMETHOD.
 
 
