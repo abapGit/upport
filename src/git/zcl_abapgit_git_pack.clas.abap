@@ -516,9 +516,7 @@ CLASS ZCL_ABAPGIT_GIT_PACK IMPLEMENTATION.
     FIELD-SYMBOLS: <ls_object> LIKE LINE OF ct_objects.
 
 
-    CREATE OBJECT lo_stream
-      EXPORTING
-        iv_data = is_object-data.
+    lo_stream = NEW #( iv_data = is_object-data ).
 
 * find base
     READ TABLE ct_objects ASSIGNING <ls_object>
@@ -582,7 +580,8 @@ CLASS ZCL_ABAPGIT_GIT_PACK IMPLEMENTATION.
 
     ENDWHILE.
 
-    lv_sha1 = zcl_abapgit_hash=>sha1( iv_type = <ls_object>-type iv_data = lv_result ).
+    lv_sha1 = zcl_abapgit_hash=>sha1( iv_type = <ls_object>-type
+                                      iv_data = lv_result ).
 
     CLEAR ls_object.
     ls_object-sha1 = lv_sha1.
