@@ -72,6 +72,11 @@ CLASS zcl_abapgit_syntax_highlighter DEFINITION
         !iv_class      TYPE string
       RETURNING
         VALUE(rv_line) TYPE string .
+    METHODS is_whitespace
+      IMPORTING
+        !iv_string       TYPE string
+      RETURNING
+        VALUE(rv_result) TYPE abap_bool .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -85,8 +90,10 @@ CLASS ZCL_ABAPGIT_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
     DATA ls_rule LIKE LINE OF mt_rules.
 
     IF NOT iv_regex IS INITIAL.
-      ls_rule-regex = NEW #( pattern = iv_regex
-                             ignore_case = abap_true ).
+      CREATE OBJECT ls_rule-regex
+        EXPORTING
+          pattern     = iv_regex
+          ignore_case = abap_true.
     ENDIF.
 
     ls_rule-token         = iv_token.
@@ -116,15 +123,15 @@ CLASS ZCL_ABAPGIT_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
 
     " Create instance of highighter dynamically dependent on syntax type
     IF iv_filename CP '*.abap'.
-      ro_instance = NEW zcl_abapgit_syntax_abap( ).
+      CREATE OBJECT ro_instance TYPE zcl_abapgit_syntax_abap.
     ELSEIF iv_filename CP '*.xml' OR iv_filename CP '*.html'.
-      ro_instance = NEW zcl_abapgit_syntax_xml( ).
+      CREATE OBJECT ro_instance TYPE zcl_abapgit_syntax_xml.
     ELSEIF iv_filename CP '*.css'.
-      ro_instance = NEW zcl_abapgit_syntax_css( ).
+      CREATE OBJECT ro_instance TYPE zcl_abapgit_syntax_css.
     ELSEIF iv_filename CP '*.js'.
-      ro_instance = NEW zcl_abapgit_syntax_js( ).
+      CREATE OBJECT ro_instance TYPE zcl_abapgit_syntax_js.
     ELSEIF iv_filename CP '*.json'.
-      ro_instance = NEW zcl_abapgit_syntax_json( ).
+      CREATE OBJECT ro_instance TYPE zcl_abapgit_syntax_json.
     ELSE.
       CLEAR ro_instance.
     ENDIF.
@@ -194,6 +201,22 @@ CLASS ZCL_ABAPGIT_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD is_whitespace.
+
+    DATA: lv_whitespace TYPE string.
+
+    "/^\s+$/
+    lv_whitespace = ` ` && cl_abap_char_utilities=>horizontal_tab && cl_abap_char_utilities=>cr_lf.
+
+    IF iv_string CO lv_whitespace.
+      rv_result = abap_true.
+    ELSE.
+      rv_result = abap_false.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD parse_line.
 
     DATA:
@@ -242,7 +265,8 @@ CLASS ZCL_ABAPGIT_SYNTAX_HIGHLIGHTER IMPLEMENTATION.
 
     DATA: lt_matches TYPE ty_match_tt.
 
-    IF strlen( iv_line ) = 0.
+    IF iv_line IS INITIAL OR is_whitespace( iv_line ) = abap_true.
+      rv_line = iv_line.
       RETURN.
     ENDIF.
 
