@@ -128,8 +128,11 @@ CLASS ZCL_ABAPGIT_DOT_ABAPGIT IMPLEMENTATION.
     APPEND '/.gitlab-ci.yml' TO ls_data-ignore.
     APPEND '/abaplint.json' TO ls_data-ignore.
     APPEND '/azure-pipelines.yml' TO ls_data-ignore.
+    APPEND '/.devcontainer.json' TO ls_data-ignore.
 
-    ro_dot_abapgit = NEW #( is_data = ls_data ).
+    CREATE OBJECT ro_dot_abapgit
+      EXPORTING
+        is_data = ls_data.
 
   ENDMETHOD.
 
@@ -149,7 +152,9 @@ CLASS ZCL_ABAPGIT_DOT_ABAPGIT IMPLEMENTATION.
 
     ls_data = from_xml( lv_xml ).
 
-    ro_dot_abapgit = NEW #( is_data = ls_data ).
+    CREATE OBJECT ro_dot_abapgit
+      EXPORTING
+        is_data = ls_data.
 
   ENDMETHOD.
 
