@@ -1,7 +1,7 @@
 # upport
 upport, Experimental
 
-automatically updated every 3 hours
+automatically updated
 
 no pull requests accepted, as all code is automatically updated
 
