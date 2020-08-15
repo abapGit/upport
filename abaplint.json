@@ -26,7 +26,7 @@
       "seop_incextapp_definition",
       "seop_incextapp_implementation",
       "seop_incextapp_macros",
-      "seop_incextapp_testclasses",      
+      "seop_incextapp_testclasses",
       "icon_abap",
       "icon_display_text",
       "icon_set_state",
@@ -76,6 +76,9 @@
     "parser_error": true,
     "check_syntax": true,
     "line_break_multiple_parameters": true,
-    "use_new": true
+    "unknown_types": true,
+    "use_new": true,
+    "prefer_inline": false,
+    "sql_escape_host_variables": false
   }
 }
