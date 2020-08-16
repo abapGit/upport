@@ -194,13 +194,15 @@ CLASS ZCL_ABAPGIT_HTML IMPLEMENTATION.
 
 
   METHOD class_constructor.
-    go_single_tags_re = NEW #( pattern = '<(AREA|BASE|BR|COL|COMMAND|EMBED|HR|IMG|INPUT|LINK|META|PARAM|SOURCE|!)'
-                               ignore_case = abap_false ).
+    CREATE OBJECT go_single_tags_re
+      EXPORTING
+        pattern     = '<(AREA|BASE|BR|COL|COMMAND|EMBED|HR|IMG|INPUT|LINK|META|PARAM|SOURCE|!)'
+        ignore_case = abap_false.
   ENDMETHOD.
 
 
   METHOD create.
-    ro_html = NEW #( ).
+    CREATE OBJECT ro_html.
   ENDMETHOD.
 
 
@@ -369,7 +371,7 @@ CLASS ZCL_ABAPGIT_HTML IMPLEMENTATION.
     add( icon( iv_name    = iv_name
                iv_class   = iv_class
                iv_hint    = iv_hint
-               iv_onclick = iv_onclick  ) ).
+               iv_onclick = iv_onclick ) ).
 
   ENDMETHOD.
 
