@@ -78,6 +78,7 @@
     "line_break_multiple_parameters": true,
     "unknown_types": true,
     "use_new": true,
+    "sequential_blank": true,
     "prefer_inline": false,
     "sql_escape_host_variables": false
   }
