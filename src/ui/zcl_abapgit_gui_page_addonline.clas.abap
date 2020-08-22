@@ -47,7 +47,7 @@ CLASS zcl_abapgit_gui_page_addonline DEFINITION
 
     METHODS parse_form
       IMPORTING
-        it_post_data TYPE cnht_post_data_tab
+        it_post_data        TYPE cnht_post_data_tab
       RETURNING
         VALUE(ro_form_data) TYPE REF TO zcl_abapgit_string_map
       RAISING
@@ -55,7 +55,7 @@ CLASS zcl_abapgit_gui_page_addonline DEFINITION
 
     METHODS validate_form
       IMPORTING
-        io_form_data TYPE REF TO zcl_abapgit_string_map
+        io_form_data             TYPE REF TO zcl_abapgit_string_map
       RETURNING
         VALUE(ro_validation_log) TYPE REF TO zcl_abapgit_string_map
       RAISING
@@ -65,13 +65,13 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_GUI_PAGE_ADDONLINE IMPLEMENTATION.
+CLASS zcl_abapgit_gui_page_addonline IMPLEMENTATION.
 
 
   METHOD constructor.
     super->constructor( ).
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
   ENDMETHOD.
 
 
@@ -79,7 +79,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_ADDONLINE IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_addonline.
 
-    lo_component = NEW #( ).
+    CREATE OBJECT lo_component.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title = 'Clone online repository'
@@ -94,7 +94,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_ADDONLINE IMPLEMENTATION.
     DATA ls_field LIKE LINE OF lt_form.
 
     lt_form = zcl_abapgit_html_action_utils=>parse_post_data( it_post_data ).
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     LOOP AT lt_form INTO ls_field.
       CASE ls_field-name.
@@ -121,7 +121,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_ADDONLINE IMPLEMENTATION.
 
     DATA lx_err TYPE REF TO zcx_abapgit_exception.
 
-    ro_validation_log = NEW #( ).
+    CREATE OBJECT ro_validation_log.
 
     IF io_form_data->get( c_id-url ) IS INITIAL.
       ro_validation_log->set(
@@ -167,7 +167,8 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_ADDONLINE IMPLEMENTATION.
 
   METHOD zif_abapgit_gui_event_handler~on_event.
 
-    DATA ls_repo_params TYPE zif_abapgit_services_repo=>ty_repo_params.
+    DATA: ls_repo_params     TYPE zif_abapgit_services_repo=>ty_repo_params,
+          lo_new_online_repo TYPE REF TO zcl_abapgit_repo_online.
 
     mo_form_data = parse_form( it_postdata ). " import data from html before re-render
 
@@ -232,8 +233,11 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_ADDONLINE IMPLEMENTATION.
 
         IF mo_validation_log->is_empty( ) = abap_true.
           mo_form_data->to_abap( CHANGING cs_container = ls_repo_params ).
-          zcl_abapgit_services_repo=>new_online( ls_repo_params ).
-          ev_state = zcl_abapgit_gui=>c_event_state-go_back.
+          lo_new_online_repo = zcl_abapgit_services_repo=>new_online( ls_repo_params ).
+          CREATE OBJECT ei_page TYPE zcl_abapgit_gui_page_view_repo
+            EXPORTING
+              iv_key = lo_new_online_repo->get_key( ).
+          ev_state = zcl_abapgit_gui=>c_event_state-new_page_replacing.
         ELSE.
           ev_state = zcl_abapgit_gui=>c_event_state-re_render. " Display errors
         ENDIF.
@@ -249,7 +253,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_ADDONLINE IMPLEMENTATION.
 
     gui_services( )->register_event_handler( me ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     lo_form = zcl_abapgit_html_form=>create( iv_form_id = 'add-repo-online-form' ).
     lo_form->text(
