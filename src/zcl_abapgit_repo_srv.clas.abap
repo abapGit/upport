@@ -93,7 +93,7 @@ CLASS ZCL_ABAPGIT_REPO_SRV IMPLEMENTATION.
 
   METHOD get_instance.
     IF gi_ref IS INITIAL.
-      gi_ref = NEW zcl_abapgit_repo_srv( ).
+      CREATE OBJECT gi_ref TYPE zcl_abapgit_repo_srv.
     ENDIF.
     ri_srv = gi_ref.
   ENDMETHOD.
@@ -102,9 +102,13 @@ CLASS ZCL_ABAPGIT_REPO_SRV IMPLEMENTATION.
   METHOD instantiate_and_add.
 
     IF is_repo_meta-offline = abap_false.
-      ro_repo = NEW zcl_abapgit_repo_online( is_data = is_repo_meta ).
+      CREATE OBJECT ro_repo TYPE zcl_abapgit_repo_online
+        EXPORTING
+          is_data = is_repo_meta.
     ELSE.
-      ro_repo = NEW zcl_abapgit_repo_offline( is_data = is_repo_meta ).
+      CREATE OBJECT ro_repo TYPE zcl_abapgit_repo_offline
+        EXPORTING
+          is_data = is_repo_meta.
     ENDIF.
     add( ro_repo ).
 
@@ -398,12 +402,13 @@ CLASS ZCL_ABAPGIT_REPO_SRV IMPLEMENTATION.
 
     lv_branch_name = iv_branch_name.
     IF lv_branch_name IS INITIAL.
-      lv_branch_name = 'refs/heads/master'.
+      lv_branch_name = zif_abapgit_definitions=>c_git_branch-master.
     ENDIF.
     IF -1 = find(
         val = lv_branch_name
-        sub = 'refs/heads/' ).
-      lv_branch_name = 'refs/heads/' && lv_branch_name. " Assume short branch name was received
+        sub = zif_abapgit_definitions=>c_git_branch-heads_prefix ).
+      " Assume short branch name was received
+      lv_branch_name = zif_abapgit_definitions=>c_git_branch-heads_prefix && lv_branch_name.
     ENDIF.
 
     IF zcl_abapgit_auth=>is_allowed( zif_abapgit_auth=>gc_authorization-create_repo ) = abap_false.
