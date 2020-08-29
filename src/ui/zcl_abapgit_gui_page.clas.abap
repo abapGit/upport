@@ -22,63 +22,57 @@ CLASS zcl_abapgit_gui_page DEFINITION PUBLIC ABSTRACT
     DATA ms_control TYPE ty_control .
 
     METHODS render_content
-      ABSTRACT
+          ABSTRACT
       RETURNING
         VALUE(ri_html) TYPE REF TO zif_abapgit_html
       RAISING
         zcx_abapgit_exception .
   PRIVATE SECTION.
-    DATA:
-      mo_settings         TYPE REF TO zcl_abapgit_settings,
-      mx_error            TYPE REF TO zcx_abapgit_exception,
-      mo_exception_viewer TYPE REF TO zcl_abapgit_exception_viewer.
+
+    DATA mo_settings TYPE REF TO zcl_abapgit_settings .
+    DATA mx_error TYPE REF TO zcx_abapgit_exception .
+    DATA mo_exception_viewer TYPE REF TO zcl_abapgit_exception_viewer .
 
     METHODS render_deferred_parts
       IMPORTING
-        ii_html          TYPE REF TO zif_abapgit_html
-        iv_part_category TYPE string
+        !ii_html          TYPE REF TO zif_abapgit_html
+        !iv_part_category TYPE string
       RAISING
-        zcx_abapgit_exception.
-
+        zcx_abapgit_exception .
     METHODS html_head
-      RETURNING VALUE(ri_html) TYPE REF TO zif_abapgit_html.
-
+      RETURNING
+        VALUE(ri_html) TYPE REF TO zif_abapgit_html .
     METHODS title
-      RETURNING VALUE(ri_html) TYPE REF TO zif_abapgit_html.
-
+      RETURNING
+        VALUE(ri_html) TYPE REF TO zif_abapgit_html .
     METHODS footer
-      RETURNING VALUE(ri_html) TYPE REF TO zif_abapgit_html.
-
+      RETURNING
+        VALUE(ri_html) TYPE REF TO zif_abapgit_html .
     METHODS render_link_hints
       IMPORTING
-        ii_html TYPE REF TO zif_abapgit_html
+        !ii_html TYPE REF TO zif_abapgit_html
       RAISING
-        zcx_abapgit_exception.
-
+        zcx_abapgit_exception .
     METHODS render_command_palettes
       IMPORTING
-        ii_html TYPE REF TO zif_abapgit_html
+        !ii_html TYPE REF TO zif_abapgit_html
       RAISING
-        zcx_abapgit_exception.
-
+        zcx_abapgit_exception .
     METHODS render_hotkey_overview
       RETURNING
         VALUE(ro_html) TYPE REF TO zif_abapgit_html
       RAISING
-        zcx_abapgit_exception.
-
+        zcx_abapgit_exception .
     METHODS render_error_message_box
       RETURNING
-        VALUE(ro_html) TYPE REF TO zcl_abapgit_html
+        VALUE(ri_html) TYPE REF TO zif_abapgit_html
       RAISING
-        zcx_abapgit_exception.
-
+        zcx_abapgit_exception .
     METHODS scripts
       RETURNING
         VALUE(ro_html) TYPE REF TO zcl_abapgit_html
       RAISING
-        zcx_abapgit_exception.
-
+        zcx_abapgit_exception .
 ENDCLASS.
 
 
@@ -96,7 +90,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE IMPLEMENTATION.
 
   METHOD footer.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div id="footer">' ).
     ri_html->add( '<table class="w100"><tr>' ).
@@ -121,7 +115,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE IMPLEMENTATION.
 
   METHOD html_head.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<head>' ).                               "#EC NOTEXT
 
@@ -183,7 +177,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE IMPLEMENTATION.
     " You should remember that the we have to instantiate ro_html even
     " it's overwritten further down. Because ADD checks whether it's
     " bound.
-    ro_html = NEW #( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     " You should remember that we render the message panel only
     " if we have an error.
@@ -191,11 +185,13 @@ CLASS ZCL_ABAPGIT_GUI_PAGE IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    ro_html = zcl_abapgit_gui_chunk_lib=>render_error_message_box( mx_error ).
+    ri_html = zcl_abapgit_gui_chunk_lib=>render_error_message_box( mx_error ).
 
     " You should remember that the exception viewer dispatches the events of
     " error message panel
-    mo_exception_viewer = NEW #( ix_error = mx_error ).
+    CREATE OBJECT mo_exception_viewer
+      EXPORTING
+        ix_error = mx_error.
 
     " You should remember that we render the message panel just once
     " for each exception/error text.
@@ -234,7 +230,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE IMPLEMENTATION.
 
   METHOD scripts.
 
-    ro_html = NEW #( ).
+    CREATE OBJECT ro_html.
 
     render_deferred_parts(
       ii_html          = ro_html
@@ -248,7 +244,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE IMPLEMENTATION.
 
   METHOD title.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div id="header">' ).
 
@@ -314,7 +310,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE IMPLEMENTATION.
     gui_services( )->register_event_handler( me ).
 
     " Real page
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<!DOCTYPE html>' ).                      "#EC NOTEXT
     ri_html->add( '<html>' ).                               "#EC NOTEXT
