@@ -130,7 +130,9 @@ CLASS ZCL_ABAPGIT_DOT_ABAPGIT IMPLEMENTATION.
     APPEND '/azure-pipelines.yml' TO ls_data-ignore.
     APPEND '/.devcontainer.json' TO ls_data-ignore.
 
-    ro_dot_abapgit = NEW #( is_data = ls_data ).
+    CREATE OBJECT ro_dot_abapgit
+      EXPORTING
+        is_data = ls_data.
 
   ENDMETHOD.
 
@@ -150,7 +152,9 @@ CLASS ZCL_ABAPGIT_DOT_ABAPGIT IMPLEMENTATION.
 
     ls_data = from_xml( lv_xml ).
 
-    ro_dot_abapgit = NEW #( is_data = ls_data ).
+    CREATE OBJECT ro_dot_abapgit
+      EXPORTING
+        is_data = ls_data.
 
   ENDMETHOD.
 
@@ -164,7 +168,7 @@ CLASS ZCL_ABAPGIT_DOT_ABAPGIT IMPLEMENTATION.
     CALL TRANSFORMATION id
       OPTIONS value_handling = 'accept_data_loss'
       SOURCE XML lv_xml
-      RESULT data = rs_data ##NO_TEXT.
+      RESULT data = rs_data.
 
 * downward compatibility
     IF rs_data-folder_logic IS INITIAL.
