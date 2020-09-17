@@ -7,15 +7,6 @@ CLASS zcl_abapgit_objects DEFINITION
     TYPES:
       ty_types_tt TYPE SORTED TABLE OF tadir-object WITH UNIQUE KEY table_line.
     TYPES:
-      BEGIN OF ty_deserialization,
-        obj     TYPE REF TO zif_abapgit_object,
-        xml     TYPE REF TO zcl_abapgit_xml_input,
-        package TYPE devclass,
-        item    TYPE zif_abapgit_definitions=>ty_item,
-      END OF ty_deserialization .
-    TYPES:
-      ty_deserialization_tt TYPE STANDARD TABLE OF ty_deserialization WITH DEFAULT KEY .
-    TYPES:
       BEGIN OF ty_serialization,
         files TYPE zif_abapgit_definitions=>ty_files_tt,
         item  TYPE zif_abapgit_definitions=>ty_item,
@@ -379,8 +370,11 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
         RETURN.
       ENDIF.
 
-      li_remote_version = NEW zcl_abapgit_xml_input( iv_xml = zcl_abapgit_convert=>xstring_to_string_utf8( ls_remote_file-data )
-                                                     iv_filename = ls_remote_file-filename ).
+      CREATE OBJECT li_remote_version
+        TYPE zcl_abapgit_xml_input
+        EXPORTING
+          iv_xml      = zcl_abapgit_convert=>xstring_to_string_utf8( ls_remote_file-data )
+          iv_filename = ls_remote_file-filename.
 
       ls_result = li_comparator->compare( ii_remote = li_remote_version
                                           ii_log = ii_log ).
@@ -460,7 +454,9 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
         lv_message = |Object type { is_item-obj_type } not supported, serialize|.
         IF iv_native_only = abap_false.
           TRY. " 2nd step, try looking for plugins
-              ri_obj = NEW zcl_abapgit_objects_bridge( is_item = is_item ).
+              CREATE OBJECT ri_obj TYPE zcl_abapgit_objects_bridge
+                EXPORTING
+                  is_item = is_item.
             CATCH cx_sy_create_object_error.
               zcx_abapgit_exception=>raise( lv_message ).
           ENDTRY.
@@ -567,7 +563,7 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
           lt_remote   TYPE zif_abapgit_definitions=>ty_files_tt,
           lv_package  TYPE devclass,
           lo_files    TYPE REF TO zcl_abapgit_objects_files,
-          lo_xml      TYPE REF TO zcl_abapgit_xml_input,
+          lo_xml      TYPE REF TO zif_abapgit_xml_input,
           lt_results  TYPE zif_abapgit_definitions=>ty_results_tt,
           li_progress TYPE REF TO zif_abapgit_progress,
           lv_path     TYPE string,
@@ -580,7 +576,7 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
     FIELD-SYMBOLS: <ls_result>  TYPE zif_abapgit_definitions=>ty_result,
                    <lv_step_id> TYPE LINE OF zif_abapgit_definitions=>ty_deserialization_step_tt,
                    <ls_step>    TYPE LINE OF zif_abapgit_definitions=>ty_step_data_tt,
-                   <ls_deser>   TYPE LINE OF ty_deserialization_tt.
+                   <ls_deser>   TYPE LINE OF zif_abapgit_definitions=>ty_deserialization_tt.
 
     lt_steps = get_deserialize_steps( ).
 
@@ -634,8 +630,10 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
             lv_path = <ls_result>-path.
           ENDIF.
 
-          lo_files = NEW #( is_item = ls_item
-                            iv_path = lv_path ).
+          CREATE OBJECT lo_files
+            EXPORTING
+              is_item = ls_item
+              iv_path = lv_path.
           lo_files->set_files( lt_remote ).
 
           "analyze XML in order to instantiate the proper serializer
@@ -1148,19 +1146,21 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
         rs_files_and_item-item-obj_name }| ).
     ENDIF.
 
-    lo_files = NEW #( is_item = rs_files_and_item-item ).
+    CREATE OBJECT lo_files
+      EXPORTING
+        is_item = rs_files_and_item-item.
 
     li_obj = create_object( is_item     = rs_files_and_item-item
                             iv_language = iv_language ).
     li_obj->mo_files = lo_files.
-    lo_xml = NEW #( ).
+    CREATE OBJECT lo_xml.
 
     IF iv_serialize_master_lang_only = abap_true.
       lo_xml->i18n_params( iv_serialize_master_lang_only = abap_true ).
     ENDIF.
 
     li_obj->serialize( lo_xml ).
-    lo_files->add_xml( io_xml      = lo_xml
+    lo_files->add_xml( ii_xml      = lo_xml
                        is_metadata = li_obj->get_metadata( ) ).
 
     rs_files_and_item-files = lo_files->get_files( ).
