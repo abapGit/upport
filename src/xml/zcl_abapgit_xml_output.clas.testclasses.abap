@@ -29,8 +29,8 @@ CLASS ltcl_xml_output IMPLEMENTATION.
     ls_input-foo = '2'.
     ls_input-bar = 'A'.
 
-    lo_output = NEW #( ).
-    lo_output->add( iv_name = 'DATA'
+    CREATE OBJECT lo_output.
+    lo_output->zif_abapgit_xml_output~add( iv_name = 'DATA'
                     ig_data = ls_input ).
 
     li_xml_element = lo_output->mi_xml_doc->find_from_name( 'FOO' ).
@@ -66,11 +66,11 @@ CLASS ltcl_xml_output IMPLEMENTATION.
 
     REPLACE ALL OCCURRENCES OF '#' IN lv_value WITH cl_abap_char_utilities=>newline.
 
-    lo_output = NEW #( ).
-    lo_output->add( iv_name = 'DATA'
-                    ig_data = ls_input ).
+    CREATE OBJECT lo_output.
+    lo_output->zif_abapgit_xml_output~add( iv_name = 'DATA'
+                                           ig_data = ls_input ).
 
-    lv_xml = lo_output->render( ).
+    lv_xml = lo_output->zif_abapgit_xml_output~render( ).
 
     lv_encoding = cl_abap_codepage=>sap_codepage( `UTF-16LE` ).
 

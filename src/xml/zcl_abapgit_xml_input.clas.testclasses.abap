@@ -36,14 +36,16 @@ CLASS ltcl_xml IMPLEMENTATION.
 
     CLEAR ls_old.
 
-    lo_output = NEW #( ).
-    lo_output->add( iv_name = 'DATA'
-                    ig_data = ls_old ).
-    lv_xml = lo_output->render( ).
+    CREATE OBJECT lo_output.
+    lo_output->zif_abapgit_xml_output~add( iv_name = 'DATA'
+                                           ig_data = ls_old ).
+    lv_xml = lo_output->zif_abapgit_xml_output~render( ).
 
-    lo_input = NEW #( iv_xml = lv_xml ).
-    lo_input->read( EXPORTING iv_name = 'DATA'
-                    CHANGING cg_data = ls_new ).
+    CREATE OBJECT lo_input
+      EXPORTING
+        iv_xml = lv_xml.
+    lo_input->zif_abapgit_xml_input~read( EXPORTING iv_name = 'DATA'
+                                          CHANGING cg_data = ls_new ).
 
     cl_abap_unit_assert=>assert_equals(
       act = ls_new-foo
@@ -67,14 +69,16 @@ CLASS ltcl_xml IMPLEMENTATION.
     ls_old-foo = 2.
     ls_old-bar = 'A'.
 
-    lo_output = NEW #( ).
-    lo_output->add( iv_name = 'DATA'
-                    ig_data = ls_old ).
-    lv_xml = lo_output->render( ).
+    CREATE OBJECT lo_output.
+    lo_output->zif_abapgit_xml_output~add( iv_name = 'DATA'
+                                           ig_data = ls_old ).
+    lv_xml = lo_output->zif_abapgit_xml_output~render( ).
 
-    lo_input = NEW #( iv_xml = lv_xml ).
-    lo_input->read( EXPORTING iv_name = 'DATA'
-                    CHANGING cg_data = ls_new ).
+    CREATE OBJECT lo_input
+      EXPORTING
+        iv_xml = lv_xml.
+    lo_input->zif_abapgit_xml_input~read( EXPORTING iv_name = 'DATA'
+                                          CHANGING cg_data = ls_new ).
 
     cl_abap_unit_assert=>assert_equals(
       act = ls_new-foo
@@ -99,14 +103,16 @@ CLASS ltcl_xml IMPLEMENTATION.
     ls_new-bar = 'A'.
     ls_new-moo = 5.
 
-    lo_output = NEW #( ).
-    lo_output->add( iv_name = 'DATA'
-                    ig_data = ls_new ).
-    lv_xml = lo_output->render( ).
+    CREATE OBJECT lo_output.
+    lo_output->zif_abapgit_xml_output~add( iv_name = 'DATA'
+                                           ig_data = ls_new ).
+    lv_xml = lo_output->zif_abapgit_xml_output~render( ).
 
-    lo_input = NEW #( iv_xml = lv_xml ).
-    lo_input->read( EXPORTING iv_name = 'DATA'
-                    CHANGING cg_data = ls_old ).
+    CREATE OBJECT lo_input
+      EXPORTING
+        iv_xml = lv_xml.
+    lo_input->zif_abapgit_xml_input~read( EXPORTING iv_name = 'DATA'
+                                          CHANGING cg_data = ls_old ).
 
     cl_abap_unit_assert=>assert_equals(
       act = ls_old-foo
