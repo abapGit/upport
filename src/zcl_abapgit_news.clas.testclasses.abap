@@ -17,7 +17,7 @@ ENDCLASS.
 
 CLASS lcl_log_entries DEFINITION FINAL.
   PUBLIC SECTION.
-    DATA mt_log_entries TYPE zcl_abapgit_news=>tt_log.
+    DATA mt_log_entries TYPE zcl_abapgit_news=>ty_logs.
     METHODS add
       IMPORTING
         iv_str TYPE string.
@@ -217,12 +217,12 @@ CLASS ltcl_news IMPLEMENTATION.
 
   METHOD parse.
 
-    DATA lt_log_act TYPE zcl_abapgit_news=>tt_log.
+    DATA lt_log_act TYPE zcl_abapgit_news=>ty_logs.
     DATA lo_src_text_buf TYPE REF TO lcl_string_buffer.
     DATA lo_log_entries TYPE REF TO lcl_log_entries.
 
     " Generate test data
-    lo_src_text_buf = NEW #( ).
+    CREATE OBJECT lo_src_text_buf.
     lo_src_text_buf->add( '======' ).
     lo_src_text_buf->add( '------' ).
     lo_src_text_buf->add( `      ` ).
@@ -239,7 +239,7 @@ CLASS ltcl_news IMPLEMENTATION.
 
     " Case 1
     " Generate expected results
-    lo_log_entries = NEW #( ).
+    CREATE OBJECT lo_log_entries.
     "                   VERSION  HEAD IMP POS  TEXT
     lo_log_entries->add( '1.28.0 /X   /   /1   /2017-02-13 v1.28.0' ).
     lo_log_entries->add( '1.28.0 /    /   /0   /+ Staging page redesigned' ).
@@ -257,7 +257,7 @@ CLASS ltcl_news IMPLEMENTATION.
 
 
     " Case 2 (exect version match)
-    lo_log_entries = NEW #( ).
+    CREATE OBJECT lo_log_entries.
     "                   VERSION  HEAD IMP UPD TEXT
     lo_log_entries->add( '1.28.0 /X  /   /1   /2017-02-13 v1.28.0' ).
     lo_log_entries->add( '1.28.0 /   /   /0   /+ Staging page redesigned' ).
@@ -272,7 +272,7 @@ CLASS ltcl_news IMPLEMENTATION.
       msg = ' Error during parsing: Case 2.' ).
 
     " Case 3 (display tail)
-    lo_log_entries = NEW #( ).
+    CREATE OBJECT lo_log_entries.
     "                   VERSION  HEAD IMP UPD TEXT
     lo_log_entries->add( '1.28.0 /X  /   /0   /2017-02-13 v1.28.0' ).
     lo_log_entries->add( '1.28.0 /   /   /0   /+ Staging page redesigned' ).
