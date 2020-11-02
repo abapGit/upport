@@ -88,7 +88,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_NEWS IMPLEMENTATION.
+CLASS zcl_abapgit_news IMPLEMENTATION.
 
 
   METHOD compare_versions.
@@ -196,9 +196,11 @@ CLASS ZCL_ABAPGIT_NEWS IMPLEMENTATION.
     LOOP AT lt_remote ASSIGNING <ls_file> WHERE path = lc_log_path
                                             AND ( filename CP lc_log_filename OR filename CP lc_log_filename_up ).
 
-      ro_instance = NEW #( iv_rawdata = <ls_file>-data
-                           iv_current_version = lv_version
-                           iv_lastseen_version = normalize_version( lv_last_seen ) ).
+      CREATE OBJECT ro_instance
+        EXPORTING
+          iv_rawdata          = <ls_file>-data
+          iv_current_version  = lv_version
+          iv_lastseen_version = normalize_version( lv_last_seen ).
 
       EXIT.
 
@@ -214,7 +216,7 @@ CLASS ZCL_ABAPGIT_NEWS IMPLEMENTATION.
 
 
   METHOD get_log.
-    rt_log = me->mt_log.
+    rt_log = mt_log.
   ENDMETHOD.
 
 
@@ -244,7 +246,7 @@ CLASS ZCL_ABAPGIT_NEWS IMPLEMENTATION.
 
 
   METHOD latest_version.
-    rv_version = me->mv_latest_version.
+    rv_version = mv_latest_version.
   ENDMETHOD.
 
 
