@@ -40,7 +40,7 @@ CLASS zcl_abapgit_gui_page_main IMPLEMENTATION.
 
   METHOD build_main_menu.
 
-    ro_menu = NEW #( iv_id = 'toolbar-main' ).
+    CREATE OBJECT ro_menu EXPORTING iv_id = 'toolbar-main'.
 
     ro_menu->add(
       iv_txt = zcl_abapgit_gui_buttons=>new_online( )
@@ -72,11 +72,11 @@ CLASS zcl_abapgit_gui_page_main IMPLEMENTATION.
 
   METHOD render_content.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
     gui_services( )->get_hotkeys_ctl( )->register_hotkeys( me ).
 
     IF mo_repo_overview IS INITIAL.
-      mo_repo_overview = NEW #( ).
+      CREATE OBJECT mo_repo_overview.
     ENDIF.
 
     ri_html->add( mo_repo_overview->zif_abapgit_gui_renderable~render( ) ).
@@ -105,7 +105,9 @@ CLASS zcl_abapgit_gui_page_main IMPLEMENTATION.
         ENDTRY.
 
         mv_repo_key = lv_key.
-        rs_handled-page = NEW zcl_abapgit_gui_page_repo_view( iv_key = lv_key ).
+        CREATE OBJECT rs_handled-page TYPE zcl_abapgit_gui_page_repo_view
+          EXPORTING
+            iv_key = lv_key.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-new_page.
 
       WHEN zif_abapgit_definitions=>c_action-change_order_by.
@@ -127,13 +129,17 @@ CLASS zcl_abapgit_gui_page_main IMPLEMENTATION.
       WHEN zif_abapgit_definitions=>c_action-go_patch.
 
         lv_key = ii_event->query( )->get( 'KEY' ).
-        rs_handled-page = NEW zcl_abapgit_gui_page_patch( iv_key = lv_key ).
+        CREATE OBJECT rs_handled-page TYPE zcl_abapgit_gui_page_patch
+          EXPORTING
+            iv_key = lv_key.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-new_page.
 
       WHEN zif_abapgit_definitions=>c_action-repo_settings.
 
         lv_key = ii_event->query( )->get( 'KEY' ).
-        rs_handled-page = NEW zcl_abapgit_gui_page_repo_sett( io_repo = zcl_abapgit_repo_srv=>get_instance( )->get( lv_key ) ).
+        CREATE OBJECT rs_handled-page TYPE zcl_abapgit_gui_page_repo_sett
+          EXPORTING
+            io_repo = zcl_abapgit_repo_srv=>get_instance( )->get( lv_key ).
         rs_handled-state = zcl_abapgit_gui=>c_event_state-new_page.
 
       WHEN OTHERS.
@@ -163,7 +169,7 @@ CLASS zcl_abapgit_gui_page_main IMPLEMENTATION.
 
     ls_hotkey_action-description   = |New offline repository|.
     ls_hotkey_action-action = zif_abapgit_definitions=>c_action-repo_newoffline.
-    ls_hotkey_action-hotkey = |f|.
+    ls_hotkey_action-hotkey = |o|.
     INSERT ls_hotkey_action INTO TABLE rt_hotkey_actions.
 
   ENDMETHOD.
