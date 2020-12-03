@@ -55,12 +55,14 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_OBJECT_PINF IMPLEMENTATION.
+CLASS zcl_abapgit_object_pinf IMPLEMENTATION.
 
 
   METHOD create_facade.
 
-    ri_facade = NEW lcl_package_interface_facade( ii_interface = ii_interface ).
+    CREATE OBJECT ri_facade TYPE lcl_package_interface_facade
+      EXPORTING
+        ii_interface = ii_interface.
 
   ENDMETHOD.
 
@@ -238,6 +240,8 @@ CLASS ZCL_ABAPGIT_OBJECT_PINF IMPLEMENTATION.
   METHOD zif_abapgit_object~delete.
 
     DATA: li_interface TYPE REF TO lif_package_interface_facade.
+
+    corr_insert( iv_package ).
 
     li_interface = load( |{ ms_item-obj_name }| ).
 
