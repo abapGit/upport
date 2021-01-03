@@ -59,7 +59,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_html_form_utils IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_HTML_FORM_UTILS IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -68,7 +68,9 @@ CLASS zcl_abapgit_html_form_utils IMPLEMENTATION.
 
 
   METHOD create.
-    ro_form_util = NEW #( io_form = io_form ).
+    CREATE OBJECT ro_form_util
+      EXPORTING
+        io_form = io_form.
   ENDMETHOD.
 
 
@@ -157,7 +159,7 @@ CLASS zcl_abapgit_html_form_utils IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_field> LIKE LINE OF lt_fields.
 
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     IF io_form_data->is_empty( ) = abap_true.
       RETURN.
@@ -171,7 +173,7 @@ CLASS zcl_abapgit_html_form_utils IMPLEMENTATION.
       IF <ls_field>-type = zif_abapgit_html_form=>c_field_type-checkbox.
         ro_form_data->set(
           iv_key = <ls_field>-name
-          iv_val = boolc( lv_value = 'on' ) ).
+          iv_val = boolc( lv_value = 'on' ) ) ##TYPE.
       ELSEIF <ls_field>-type = zif_abapgit_html_form=>c_field_type-text AND <ls_field>-upper_case = abap_true.
         ro_form_data->set(
           iv_key = <ls_field>-name
@@ -234,7 +236,7 @@ CLASS zcl_abapgit_html_form_utils IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_field> LIKE LINE OF lt_fields.
 
-    ro_validation_log = NEW #( ).
+    CREATE OBJECT ro_validation_log.
 
     lt_fields = mo_form->get_fields( ).
     LOOP AT lt_fields ASSIGNING <ls_field>.
