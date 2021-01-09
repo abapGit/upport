@@ -125,7 +125,9 @@ CLASS ZCL_ABAPGIT_DOT_ABAPGIT IMPLEMENTATION.
     ls_data-starting_folder = '/src/'.
     ls_data-folder_logic    = zif_abapgit_dot_abapgit=>c_folder_logic-prefix.
 
-    ro_dot_abapgit = NEW #( is_data = ls_data ).
+    CREATE OBJECT ro_dot_abapgit
+      EXPORTING
+        is_data = ls_data.
 
   ENDMETHOD.
 
@@ -145,7 +147,9 @@ CLASS ZCL_ABAPGIT_DOT_ABAPGIT IMPLEMENTATION.
 
     ls_data = from_xml( lv_xml ).
 
-    ro_dot_abapgit = NEW #( is_data = ls_data ).
+    CREATE OBJECT ro_dot_abapgit
+      EXPORTING
+        is_data = ls_data.
 
   ENDMETHOD.
 
@@ -236,6 +240,10 @@ CLASS ZCL_ABAPGIT_DOT_ABAPGIT IMPLEMENTATION.
     " Ignore all files outside of starting folder tree
     IF ms_data-starting_folder <> '/' AND NOT lv_name CP lv_starting.
       rv_ignored = abap_true.
+    ENDIF.
+
+    IF iv_path = zif_abapgit_data_config=>c_default_path.
+      rv_ignored = abap_false.
     ENDIF.
 
   ENDMETHOD.
