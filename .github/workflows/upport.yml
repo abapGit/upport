@@ -1,7 +1,7 @@
 name: Upport
 
 on:
-  schedule: 
+  schedule:
     - cron: '0 */6 * * *'
 
 jobs:
@@ -14,15 +14,15 @@ jobs:
       with:
         node-version: '12.x'
     - name: Run Commands
-      run: |      
+      run: |
         git config user.email "ci@abapgit.org"
         git config user.name "CI"
-        git clone https://github.com/larshp/abapGit /tmp/new
+        git clone https://github.com/abapGit/abapGit /tmp/new
         rm -rf src
         cp -rf /tmp/new/src src
         git add -A
         git commit -m "update base"
-        git push        
+        git push
         npm install @abaplint/cli
         npx abaplint --fix
         git status
