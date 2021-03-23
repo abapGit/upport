@@ -552,7 +552,7 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
             WHEN zif_abapgit_ajson=>node_type-null.
             " Do nothing
             WHEN zif_abapgit_ajson=>node_type-boolean.
-              <value> = boolc( <n>-value = 'true' ).
+              <value> = xsdbool( <n>-value = 'true' ).
             WHEN zif_abapgit_ajson=>node_type-number.
               <value> = <n>-value.
             WHEN zif_abapgit_ajson=>node_type-string.

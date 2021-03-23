@@ -71,14 +71,17 @@
     "globalMacros": []
   },
   "rules": {
+    "prefer_inline": false, // todo, abaplint bugs
+    "sql_escape_host_variables": false, // todo, this needs a quickfix in abaplint
+    "use_line_exists": false, // todo, this needs a quickfix in abaplint
+    "use_bool_expression": true,
+    "prefer_xsdbool": true,
     "whitespace_end": true,
     "parser_error": true,
     "check_syntax": true,
     "line_break_multiple_parameters": true,
     "unknown_types": true,
     "use_new": true,
-    "sequential_blank": true,
-    "prefer_inline": false,
-    "sql_escape_host_variables": false
+    "sequential_blank": true
   }
 }
