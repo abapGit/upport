@@ -68,7 +68,9 @@ CLASS ZCL_ABAPGIT_HTML_FORM_UTILS IMPLEMENTATION.
 
 
   METHOD create.
-    ro_form_util = NEW #( io_form = io_form ).
+    CREATE OBJECT ro_form_util
+      EXPORTING
+        io_form = io_form.
   ENDMETHOD.
 
 
@@ -95,7 +97,7 @@ CLASS ZCL_ABAPGIT_HTML_FORM_UTILS IMPLEMENTATION.
 
 
   METHOD is_dirty.
-    rv_dirty = xsdbool( io_form_data->mt_entries <> mo_form_data->mt_entries ).
+    rv_dirty = boolc( io_form_data->mt_entries <> mo_form_data->mt_entries ).
   ENDMETHOD.
 
 
@@ -117,14 +119,14 @@ CLASS ZCL_ABAPGIT_HTML_FORM_UTILS IMPLEMENTATION.
         del = ` ` ).
 
       IF <ls_field>-type = zif_abapgit_html_form=>c_field_type-number.
-        rv_empty = xsdbool( lv_value IS INITIAL OR lv_value = '0' ).
+        rv_empty = boolc( lv_value IS INITIAL OR lv_value = '0' ).
       ELSEIF <ls_field>-type = zif_abapgit_html_form=>c_field_type-table.
         lv_rows = io_form_data->get( |{ <ls_field>-name }-{ zif_abapgit_html_form=>c_rows }| ).
         DO lv_rows TIMES.
           lv_row = sy-index.
           DO lines( <ls_field>-subitems ) TIMES.
             lv_value = io_form_data->get( |{ <ls_field>-name }-{ lv_row }-{ sy-index }| ).
-            rv_empty = xsdbool( lv_value IS INITIAL ).
+            rv_empty = boolc( lv_value IS INITIAL ).
             IF rv_empty <> abap_true.
               RETURN.
             ENDIF.
@@ -133,9 +135,9 @@ CLASS ZCL_ABAPGIT_HTML_FORM_UTILS IMPLEMENTATION.
       ELSEIF <ls_field>-type = zif_abapgit_html_form=>c_field_type-textarea.
         REPLACE ALL OCCURRENCES OF zif_abapgit_definitions=>c_crlf IN lv_value WITH ''.
         REPLACE ALL OCCURRENCES OF zif_abapgit_definitions=>c_newline IN lv_value WITH ''.
-        rv_empty = xsdbool( lv_value IS INITIAL ).
+        rv_empty = boolc( lv_value IS INITIAL ).
       ELSE.
-        rv_empty = xsdbool( lv_value IS INITIAL ).
+        rv_empty = boolc( lv_value IS INITIAL ).
       ENDIF.
 
       IF rv_empty <> abap_true.
@@ -157,7 +159,7 @@ CLASS ZCL_ABAPGIT_HTML_FORM_UTILS IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_field> LIKE LINE OF lt_fields.
 
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     IF io_form_data->is_empty( ) = abap_true.
       RETURN.
@@ -171,7 +173,7 @@ CLASS ZCL_ABAPGIT_HTML_FORM_UTILS IMPLEMENTATION.
       IF <ls_field>-type = zif_abapgit_html_form=>c_field_type-checkbox.
         ro_form_data->set(
           iv_key = <ls_field>-name
-          iv_val = xsdbool( lv_value = 'on' ) ) ##TYPE.
+          iv_val = boolc( lv_value = 'on' ) ) ##TYPE.
       ELSEIF <ls_field>-type = zif_abapgit_html_form=>c_field_type-text AND <ls_field>-upper_case = abap_true.
         ro_form_data->set(
           iv_key = <ls_field>-name
@@ -234,7 +236,7 @@ CLASS ZCL_ABAPGIT_HTML_FORM_UTILS IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_field> LIKE LINE OF lt_fields.
 
-    ro_validation_log = NEW #( ).
+    CREATE OBJECT ro_validation_log.
 
     lt_fields = mo_form->get_fields( ).
     LOOP AT lt_fields ASSIGNING <ls_field>.
