@@ -104,6 +104,7 @@ CLASS zcl_abapgit_gui_page_diff DEFINITION
     METHODS build_menu
       RETURNING
         VALUE(ro_menu) TYPE REF TO zcl_abapgit_html_toolbar .
+    METHODS set_layout.
 
     METHODS render_content
         REDEFINITION .
@@ -205,7 +206,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
+CLASS zcl_abapgit_gui_page_diff IMPLEMENTATION.
 
 
   METHOD add_filter_sub_menu.
@@ -230,7 +231,14 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
     DELETE ADJACENT DUPLICATES FROM lt_users.
 
     IF lines( lt_types ) > 1 OR lines( lt_users ) > 1.
-      lo_sub_filter = NEW #( iv_id = 'diff-filter' ).
+      CREATE OBJECT lo_sub_filter EXPORTING iv_id = 'diff-filter'.
+
+      IF lines( lt_users ) > 1.
+        lo_sub_filter->add( iv_txt = 'Only my changes'
+                            iv_typ = zif_abapgit_html=>c_action_type-onclick
+                            iv_aux = |{ sy-uname }|
+                            iv_chk = abap_false ).
+      ENDIF.
 
       " File types
       IF lines( lt_types ) > 1.
@@ -269,7 +277,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
           lv_jump_target TYPE string.
     FIELD-SYMBOLS: <ls_diff> LIKE LINE OF mt_diff_files.
 
-    lo_sub_jump = NEW #( iv_id = 'jump' ).
+    CREATE OBJECT lo_sub_jump EXPORTING iv_id = 'jump'.
 
     LOOP AT mt_diff_files ASSIGNING <ls_diff>.
 
@@ -382,11 +390,15 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
     " Diff data
     IF <ls_diff>-type <> 'binary'.
       IF <ls_diff>-fstate = c_fstate-remote. " Remote file leading changes
-        <ls_diff>-o_diff = NEW #( iv_new = <ls_remote>-data
-                                  iv_old = <ls_local>-file-data ).
+        CREATE OBJECT <ls_diff>-o_diff
+          EXPORTING
+            iv_new = <ls_remote>-data
+            iv_old = <ls_local>-file-data.
       ELSE.             " Local leading changes or both were modified
-        <ls_diff>-o_diff = NEW #( iv_new = <ls_local>-file-data
-                                  iv_old = <ls_remote>-data ).
+        CREATE OBJECT <ls_diff>-o_diff
+          EXPORTING
+            iv_new = <ls_local>-file-data
+            iv_old = <ls_remote>-data.
       ENDIF.
     ENDIF.
 
@@ -395,7 +407,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
 
   METHOD build_menu.
 
-    ro_menu = NEW #( ).
+    CREATE OBJECT ro_menu.
 
     add_menu_begin( ro_menu ).
     add_jump_sub_menu( ro_menu ).
@@ -480,6 +492,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
     super->constructor( ).
     ms_control-page_title = 'Diff'.
     mv_unified            = zcl_abapgit_persistence_user=>get_instance( )->get_diff_unified( ).
+    set_layout( ).
     mv_repo_key           = iv_key.
     mo_repo              ?= zcl_abapgit_repo_srv=>get_instance( )->get( iv_key ).
 
@@ -498,6 +511,16 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
     ENDIF.
 
     ms_control-page_menu = build_menu( ).
+
+  ENDMETHOD.
+
+  METHOD set_layout.
+
+    IF mv_unified = abap_true.
+      ms_control-page_layout = c_page_layout-centered.
+    ELSE.
+      ms_control-page_layout = c_page_layout-full_width.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -556,7 +579,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
     DATA: lv_beacon  TYPE string,
           lt_beacons TYPE zif_abapgit_definitions=>ty_string_tt.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     IF is_diff_line-beacon > 0.
       lt_beacons = is_diff-o_diff->get_beacons( ).
@@ -598,8 +621,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
     DATA: ls_diff_file LIKE LINE OF mt_diff_files,
           li_progress  TYPE REF TO zif_abapgit_progress.
 
-
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     li_progress = zcl_abapgit_progress=>get_instance( lines( mt_diff_files ) ).
 
@@ -630,7 +652,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
 
   METHOD render_diff.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( |<div class="diff" data-type="{ is_diff-type
       }" data-changed-by="{ is_diff-changed_by
@@ -661,7 +683,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
     DATA: ls_stats    TYPE zif_abapgit_definitions=>ty_count,
           lv_adt_link TYPE string.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div class="diff_head">' ).
 
@@ -737,7 +759,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
 
     lo_highlighter = zcl_abapgit_syntax_factory=>create( iv_filename     = is_diff-filename
                                                          iv_hidden_chars = mv_hidden_chars ).
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     lt_diffs = is_diff-o_diff->get( ).
 
@@ -796,7 +818,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
           lv_mark TYPE string,
           lv_bg   TYPE string.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     " New line
     lv_mark = ` `.
@@ -863,7 +885,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_diff_line> LIKE LINE OF mt_delayed_lines.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     " Release delayed subsequent update lines
     IF is_diff_line-result <> zif_abapgit_definitions=>c_diff-update.
@@ -913,7 +935,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
 
   METHOD render_scripts.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->set_title( cl_abap_typedescr=>describe_by_object_ref( me )->get_relative_name( ) ).
 
@@ -942,7 +964,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
 
   METHOD render_table_head.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
     ri_html->add( '<thead class="header">' ).
     ri_html->add( '<tr>' ).
 
@@ -992,6 +1014,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_DIFF IMPLEMENTATION.
       WHEN c_actions-toggle_unified. " Toggle file diplay
 
         mv_unified = zcl_abapgit_persistence_user=>get_instance( )->toggle_diff_unified( ).
+        set_layout( ).
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
       WHEN c_actions-toggle_hidden_chars. " Toggle display of hidden characters
