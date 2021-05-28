@@ -145,7 +145,9 @@ CLASS zcl_abapgit_git_transport IMPLEMENTATION.
 
     lv_data = eo_client->get_cdata( ).
 
-    eo_branch_list = NEW #( iv_data = lv_data ).
+    CREATE OBJECT eo_branch_list
+      EXPORTING
+        iv_data = lv_data.
 
   ENDMETHOD.
 
@@ -213,9 +215,9 @@ CLASS zcl_abapgit_git_transport IMPLEMENTATION.
             " Otherwise return full error message
             lv_error = lv_commnd_text.
           ENDIF.
-        ELSEIF strlen( lv_string ) < 8.
+        ELSEIF strlen( lv_string ) < 4.
           lv_error = 'Missing flush-pkt'.
-        ELSEIF lv_string(8) <> '00000000'.
+        ELSEIF lv_string <> '0000' AND lv_string <> '00000000'.
           " We update only one reference at a time so this should be the end
           lv_error = 'Unexpected end of status (flush-pkt)'.
         ENDIF.
