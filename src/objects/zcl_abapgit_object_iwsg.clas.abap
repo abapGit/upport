@@ -18,12 +18,15 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_OBJECT_IWSG IMPLEMENTATION.
+CLASS zcl_abapgit_object_iwsg IMPLEMENTATION.
 
 
   METHOD get_generic.
 
-    ro_generic = NEW #( is_item = ms_item ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        is_item     = ms_item
+        iv_language = mv_language.
 
   ENDMETHOD.
 
