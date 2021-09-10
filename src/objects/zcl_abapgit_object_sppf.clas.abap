@@ -1,4 +1,4 @@
-CLASS zcl_abapgit_object_asfc DEFINITION
+CLASS zcl_abapgit_object_sppf DEFINITION
   PUBLIC
   INHERITING FROM zcl_abapgit_objects_super
   CREATE PUBLIC .
@@ -18,7 +18,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_object_asfc IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_OBJECT_SPPF IMPLEMENTATION.
 
 
   METHOD get_generic.
