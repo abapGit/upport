@@ -871,13 +871,18 @@ CLASS ZCL_ABAPGIT_OBJECT_TABL IMPLEMENTATION.
           li_local_version_input  TYPE REF TO zif_abapgit_xml_input.
 
 
-    li_local_version_output = NEW zcl_abapgit_xml_output( ).
+    CREATE OBJECT li_local_version_output TYPE zcl_abapgit_xml_output.
 
     zif_abapgit_object~serialize( li_local_version_output ).
 
-    li_local_version_input = NEW zcl_abapgit_xml_input( iv_xml = li_local_version_output->render( ) ).
+    CREATE OBJECT li_local_version_input
+      TYPE zcl_abapgit_xml_input
+      EXPORTING
+        iv_xml = li_local_version_output->render( ).
 
-    ri_comparator = NEW zcl_abapgit_object_tabl_compar( ii_local = li_local_version_input ).
+    CREATE OBJECT ri_comparator TYPE zcl_abapgit_object_tabl_compar
+      EXPORTING
+        ii_local = li_local_version_input.
 
   ENDMETHOD.
 
@@ -1005,6 +1010,7 @@ CLASS ZCL_ABAPGIT_OBJECT_TABL IMPLEMENTATION.
     DELETE lt_dd08v WHERE noinherit = 'N'.
     LOOP AT lt_dd05m ASSIGNING <ls_dd05m>.
       CLEAR <ls_dd05m>-tabname.
+      CLEAR <ls_dd05m>-leng.
       lv_index = sy-tabix.
       READ TABLE lt_dd08v WITH KEY fieldname = <ls_dd05m>-fieldname TRANSPORTING NO FIELDS.
       IF sy-subrc <> 0.
