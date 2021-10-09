@@ -13,13 +13,15 @@ CLASS zcl_abapgit_gui_page_stage DEFINITION
                  stage_filter  TYPE string VALUE 'stage_filter',
                END OF c_action.
 
-    METHODS:
-      constructor
-        IMPORTING
-                  io_repo TYPE REF TO zcl_abapgit_repo_online
-                  iv_seed TYPE string OPTIONAL
-        RAISING   zcx_abapgit_exception,
-      zif_abapgit_gui_event_handler~on_event REDEFINITION.
+    METHODS constructor
+      IMPORTING
+        io_repo TYPE REF TO zcl_abapgit_repo_online
+        iv_seed TYPE string OPTIONAL
+        iv_sci_result TYPE zif_abapgit_definitions=>ty_sci_result DEFAULT zif_abapgit_definitions=>c_sci_result-no_run
+      RAISING
+        zcx_abapgit_exception.
+
+    METHODS zif_abapgit_gui_event_handler~on_event REDEFINITION.
 
   PROTECTED SECTION.
     METHODS:
@@ -39,6 +41,7 @@ CLASS zcl_abapgit_gui_page_stage DEFINITION
     DATA ms_files TYPE zif_abapgit_definitions=>ty_stage_files .
     DATA mv_seed TYPE string .               " Unique page id to bind JS sessionStorage
     DATA mv_filter_value TYPE string .
+    DATA mv_sci_result TYPE zif_abapgit_definitions=>ty_sci_result.
 
     METHODS check_selected
       IMPORTING
@@ -119,12 +122,12 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_GUI_PAGE_STAGE IMPLEMENTATION.
 
 
   METHOD build_menu.
 
-    ro_menu = NEW #( ).
+    CREATE OBJECT ro_menu.
 
     IF lines( ms_files-local ) > 0
     OR lines( ms_files-remote ) > 0.
@@ -193,6 +196,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     ms_control-page_title = 'Stage'.
     mo_repo               = io_repo.
     mv_seed               = iv_seed.
+    mv_sci_result         = iv_sci_result.
 
     IF mv_seed IS INITIAL. " Generate based on time unless obtained from diff page
       GET TIME STAMP FIELD lv_ts.
@@ -346,8 +350,10 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     DELETE lt_files WHERE method <> zif_abapgit_definitions=>c_method-add
                     AND   method <> zif_abapgit_definitions=>c_method-rm.
 
-    lo_page = NEW #( iv_key = lv_key
-                     it_files = lt_files ).
+    CREATE OBJECT lo_page
+      EXPORTING
+        iv_key   = lv_key
+        it_files = lt_files.
 
     ri_page = lo_page.
 
@@ -367,7 +373,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     DATA: lv_local_count TYPE i,
           lv_add_all_txt TYPE string.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
     lv_local_count = count_default_files_to_commit( ).
     IF lv_local_count > 0.
       lv_add_all_txt = |Add All and Commit ({ lv_local_count })|.
@@ -401,6 +407,9 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     ri_html->add( '<input class="stage-filter" id="objectSearch"' &&
                   ' type="search" placeholder="Filter Objects"' &&
                   | value="{ mv_filter_value }">| ).
+    zcl_abapgit_gui_chunk_lib=>render_sci_result(
+      ii_html       = ri_html
+      iv_sci_result = mv_sci_result ).
     ri_html->add( '</td>' ).
 
     ri_html->add( '</tr>' ).
@@ -411,7 +420,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
   METHOD render_content.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div class="repo">' ).
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
@@ -453,7 +462,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     DATA: lv_param    TYPE string,
           lv_filename TYPE string.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     lv_filename = is_file-path && is_file-filename.
     " make sure whitespace is preserved in the DOM
@@ -511,7 +520,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
                    <ls_status> LIKE LINE OF ms_files-status,
                    <ls_local>  LIKE LINE OF ms_files-local.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<table id="stageTab" class="stage_tab w100">' ).
 
@@ -621,7 +630,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
     DATA lv_main_language TYPE spras.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     lv_main_language = mo_repo->get_dot_abapgit( )->get_main_language( ).
 
@@ -636,7 +645,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
   METHOD render_scripts.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->set_title( cl_abap_typedescr=>describe_by_object_ref( me )->get_relative_name( ) ).
 
@@ -667,7 +676,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     FIELD-SYMBOLS <ls_remote> LIKE LINE OF ms_files-remote.
     FIELD-SYMBOLS <ls_status> LIKE LINE OF ms_files-status.
 
-    ro_stage = NEW #( ).
+    CREATE OBJECT ro_stage.
 
     LOOP AT ms_files-local ASSIGNING <ls_local>.
       READ TABLE ms_files-status ASSIGNING <ls_status>
@@ -722,7 +731,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
     check_selected( lo_files ).
 
-    ro_stage = NEW #( ).
+    CREATE OBJECT ro_stage.
 
     LOOP AT lo_files->mt_entries ASSIGNING <ls_item>
       "Ignore Files that we don't want to stage, so any errors don't stop the staging process
@@ -786,8 +795,11 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
         lo_stage = stage_all( ).
 
-        rs_handled-page = NEW zcl_abapgit_gui_page_commit( io_repo = mo_repo
-                                                           io_stage = lo_stage ).
+        CREATE OBJECT rs_handled-page TYPE zcl_abapgit_gui_page_commit
+          EXPORTING
+            io_repo  = mo_repo
+            io_stage = lo_stage
+            iv_sci_result = mv_sci_result.
 
         rs_handled-state = zcl_abapgit_gui=>c_event_state-new_page.
 
@@ -795,8 +807,11 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
         lo_stage = stage_selected( ii_event ).
 
-        rs_handled-page = NEW zcl_abapgit_gui_page_commit( io_repo = mo_repo
-                                                           io_stage = lo_stage ).
+        CREATE OBJECT rs_handled-page TYPE zcl_abapgit_gui_page_commit
+          EXPORTING
+            io_repo  = mo_repo
+            io_stage = lo_stage
+            iv_sci_result = mv_sci_result.
 
         rs_handled-state = zcl_abapgit_gui=>c_event_state-new_page.
 
