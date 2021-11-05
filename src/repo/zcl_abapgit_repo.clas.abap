@@ -310,7 +310,7 @@ CLASS zcl_abapgit_repo IMPLEMENTATION.
 
   METHOD create_new_log.
 
-    mi_log = NEW zcl_abapgit_log( ).
+    CREATE OBJECT mi_log TYPE zcl_abapgit_log.
     mi_log->set_title( iv_title ).
 
     ri_log = mi_log.
@@ -414,8 +414,9 @@ CLASS zcl_abapgit_repo IMPLEMENTATION.
     get_files_remote( ).
 
     READ TABLE mt_remote ASSIGNING <ls_remote>
-      WITH KEY path = zif_abapgit_definitions=>c_root_dir
-      filename = zif_abapgit_definitions=>c_dot_abapgit.
+      WITH KEY file_path
+      COMPONENTS path     = zif_abapgit_definitions=>c_root_dir
+                 filename = zif_abapgit_definitions=>c_dot_abapgit.
     IF sy-subrc = 0.
       ro_dot = zcl_abapgit_dot_abapgit=>deserialize( <ls_remote>-data ).
       set_dot_abapgit( ro_dot ).
@@ -432,8 +433,9 @@ CLASS zcl_abapgit_repo IMPLEMENTATION.
     get_files_remote( ).
 
     READ TABLE mt_remote ASSIGNING <ls_remote>
-      WITH KEY path     = zif_abapgit_definitions=>c_root_dir
-               filename = zif_abapgit_apack_definitions=>c_dot_apack_manifest.
+      WITH KEY file_path
+      COMPONENTS path     = zif_abapgit_definitions=>c_root_dir
+                 filename = zif_abapgit_apack_definitions=>c_dot_apack_manifest.
     IF sy-subrc = 0.
       ro_dot = zcl_abapgit_apack_reader=>deserialize( iv_package_name = ms_data-package
                                                       iv_xstr         = <ls_remote>-data ).
@@ -454,11 +456,12 @@ CLASS zcl_abapgit_repo IMPLEMENTATION.
 
     get_files_remote( ).
 
-    ri_config = NEW zcl_abapgit_data_config( ).
+    CREATE OBJECT ri_config TYPE zcl_abapgit_data_config.
     mi_data_config = ri_config.
 
     READ TABLE mt_remote ASSIGNING <ls_remote>
-      WITH KEY path = zif_abapgit_data_config=>c_default_path.
+      WITH KEY file_path
+      COMPONENTS path = zif_abapgit_data_config=>c_default_path.
     IF sy-subrc = 0.
       ri_config->from_json( mt_remote ).
     ENDIF.
@@ -467,7 +470,9 @@ CLASS zcl_abapgit_repo IMPLEMENTATION.
 
 
   METHOD get_dot_abapgit.
-    ro_dot_abapgit = NEW #( is_data = ms_data-dot_abapgit ).
+    CREATE OBJECT ro_dot_abapgit
+      EXPORTING
+        is_data = ms_data-dot_abapgit.
   ENDMETHOD.
 
 
@@ -491,8 +496,10 @@ CLASS zcl_abapgit_repo IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    lo_serialize = NEW #( io_dot_abapgit = get_dot_abapgit( )
-                          is_local_settings = get_local_settings( ) ).
+    CREATE OBJECT lo_serialize
+      EXPORTING
+        io_dot_abapgit    = get_dot_abapgit( )
+        is_local_settings = get_local_settings( ).
 
     rt_files = lo_serialize->files_local(
       iv_package     = get_package( )
@@ -683,7 +690,7 @@ CLASS zcl_abapgit_repo IMPLEMENTATION.
     CLEAR lt_tadir.
     INSERT ls_tadir INTO TABLE lt_tadir.
 
-    lo_serialize = NEW #( ).
+    CREATE OBJECT lo_serialize.
     lt_new_local_files = lo_serialize->serialize( lt_tadir ).
 
     INSERT LINES OF lt_new_local_files INTO TABLE mt_local.
