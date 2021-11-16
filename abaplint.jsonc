@@ -74,7 +74,7 @@
     "prefer_inline": false, // todo, abaplint bugs
     "sql_escape_host_variables": false, // todo, this needs a quickfix in abaplint
     "use_line_exists": false, // todo, this needs a quickfix in abaplint
-    "prefer_xsdbool": false, // todo, needs the corresponding downport implemented in abaplint
+    "prefer_xsdbool": true,
     "use_bool_expression": true,
     "whitespace_end": true,
     "parser_error": true,
