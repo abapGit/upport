@@ -49,7 +49,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_OBJECT_SPRX IMPLEMENTATION.
+CLASS zcl_abapgit_object_sprx IMPLEMENTATION.
 
 
   METHOD check_sprx_tadir.
@@ -295,7 +295,7 @@ CLASS ZCL_ABAPGIT_OBJECT_SPRX IMPLEMENTATION.
         status      = lv_status
         status_text = lv_status_text ).
 
-    rv_bool = xsdbool( lv_status = if_proxy=>c_state_active ).
+    rv_bool = boolc( lv_status = if_proxy=>c_state_active ).
 
   ENDMETHOD.
 
@@ -326,14 +326,7 @@ CLASS ZCL_ABAPGIT_OBJECT_SPRX IMPLEMENTATION.
 
 
   METHOD zif_abapgit_object~jump.
-
-    CALL FUNCTION 'RS_TOOL_ACCESS'
-      EXPORTING
-        operation     = 'SHOW'
-        object_name   = ms_item-obj_name
-        object_type   = ms_item-obj_type
-        in_new_window = abap_true.
-
+    " Covered by ZCL_ABAPGIT_OBJECTS=>JUMP
   ENDMETHOD.
 
 

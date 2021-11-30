@@ -170,7 +170,7 @@ CLASS zcl_abapgit_object_xslt IMPLEMENTATION.
     lv_name = ms_item-obj_name.
 
     rv_bool = cl_o2_api_xsltdesc=>exists( lv_name ).
-    rv_bool = xsdbool( rv_bool = '1' ).
+    rv_bool = boolc( rv_bool = '1' ).
 
   ENDMETHOD.
 
@@ -202,13 +202,7 @@ CLASS zcl_abapgit_object_xslt IMPLEMENTATION.
 
 
   METHOD zif_abapgit_object~jump.
-
-    CALL FUNCTION 'RS_TOOL_ACCESS'
-      EXPORTING
-        operation   = 'SHOW'
-        object_name = ms_item-obj_name
-        object_type = ms_item-obj_type.
-
+    " Covered by ZCL_ABAPGIT_OBJECTS=>JUMP
   ENDMETHOD.
 
 

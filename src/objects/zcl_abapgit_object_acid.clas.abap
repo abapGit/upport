@@ -140,7 +140,7 @@ CLASS zcl_abapgit_object_acid IMPLEMENTATION.
     lo_aab = create_object( ).
 
     lo_aab->get_state( IMPORTING ex_state = lv_state ).
-    rv_bool = xsdbool( lv_state = abap_true ).
+    rv_bool = boolc( lv_state = abap_true ).
 
   ENDMETHOD.
 
@@ -173,14 +173,7 @@ CLASS zcl_abapgit_object_acid IMPLEMENTATION.
 
 
   METHOD zif_abapgit_object~jump.
-
-    CALL FUNCTION 'RS_TOOL_ACCESS'
-      EXPORTING
-        operation     = 'SHOW'
-        object_name   = ms_item-obj_name
-        object_type   = 'ACID'
-        in_new_window = abap_true.
-
+    " Covered by ZCL_ABAPGIT_OBJECTS=>JUMP
   ENDMETHOD.
 
 
