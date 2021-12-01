@@ -122,6 +122,12 @@ ENDCLASS.
 CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
 
+  METHOD branch_name_to_internal.
+    rv_new_branch_name = zcl_abapgit_git_branch_list=>complete_heads_branch_name(
+      zcl_abapgit_git_branch_list=>normalize_branch_name( iv_branch_name ) ).
+  ENDMETHOD.
+
+
   METHOD constructor.
 
     super->constructor( ).
@@ -134,8 +140,8 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
     " Get settings from DB
     mo_settings = zcl_abapgit_persist_factory=>get_settings( )->read( ).
 
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
     mo_form = get_form_schema( ).
     mo_form_util = zcl_abapgit_html_form_utils=>create( mo_form ).
 
@@ -146,9 +152,11 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_commit.
 
-    lo_component = NEW #( io_repo = io_repo
-                          io_stage = io_stage
-                          iv_sci_result = iv_sci_result ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        io_repo       = io_repo
+        io_stage      = io_stage
+        iv_sci_result = iv_sci_result.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Commit'
@@ -318,15 +326,19 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
     )->text(
       iv_name        = c_id-committer_email
       iv_label       = 'Committer Email'
-      iv_required    = abap_true
-    )->text(
-      iv_name        = c_id-author_name
-      iv_label       = 'Author Name'
-      iv_placeholder = 'Optionally, specify an author (same as committer by default)'
-    )->text(
-      iv_name        = c_id-author_email
-      iv_label       = 'Author Email'
-    )->text(
+      iv_required    = abap_true ).
+
+    IF mo_settings->get_commitmsg_hide_author( ) IS INITIAL.
+      ro_form->text(
+        iv_name        = c_id-author_name
+        iv_label       = 'Author Name'
+        iv_placeholder = 'Optionally, specify an author (same as committer by default)'
+      )->text(
+        iv_name        = c_id-author_email
+        iv_label       = 'Author Email' ).
+    ENDIF.
+
+    ro_form->text(
       iv_name        = c_id-new_branch_name
       iv_label       = 'New Branch Name'
       iv_placeholder = 'Optionally, enter a new branch name for this commit'
@@ -355,7 +367,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
       rv_valid = abap_true.
     ELSE.
       FIND REGEX lc_email_regex IN iv_email.
-      rv_valid = xsdbool( sy-subrc = 0 ).
+      rv_valid = boolc( sy-subrc = 0 ).
     ENDIF.
 
   ENDMETHOD.
@@ -365,7 +377,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_stage> LIKE LINE OF mt_stage.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<table class="stage_tab">' ).
     ri_html->add( '<thead>' ).
@@ -408,7 +420,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_stage> LIKE LINE OF mt_stage.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     LOOP AT mt_stage ASSIGNING <ls_stage>.
       ls_sum-method = <ls_stage>-method.
@@ -535,7 +547,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
       get_defaults( ).
     ENDIF.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div id="top" class="paddings">' ).
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top( mo_repo ) ).
@@ -555,10 +567,4 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
     ri_html->add( '</div>' ).
 
   ENDMETHOD.
-
-  METHOD branch_name_to_internal.
-    rv_new_branch_name = zcl_abapgit_git_branch_list=>complete_heads_branch_name(
-      zcl_abapgit_git_branch_list=>normalize_branch_name( iv_branch_name ) ).
-  ENDMETHOD.
-
 ENDCLASS.
