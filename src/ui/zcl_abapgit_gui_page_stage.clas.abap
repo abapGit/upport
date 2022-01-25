@@ -15,9 +15,10 @@ CLASS zcl_abapgit_gui_page_stage DEFINITION
 
     METHODS constructor
       IMPORTING
-        io_repo TYPE REF TO zcl_abapgit_repo_online
-        iv_seed TYPE string OPTIONAL
+        io_repo       TYPE REF TO zcl_abapgit_repo_online
+        iv_seed       TYPE string OPTIONAL
         iv_sci_result TYPE zif_abapgit_definitions=>ty_sci_result DEFAULT zif_abapgit_definitions=>c_sci_result-no_run
+        ii_obj_filter TYPE REF TO zif_abapgit_object_filter OPTIONAL
       RAISING
         zcx_abapgit_exception.
 
@@ -42,6 +43,7 @@ CLASS zcl_abapgit_gui_page_stage DEFINITION
     DATA mv_seed TYPE string .               " Unique page id to bind JS sessionStorage
     DATA mv_filter_value TYPE string .
     DATA mv_sci_result TYPE zif_abapgit_definitions=>ty_sci_result.
+    DATA mi_obj_filter TYPE REF TO zif_abapgit_object_filter.
 
     METHODS check_selected
       IMPORTING
@@ -127,7 +129,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
   METHOD build_menu.
 
-    ro_menu = NEW #( iv_id = 'toolbar-main' ).
+    CREATE OBJECT ro_menu EXPORTING iv_id = 'toolbar-main'.
 
     IF lines( ms_files-local ) > 0
     OR lines( ms_files-remote ) > 0.
@@ -197,6 +199,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     mo_repo               = io_repo.
     mv_seed               = iv_seed.
     mv_sci_result         = iv_sci_result.
+    mi_obj_filter         = ii_obj_filter.
 
     IF mv_seed IS INITIAL. " Generate based on time unless obtained from diff page
       GET TIME STAMP FIELD lv_ts.
@@ -350,8 +353,10 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     DELETE lt_files WHERE method <> zif_abapgit_definitions=>c_method-add
                     AND   method <> zif_abapgit_definitions=>c_method-rm.
 
-    lo_page = NEW #( iv_key = lv_key
-                     it_files = lt_files ).
+    CREATE OBJECT lo_page
+      EXPORTING
+        iv_key   = lv_key
+        it_files = lt_files.
 
     ri_page = lo_page.
 
@@ -359,7 +364,9 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
 
   METHOD init_files.
-    ms_files = zcl_abapgit_factory=>get_stage_logic( )->get( mo_repo ).
+    ms_files = zcl_abapgit_factory=>get_stage_logic( )->get( io_repo       = mo_repo
+                                                             ii_obj_filter = mi_obj_filter ).
+
     IF lines( ms_files-local ) = 0 AND lines( ms_files-remote ) = 0.
       zcx_abapgit_exception=>raise( 'There are no changes that could be staged' ).
     ENDIF.
@@ -371,7 +378,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     DATA: lv_local_count TYPE i,
           lv_add_all_txt TYPE string.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
     lv_local_count = count_default_files_to_commit( ).
     IF lv_local_count > 0.
       lv_add_all_txt = |Add All and Commit ({ lv_local_count })|.
@@ -418,7 +425,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
   METHOD render_content.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div class="repo">' ).
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
@@ -460,7 +467,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     DATA: lv_param    TYPE string,
           lv_filename TYPE string.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     lv_filename = is_file-path && is_file-filename.
     " make sure whitespace is preserved in the DOM
@@ -518,7 +525,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
                    <ls_status> LIKE LINE OF ms_files-status,
                    <ls_local>  LIKE LINE OF ms_files-local.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<table id="stageTab" class="stage_tab w100">' ).
 
@@ -547,7 +554,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
       READ TABLE lt_changed_by INTO ls_changed_by WITH KEY item = <ls_local>-item. "#EC CI_SUBRC
       READ TABLE lt_transports INTO ls_transport WITH KEY
         obj_type = <ls_local>-item-obj_type
-        obj_name = <ls_local>-item-obj_name. "#EC CI_SUBRC
+        obj_name = <ls_local>-item-obj_name.              "#EC CI_SUBRC
       READ TABLE ms_files-status ASSIGNING <ls_status>
         WITH TABLE KEY
           path     = <ls_local>-file-path
@@ -628,7 +635,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
     DATA lv_main_language TYPE spras.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     lv_main_language = mo_repo->get_dot_abapgit( )->get_main_language( ).
 
@@ -643,7 +650,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
   METHOD render_scripts.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->set_title( cl_abap_typedescr=>describe_by_object_ref( me )->get_relative_name( ) ).
 
@@ -674,7 +681,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     FIELD-SYMBOLS <ls_remote> LIKE LINE OF ms_files-remote.
     FIELD-SYMBOLS <ls_status> LIKE LINE OF ms_files-status.
 
-    ro_stage = NEW #( ).
+    CREATE OBJECT ro_stage.
 
     LOOP AT ms_files-local ASSIGNING <ls_local>.
       READ TABLE ms_files-status ASSIGNING <ls_status>
@@ -729,7 +736,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
     check_selected( lo_files ).
 
-    ro_stage = NEW #( ).
+    CREATE OBJECT ro_stage.
 
     LOOP AT lo_files->mt_entries ASSIGNING <ls_item>
       "Ignore Files that we don't want to stage, so any errors don't stop the staging process
