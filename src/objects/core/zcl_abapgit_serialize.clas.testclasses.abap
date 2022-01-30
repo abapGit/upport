@@ -19,7 +19,7 @@ CLASS ltcl_determine_max_threads IMPLEMENTATION.
 
   METHOD setup.
     TRY.
-        mo_cut = NEW #( ).
+        CREATE OBJECT mo_cut.
       CATCH zcx_abapgit_exception.
         cl_abap_unit_assert=>fail( 'Error creating serializer' ).
     ENDTRY.
@@ -69,7 +69,7 @@ CLASS ltcl_serialize IMPLEMENTATION.
 
   METHOD setup.
     TRY.
-        mo_cut = NEW #( ).
+        CREATE OBJECT mo_cut.
       CATCH zcx_abapgit_exception.
         cl_abap_unit_assert=>fail( 'Error creating serializer' ).
     ENDTRY.
@@ -107,6 +107,8 @@ CLASS ltcl_serialize IMPLEMENTATION.
   METHOD unsupported.
 
     DATA: lt_tadir TYPE zif_abapgit_definitions=>ty_tadir_tt,
+          ls_msg   TYPE zif_abapgit_log=>ty_log_out,
+          lt_msg   TYPE zif_abapgit_log=>ty_log_outs,
           li_log1  TYPE REF TO zif_abapgit_log,
           li_log2  TYPE REF TO zif_abapgit_log.
 
@@ -117,24 +119,32 @@ CLASS ltcl_serialize IMPLEMENTATION.
     <ls_tadir>-object   = 'ABCD'.
     <ls_tadir>-obj_name = 'OBJECT'.
 
-    li_log1 = NEW zcl_abapgit_log( ).
+    CREATE OBJECT li_log1 TYPE zcl_abapgit_log.
     mo_cut->serialize(
       it_tadir            = lt_tadir
       ii_log              = li_log1
       iv_force_sequential = abap_true ).
 
-    li_log2 = NEW zcl_abapgit_log( ).
+    CREATE OBJECT li_log2 TYPE zcl_abapgit_log.
     mo_cut->serialize(
       it_tadir            = lt_tadir
       ii_log              = li_log2
       iv_force_sequential = abap_false ).
 
-    cl_abap_unit_assert=>assert_char_cp(
-      act = zcl_abapgit_log_viewer=>to_html( li_log1 )->render( )
-      exp = '*Object type ABCD not supported*' ).
+    lt_msg = li_log1->get_messages( ).
+    READ TABLE lt_msg INTO ls_msg INDEX 1.
+    cl_abap_unit_assert=>assert_subrc( ).
 
     cl_abap_unit_assert=>assert_char_cp(
-      act = zcl_abapgit_log_viewer=>to_html( li_log2 )->render( )
+      act = ls_msg-text
+      exp = '*Object type ABCD not supported*' ).
+
+    lt_msg = li_log2->get_messages( ).
+    READ TABLE lt_msg INTO ls_msg INDEX 1.
+    cl_abap_unit_assert=>assert_subrc( ).
+
+    cl_abap_unit_assert=>assert_char_cp(
+      act = ls_msg-text
       exp = '*Object type ABCD not supported*' ).
 
   ENDMETHOD.
@@ -166,9 +176,13 @@ CLASS ltcl_i18n IMPLEMENTATION.
     INSERT 'DE' INTO TABLE ls_data-i18n_languages.
 
     TRY.
-        mo_dot_abapgit = NEW #( is_data = ls_data ).
+        CREATE OBJECT mo_dot_abapgit
+          EXPORTING
+            is_data = ls_data.
 
-        mo_cut = NEW #( io_dot_abapgit = mo_dot_abapgit ).
+        CREATE OBJECT mo_cut
+          EXPORTING
+            io_dot_abapgit = mo_dot_abapgit.
       CATCH zcx_abapgit_exception.
         cl_abap_unit_assert=>fail( 'Error creating serializer' ).
     ENDTRY.
@@ -205,7 +219,9 @@ CLASS ltcl_i18n IMPLEMENTATION.
 
     lv_xml = zcl_abapgit_convert=>xstring_to_string_utf8( <ls_result>-file-data ).
 
-    lo_input = NEW #( iv_xml = lv_xml ).
+    CREATE OBJECT lo_input
+      EXPORTING
+        iv_xml = lv_xml.
 
     lo_input->zif_abapgit_xml_input~read( EXPORTING iv_name = 'DD02V'
                                           CHANGING  cg_data = ls_dd02v ).

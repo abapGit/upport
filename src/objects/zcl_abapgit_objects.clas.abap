@@ -362,8 +362,11 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
         RETURN.
       ENDIF.
 
-      li_remote_version = NEW zcl_abapgit_xml_input( iv_xml = zcl_abapgit_convert=>xstring_to_string_utf8( ls_remote_file-data )
-                                                     iv_filename = ls_remote_file-filename ).
+      CREATE OBJECT li_remote_version
+        TYPE zcl_abapgit_xml_input
+        EXPORTING
+          iv_xml      = zcl_abapgit_convert=>xstring_to_string_utf8( ls_remote_file-data )
+          iv_filename = ls_remote_file-filename.
 
       ls_result = li_comparator->compare( ii_remote = li_remote_version
                                           ii_log = ii_log ).
@@ -442,7 +445,9 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
         lv_message = |Object type { is_item-obj_type } is not supported by this system|.
         IF iv_native_only = abap_false.
           TRY. " 2nd step, try looking for plugins
-              ri_obj = NEW zcl_abapgit_objects_bridge( is_item = is_item ).
+              CREATE OBJECT ri_obj TYPE zcl_abapgit_objects_bridge
+                EXPORTING
+                  is_item = is_item.
             CATCH cx_sy_create_object_error.
               zcx_abapgit_exception=>raise( lv_message ).
           ENDTRY.
@@ -666,8 +671,10 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
           ENDIF.
 
           " Create or update object
-          lo_files = NEW #( is_item = ls_item
-                            iv_path = lv_path ).
+          CREATE OBJECT lo_files
+            EXPORTING
+              is_item = ls_item
+              iv_path = lv_path.
           lo_files->set_files( lt_remote ).
 
           "analyze XML in order to instantiate the proper serializer
@@ -691,7 +698,8 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
           LOOP AT lt_steps_id ASSIGNING <lv_step_id>.
             READ TABLE lt_steps WITH KEY step_id = <lv_step_id> ASSIGNING <ls_step>.
             ASSERT sy-subrc = 0.
-            IF <ls_step>-is_ddic = abap_true AND li_obj->get_metadata( )-ddic = abap_false.
+            IF <lv_step_id> = zif_abapgit_object=>gc_step_id-ddic AND
+               zcl_abapgit_objects_activation=>is_ddic_type( ls_item-obj_type ) = abap_false.
               " DDIC only for DDIC objects
               zcx_abapgit_exception=>raise( |Step { <lv_step_id> } is only for DDIC objects| ).
             ENDIF.
@@ -786,9 +794,9 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
 
     CASE is_step-step_id.
       WHEN zif_abapgit_object=>gc_step_id-ddic.
-        zcl_abapgit_objects_activation=>activate( is_step-is_ddic ).
+        zcl_abapgit_objects_activation=>activate( abap_true ).
       WHEN zif_abapgit_object=>gc_step_id-abap.
-        zcl_abapgit_objects_activation=>activate( is_step-is_ddic ).
+        zcl_abapgit_objects_activation=>activate( abap_false ).
       WHEN zif_abapgit_object=>gc_step_id-late.
         " late can have both DDIC (like TABL with REF TO) and non-DDIC objects
         zcl_abapgit_objects_activation=>activate( abap_true ).
@@ -838,21 +846,18 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
     APPEND INITIAL LINE TO rt_steps ASSIGNING <ls_step>.
     <ls_step>-step_id      = zif_abapgit_object=>gc_step_id-ddic.
     <ls_step>-descr        = 'Import DDIC objects'.
-    <ls_step>-is_ddic      = abap_true.
     <ls_step>-syntax_check = abap_false.
     <ls_step>-order        = 1.
 
     APPEND INITIAL LINE TO rt_steps ASSIGNING <ls_step>.
     <ls_step>-step_id      = zif_abapgit_object=>gc_step_id-abap.
     <ls_step>-descr        = 'Import objects main'.
-    <ls_step>-is_ddic      = abap_false.
     <ls_step>-syntax_check = abap_false.
     <ls_step>-order        = 2.
 
     APPEND INITIAL LINE TO rt_steps ASSIGNING <ls_step>.
     <ls_step>-step_id      = zif_abapgit_object=>gc_step_id-late.
     <ls_step>-descr        = 'Import late objects'.
-    <ls_step>-is_ddic      = abap_false.
     <ls_step>-syntax_check = abap_true.
     <ls_step>-order        = 3.
   ENDMETHOD.
@@ -1016,14 +1021,16 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
         rs_files_and_item-item-obj_name }| ).
     ENDIF.
 
-    lo_files = NEW #( is_item = rs_files_and_item-item ).
+    CREATE OBJECT lo_files
+      EXPORTING
+        is_item = rs_files_and_item-item.
 
     li_obj = create_object( is_item     = rs_files_and_item-item
                             iv_language = iv_language ).
 
     li_obj->mo_files = lo_files.
 
-    li_xml = NEW zcl_abapgit_xml_output( ).
+    CREATE OBJECT li_xml TYPE zcl_abapgit_xml_output.
 
     ls_i18n_params-main_language         = iv_language.
     ls_i18n_params-main_language_only    = iv_main_language_only.
@@ -1042,7 +1049,7 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
 
     check_duplicates( rs_files_and_item-files ).
 
-    rs_files_and_item-item-inactive = xsdbool( li_obj->is_active( ) = abap_false ).
+    rs_files_and_item-item-inactive = boolc( li_obj->is_active( ) = abap_false ).
 
     LOOP AT rs_files_and_item-files ASSIGNING <ls_file>.
       <ls_file>-sha1 = zcl_abapgit_hash=>sha1_blob( <ls_file>-data ).

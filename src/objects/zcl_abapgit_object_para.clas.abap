@@ -170,7 +170,7 @@ CLASS zcl_abapgit_object_para IMPLEMENTATION.
 
     SELECT SINGLE paramid FROM tpara INTO lv_paramid
       WHERE paramid = ms_item-obj_name.                 "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -187,8 +187,6 @@ CLASS zcl_abapgit_object_para IMPLEMENTATION.
 
   METHOD zif_abapgit_object~get_metadata.
     rs_metadata = get_metadata( ).
-* Data elements can refer to PARA objects
-    rs_metadata-ddic = abap_true.
   ENDMETHOD.
 
 
