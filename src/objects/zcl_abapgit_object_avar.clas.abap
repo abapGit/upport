@@ -153,7 +153,7 @@ CLASS ZCL_ABAPGIT_OBJECT_AVAR IMPLEMENTATION.
     lo_aab = create_object( ).
 
     lo_aab->get_state( IMPORTING ex_state = lv_state ).
-    rv_bool = xsdbool( lv_state = abap_true ).
+    rv_bool = boolc( lv_state = abap_true ).
 
   ENDMETHOD.
 
@@ -187,7 +187,6 @@ CLASS ZCL_ABAPGIT_OBJECT_AVAR IMPLEMENTATION.
 
 
   METHOD zif_abapgit_object~jump.
-    zcx_abapgit_exception=>raise( |Jump to AVAR is not supported| ).
   ENDMETHOD.
 
 

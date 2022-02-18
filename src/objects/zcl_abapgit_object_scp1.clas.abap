@@ -387,7 +387,7 @@ CLASS zcl_abapgit_object_scp1 IMPLEMENTATION.
         profid = lv_profid
       IMPORTING
         rc     = lv_rc.
-    rv_bool = xsdbool( lv_rc = 0 ).
+    rv_bool = boolc( lv_rc = 0 ).
 
   ENDMETHOD.
 
@@ -434,6 +434,8 @@ CLASS zcl_abapgit_object_scp1 IMPLEMENTATION.
         TO MEMORY ID 'SCPR3_PARAMETER'.
 
     SUBMIT scpr3 AND RETURN.
+
+    rv_exit = abap_true.
 
   ENDMETHOD.
 
