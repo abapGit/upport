@@ -77,8 +77,8 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
   METHOD constructor.
 
     super->constructor( ).
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
     mo_repo = io_repo.
     mo_form = get_form_schema( ).
     mo_form_util = zcl_abapgit_html_form_utils=>create( mo_form ).
@@ -92,7 +92,9 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_repo.
 
-    lo_component = NEW #( io_repo = io_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        io_repo = io_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Repository Settings'
@@ -134,6 +136,9 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
     )->option(
       iv_label       = 'Full'
       iv_value       = zif_abapgit_dot_abapgit=>c_folder_logic-full
+    )->option(
+      iv_label       = 'Mixed'
+      iv_value       = zif_abapgit_dot_abapgit=>c_folder_logic-mixed
     )->text(
       iv_name        = c_id-starting_folder
       iv_label       = 'Starting Folder'
@@ -391,7 +396,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       read_settings( ).
     ENDIF.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( `<div class="repo">` ).
 
