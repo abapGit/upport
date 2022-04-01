@@ -237,6 +237,8 @@ CLASS zcl_abapgit_object_sprx IMPLEMENTATION.
       lv_return_code TYPE i,
       lt_log         TYPE sprx_log_t.
 
+    corr_insert( iv_package ).
+
     get_object_and_name(
       IMPORTING
         ev_object   = lv_object
@@ -246,6 +248,7 @@ CLASS zcl_abapgit_object_sprx IMPLEMENTATION.
        EXPORTING
          object           = lv_object
          obj_name         = lv_obj_name
+         suppress_dialogs = abap_true
        CHANGING
          c_return_code    = lv_return_code
          ct_log           = lt_log ).
@@ -295,7 +298,7 @@ CLASS zcl_abapgit_object_sprx IMPLEMENTATION.
         status      = lv_status
         status_text = lv_status_text ).
 
-    rv_bool = xsdbool( lv_status = if_proxy=>c_state_active ).
+    rv_bool = boolc( lv_status = if_proxy=>c_state_active ).
 
   ENDMETHOD.
 
