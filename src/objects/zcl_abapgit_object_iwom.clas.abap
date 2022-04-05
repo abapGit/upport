@@ -23,8 +23,10 @@ CLASS zcl_abapgit_object_iwom IMPLEMENTATION.
 
   METHOD get_generic.
 
-    ro_generic = NEW #( is_item = ms_item
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        is_item     = ms_item
+        iv_language = mv_language.
 
   ENDMETHOD.
 
@@ -36,7 +38,7 @@ CLASS zcl_abapgit_object_iwom IMPLEMENTATION.
 
   METHOD zif_abapgit_object~delete.
 
-    get_generic( )->delete( ).
+    get_generic( )->delete( iv_package ).
 
   ENDMETHOD.
 

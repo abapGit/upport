@@ -368,8 +368,10 @@ CLASS zcl_abapgit_object_ueno IMPLEMENTATION.
 
   METHOD get_generic.
 
-    ro_generic = NEW #( is_item = ms_item
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        is_item     = ms_item
+        iv_language = mv_language.
 
   ENDMETHOD.
 
@@ -529,7 +531,7 @@ CLASS zcl_abapgit_object_ueno IMPLEMENTATION.
     delete_docu_usp( ).
 
     " the deletion of the tables of the entity
-    get_generic( )->delete( ).
+    get_generic( )->delete( iv_package ).
 
   ENDMETHOD.
 
