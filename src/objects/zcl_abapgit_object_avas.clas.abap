@@ -36,7 +36,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_OBJECT_AVAS IMPLEMENTATION.
+CLASS zcl_abapgit_object_avas IMPLEMENTATION.
 
 
   METHOD insert_assignments.
@@ -79,7 +79,9 @@ CLASS ZCL_ABAPGIT_OBJECT_AVAS IMPLEMENTATION.
     lv_id = ms_item-obj_name.
 
     TRY.
-        ro_avas = NEW #( im_assignment_id = lv_id ).
+        CREATE OBJECT ro_avas
+          EXPORTING
+            im_assignment_id = lv_id.
       CATCH cx_pak_wb_object_locked INTO lx_err.
         zcx_abapgit_exception=>raise( |AVAS { lv_id }: locked: { lx_err->get_longtext( ) }| ).
       CATCH cx_pak_not_authorized INTO lx_err.
@@ -131,6 +133,8 @@ CLASS ZCL_ABAPGIT_OBJECT_AVAS IMPLEMENTATION.
 
     lo_avas->if_pak_wb_object_internal~unlock( ).
 
+    corr_insert( iv_package ).
+
   ENDMETHOD.
 
 
@@ -148,10 +152,10 @@ CLASS ZCL_ABAPGIT_OBJECT_AVAS IMPLEMENTATION.
 
     tadir_insert( iv_package ).
 
+    corr_insert( iv_package ).
+
     insert_assignments( ls_avas ).
 * todo, how does links work?
-
-* corr_insert?
 
   ENDMETHOD.
 
@@ -162,7 +166,7 @@ CLASS ZCL_ABAPGIT_OBJECT_AVAS IMPLEMENTATION.
 
     SELECT SINGLE guid FROM cls_assignment INTO lv_guid
       WHERE guid = ms_item-obj_name.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
