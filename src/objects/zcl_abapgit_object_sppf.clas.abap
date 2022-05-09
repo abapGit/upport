@@ -18,13 +18,15 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_OBJECT_SPPF IMPLEMENTATION.
+CLASS zcl_abapgit_object_sppf IMPLEMENTATION.
 
 
   METHOD get_generic.
 
-    ro_generic = NEW #( is_item = ms_item
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        is_item     = ms_item
+        iv_language = mv_language.
 
   ENDMETHOD.
 
@@ -36,12 +38,16 @@ CLASS ZCL_ABAPGIT_OBJECT_SPPF IMPLEMENTATION.
 
   METHOD zif_abapgit_object~delete.
 
+    set_default_transport( iv_transport ).
+
     get_generic( )->delete( iv_package ).
 
   ENDMETHOD.
 
 
   METHOD zif_abapgit_object~deserialize.
+
+    set_default_transport( iv_transport ).
 
     get_generic( )->deserialize(
       iv_package = iv_package
