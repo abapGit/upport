@@ -66,6 +66,14 @@
       "wbmr_c_skwf_folder_class",
       "wdyn_limu_component_controller",
       "wdyn_limu_component_definition",
+      "seoc_state_implemented",
+      "seox_true",
+      "seoo_cmptype_attribute",
+      "seoo_cmptype_method",
+      "seoo_cmptype_type",
+      "seos_scotype_parameter",
+      "seos_scotype_exception",
+      "seoo_cmptype_event",
       "wdyn_limu_component_view"
     ],
     "globalMacros": []
