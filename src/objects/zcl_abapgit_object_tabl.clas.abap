@@ -59,6 +59,8 @@ CLASS zcl_abapgit_object_tabl DEFINITION
     TYPES:
       ty_dd03p_tt TYPE STANDARD TABLE OF dd03p .
     TYPES:
+      ty_dd08v_tt TYPE STANDARD TABLE OF dd08v.
+    TYPES:
       BEGIN OF ty_dd02_text,
         ddlanguage TYPE dd02t-ddlanguage,
         ddtext     TYPE dd02t-ddtext,
@@ -108,6 +110,9 @@ CLASS zcl_abapgit_object_tabl DEFINITION
         !iv_tabclass               TYPE dd02l-tabclass
       RETURNING
         VALUE(rv_is_db_table_type) TYPE dd02l-tabclass .
+    METHODS clear_foreign_keys
+      CHANGING
+        !ct_dd08v TYPE ty_dd08v_tt.
 ENDCLASS.
 
 
@@ -201,6 +206,30 @@ CLASS zcl_abapgit_object_tabl IMPLEMENTATION.
            cs_dd03p-decimals,
            cs_dd03p-lowercase,
            cs_dd03p-signflag.
+
+  ENDMETHOD.
+
+
+  METHOD clear_foreign_keys.
+
+    DATA:
+      ls_item  TYPE zif_abapgit_definitions=>ty_item,
+      lv_index TYPE sy-tabix.
+
+    FIELD-SYMBOLS <ls_dd08v> TYPE dd08v.
+
+    " Remove foreign key definitions where the check table/view does not exist (yet)
+    LOOP AT ct_dd08v ASSIGNING <ls_dd08v>.
+      lv_index = sy-tabix.
+      ls_item-obj_name = <ls_dd08v>-checktable.
+      ls_item-obj_type = 'TABL'.
+      IF zcl_abapgit_objects=>exists( ls_item ) = abap_false.
+        ls_item-obj_type = 'VIEW'.
+        IF zcl_abapgit_objects=>exists( ls_item ) = abap_false.
+          DELETE ct_dd08v INDEX lv_index.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -444,7 +473,7 @@ CLASS zcl_abapgit_object_tabl IMPLEMENTATION.
   METHOD is_db_table_category.
 
     " values from domain TABCLASS
-    rv_is_db_table_type = xsdbool( iv_tabclass = 'TRANSP'
+    rv_is_db_table_type = boolc( iv_tabclass = 'TRANSP'
                               OR iv_tabclass = 'CLUSTER'
                               OR iv_tabclass = 'POOL' ).
 
@@ -461,7 +490,7 @@ CLASS zcl_abapgit_object_tabl IMPLEMENTATION.
            FROM edisegment
            INTO lv_segment_type
            WHERE segtyp = lv_segment_type.
-    rv_is_idoc_segment = xsdbool( sy-subrc = 0 ).
+    rv_is_idoc_segment = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -780,7 +809,8 @@ CLASS zcl_abapgit_object_tabl IMPLEMENTATION.
 
       " DDIC Step: Remove references to search helps and foreign keys
       IF iv_step = zif_abapgit_object=>gc_step_id-ddic.
-        CLEAR: lt_dd08v, lt_dd35v, lt_dd36m.
+        CLEAR: lt_dd35v, lt_dd36m.
+        clear_foreign_keys( CHANGING ct_dd08v = lt_dd08v ).
       ENDIF.
 
       IF iv_step = zif_abapgit_object=>gc_step_id-late
@@ -867,7 +897,7 @@ CLASS zcl_abapgit_object_tabl IMPLEMENTATION.
       SELECT SINGLE tabname FROM dd02l INTO lv_tabname
         WHERE tabname = lv_tabname.
     ENDIF.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -878,13 +908,18 @@ CLASS zcl_abapgit_object_tabl IMPLEMENTATION.
           li_local_version_input  TYPE REF TO zif_abapgit_xml_input.
 
 
-    li_local_version_output = NEW zcl_abapgit_xml_output( ).
+    CREATE OBJECT li_local_version_output TYPE zcl_abapgit_xml_output.
 
     zif_abapgit_object~serialize( li_local_version_output ).
 
-    li_local_version_input = NEW zcl_abapgit_xml_input( iv_xml = li_local_version_output->render( ) ).
+    CREATE OBJECT li_local_version_input
+      TYPE zcl_abapgit_xml_input
+      EXPORTING
+        iv_xml = li_local_version_output->render( ).
 
-    ri_comparator = NEW zcl_abapgit_object_tabl_compar( ii_local = li_local_version_input ).
+    CREATE OBJECT ri_comparator TYPE zcl_abapgit_object_tabl_compar
+      EXPORTING
+        ii_local = li_local_version_input.
 
   ENDMETHOD.
 
