@@ -100,7 +100,7 @@ CLASS zcl_abapgit_object_styl IMPLEMENTATION.
         strings    = ls_style-strings
         tabs       = ls_style-tabs.
 
-    rv_bool = xsdbool( lv_found = abap_true ).
+    rv_bool = boolc( lv_found = abap_true ).
 
   ENDMETHOD.
 
@@ -117,7 +117,6 @@ CLASS zcl_abapgit_object_styl IMPLEMENTATION.
 
   METHOD zif_abapgit_object~get_metadata.
     rs_metadata = get_metadata( ).
-    rs_metadata-delete_tadir = abap_true.
   ENDMETHOD.
 
 

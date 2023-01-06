@@ -65,9 +65,11 @@ CLASS zcl_abapgit_object_g4bs IMPLEMENTATION.
 
   METHOD get_generic.
 
-    ro_generic = NEW #( io_field_rules = get_field_rules( )
-                        is_item = ms_item
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        io_field_rules = get_field_rules( )
+        is_item        = ms_item
+        iv_language    = mv_language.
 
   ENDMETHOD.
 
@@ -123,10 +125,7 @@ CLASS zcl_abapgit_object_g4bs IMPLEMENTATION.
 
 
   METHOD zif_abapgit_object~get_metadata.
-
     rs_metadata = get_metadata( ).
-    rs_metadata-delete_tadir = abap_true.
-
   ENDMETHOD.
 
 

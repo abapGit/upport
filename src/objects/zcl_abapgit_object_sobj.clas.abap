@@ -25,7 +25,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_OBJECT_SOBJ IMPLEMENTATION.
+CLASS zcl_abapgit_object_sobj IMPLEMENTATION.
 
 
   METHOD get_field_rules.
@@ -85,9 +85,11 @@ CLASS ZCL_ABAPGIT_OBJECT_SOBJ IMPLEMENTATION.
 
   METHOD get_generic.
 
-    ro_generic = NEW #( io_field_rules = get_field_rules( )
-                        is_item = ms_item
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        io_field_rules = get_field_rules( )
+        is_item        = ms_item
+        iv_language    = mv_language.
 
   ENDMETHOD.
 
@@ -98,7 +100,7 @@ CLASS ZCL_ABAPGIT_OBJECT_SOBJ IMPLEMENTATION.
 
 
   METHOD is_locked.
-    rv_is_locked = xsdbool( is_objtype_locked( ) = abap_true OR is_program_locked(  ) = abap_true ).
+    rv_is_locked = boolc( is_objtype_locked( ) = abap_true OR is_program_locked(  ) = abap_true ).
   ENDMETHOD.
 
 
@@ -209,10 +211,7 @@ CLASS ZCL_ABAPGIT_OBJECT_SOBJ IMPLEMENTATION.
 
 
   METHOD zif_abapgit_object~get_metadata.
-
     rs_metadata = get_metadata( ).
-    rs_metadata-delete_tadir = abap_true.
-
   ENDMETHOD.
 
 
