@@ -65,6 +65,10 @@ ENDCLASS.
 
 CLASS ltcl_run_checks IMPLEMENTATION.
 
+  METHOD zif_abapgit_sap_package~read_description.
+    RETURN.
+  ENDMETHOD.
+
   METHOD zif_abapgit_sap_package~list_subpackages.
     RETURN.
   ENDMETHOD.
@@ -127,7 +131,7 @@ CLASS ltcl_run_checks IMPLEMENTATION.
 
   METHOD setup.
 
-    mi_log = NEW zcl_abapgit_log( ).
+    CREATE OBJECT mi_log TYPE zcl_abapgit_log.
 
     mo_dot = zcl_abapgit_dot_abapgit=>build_default( ).
     mo_dot->set_starting_folder( '/' ).  " assumed by unit tests
@@ -751,7 +755,9 @@ CLASS ltcl_status_helper IMPLEMENTATION.
       it_remote    = mt_remote
       it_cur_state = mt_state ).
 
-    ro_result = NEW #( it_results = lt_results ).
+    CREATE OBJECT ro_result
+      EXPORTING
+        it_results = lt_results.
 
   ENDMETHOD.
 
@@ -789,7 +795,7 @@ CLASS ltcl_calculate_status IMPLEMENTATION.
 
   METHOD setup.
 
-    mo_helper = NEW #( ).
+    CREATE OBJECT mo_helper.
 
   ENDMETHOD.
 
