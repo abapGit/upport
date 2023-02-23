@@ -73,14 +73,14 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_GUI_PAGE_SETT_REPO IMPLEMENTATION.
 
 
   METHOD constructor.
 
     super->constructor( ).
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
     mo_repo = io_repo.
     mo_form = get_form_schema( ).
     mo_form_util = zcl_abapgit_html_form_utils=>create( mo_form ).
@@ -94,7 +94,9 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_repo.
 
-    lo_component = NEW #( io_repo = io_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        io_repo = io_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Repository Settings'
@@ -424,13 +426,13 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
   METHOD zif_abapgit_gui_renderable~render.
 
-    gui_services( )->register_event_handler( me ).
+    register_handlers( ).
 
     IF mo_form_util->is_empty( mo_form_data ) = abap_true.
       read_settings( ).
     ENDIF.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( `<div class="repo">` ).
 
