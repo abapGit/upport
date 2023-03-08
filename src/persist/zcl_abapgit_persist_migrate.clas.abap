@@ -96,7 +96,7 @@ CLASS ZCL_ABAPGIT_PERSIST_MIGRATE IMPLEMENTATION.
     ENDTRY.
 
     " New exists and differs from own - then it is really new, needs to be installed
-    rv_exists = xsdbool( lv_h_own = lv_h_new ).
+    rv_exists = boolc( lv_h_own = lv_h_new ).
 
   ENDMETHOD.
 
@@ -194,7 +194,7 @@ CLASS ZCL_ABAPGIT_PERSIST_MIGRATE IMPLEMENTATION.
 
     SELECT SINGLE viewname FROM dd25l INTO lv_viewname
       WHERE viewname = zcl_abapgit_persistence_db=>c_lock.
-    rv_exists = xsdbool( sy-subrc = 0 ).
+    rv_exists = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -317,7 +317,7 @@ CLASS ZCL_ABAPGIT_PERSIST_MIGRATE IMPLEMENTATION.
 
     SELECT SINGLE tabname FROM dd02l INTO lv_tabname
       WHERE tabname = zcl_abapgit_persistence_db=>c_tabname.
-    rv_exists = xsdbool( sy-subrc = 0 ).
+    rv_exists = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 ENDCLASS.
