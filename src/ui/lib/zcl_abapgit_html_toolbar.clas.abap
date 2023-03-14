@@ -4,6 +4,11 @@ CLASS zcl_abapgit_html_toolbar DEFINITION
 
   PUBLIC SECTION.
 
+    CLASS-METHODS create
+      IMPORTING
+        !iv_id TYPE string OPTIONAL
+      RETURNING
+        VALUE(ro_instance) TYPE REF TO zcl_abapgit_html_toolbar.
     METHODS constructor
       IMPORTING
         !iv_id TYPE string OPTIONAL .
@@ -115,6 +120,12 @@ CLASS zcl_abapgit_html_toolbar IMPLEMENTATION.
     mv_id = iv_id.
   ENDMETHOD.
 
+  METHOD create.
+    CREATE OBJECT ro_instance
+      EXPORTING
+        iv_id = iv_id.
+  ENDMETHOD.
+
 
   METHOD count_items.
     rv_count = lines( mt_items ).
@@ -125,7 +136,7 @@ CLASS zcl_abapgit_html_toolbar IMPLEMENTATION.
 
     DATA: lv_class TYPE string.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     lv_class = 'nav-container'.
     IF iv_right = abap_true.
@@ -143,7 +154,7 @@ CLASS zcl_abapgit_html_toolbar IMPLEMENTATION.
 
     DATA: lv_class TYPE string.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     lv_class = 'nav-container'.
     IF iv_right = abap_true.
@@ -179,7 +190,7 @@ CLASS zcl_abapgit_html_toolbar IMPLEMENTATION.
     FIELD-SYMBOLS <ls_item> LIKE LINE OF mt_items.
 
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     IF iv_sort = abap_true.
       SORT mt_items BY txt ASCENDING AS TEXT.
