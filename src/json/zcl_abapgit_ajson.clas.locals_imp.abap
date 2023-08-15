@@ -462,7 +462,7 @@ CLASS lcl_json_serializer IMPLEMENTATION.
   METHOD stringify.
 
     DATA lo TYPE REF TO lcl_json_serializer.
-    lo = NEW #( ).
+    CREATE OBJECT lo.
     lo->mt_json_tree = it_json_tree.
     lo->mv_indent_step = iv_indent.
     lo->mv_keep_item_order = iv_keep_item_order.
@@ -977,7 +977,7 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
         " Do nothing
       WHEN zif_abapgit_ajson_types=>node_type-boolean.
         " TODO: check type ?
-        <container> = xsdbool( is_node-value = 'true' ).
+        <container> = boolc( is_node-value = 'true' ).
       WHEN zif_abapgit_ajson_types=>node_type-number.
         " TODO: check type ?
         <container> = is_node-value.
@@ -1211,7 +1211,6 @@ CLASS lcl_abap_to_json DEFINITION FINAL.
         iv_item_order TYPE i DEFAULT 0
       CHANGING
         ct_nodes TYPE zif_abapgit_ajson_types=>ty_nodes_tt
-        cs_root  TYPE zif_abapgit_ajson_types=>ty_node OPTIONAL
       RAISING
         zcx_abapgit_ajson_error.
 
@@ -1260,7 +1259,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lo_type = cl_abap_typedescr=>describe_by_data( iv_data ).
 
-    lo_converter = NEW #( ).
+    CREATE OBJECT lo_converter.
     lo_converter->mi_custom_mapping  = ii_custom_mapping.
     lo_converter->mv_keep_item_order = is_opts-keep_item_order.
     lo_converter->mv_format_datetime = is_opts-format_datetime.
@@ -1497,7 +1496,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
   METHOD convert_struc.
 
     DATA lo_struc TYPE REF TO cl_abap_structdescr.
-    DATA lt_comps TYPE cl_abap_structdescr=>component_table.
+    DATA lt_comps TYPE cl_abap_structdescr=>included_view.
     DATA ls_next_prefix LIKE is_prefix.
     DATA lv_mapping_prefix_name LIKE is_prefix-name.
     DATA lv_item_order TYPE i.
@@ -1509,34 +1508,30 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     " Object root
 
-    IF cs_root IS SUPPLIED. " call for include structure
-      ASSIGN cs_root TO <root>.
-    ELSE. " First call
-      ls_root-path  = is_prefix-path.
-      ls_root-name  = is_prefix-name.
-      ls_root-type  = zif_abapgit_ajson_types=>node_type-object.
-      ls_root-index = iv_index.
+    ls_root-path  = is_prefix-path.
+    ls_root-name  = is_prefix-name.
+    ls_root-type  = zif_abapgit_ajson_types=>node_type-object.
+    ls_root-index = iv_index.
 
-      IF mi_custom_mapping IS BOUND.
-        ls_root-name = mi_custom_mapping->to_json(
-          iv_path = is_prefix-path
-          iv_name = is_prefix-name ).
-      ENDIF.
-
-      IF ls_root-name IS INITIAL.
-        ls_root-name  = is_prefix-name.
-      ENDIF.
-
-      ls_root-order = iv_item_order.
-
-      APPEND ls_root TO ct_nodes ASSIGNING <root>.
-
+    IF mi_custom_mapping IS BOUND.
+      ls_root-name = mi_custom_mapping->to_json(
+        iv_path = is_prefix-path
+        iv_name = is_prefix-name ).
     ENDIF.
+
+    IF ls_root-name IS INITIAL.
+      ls_root-name  = is_prefix-name.
+    ENDIF.
+
+    ls_root-order = iv_item_order.
+
+    APPEND ls_root TO ct_nodes ASSIGNING <root>.
 
     " Object attributes
 
     lo_struc ?= io_type.
-    lt_comps = lo_struc->get_components( ).
+    lt_comps = lo_struc->get_included_view( ).
+    " replaced call to get_components() with get_included_view() to avoid problems with suffixes in includes.
     " get_components is potentially much slower than lo_struc->components
     " but ! we still need it to identify booleans
     " and rtti seems to cache type descriptions really well (https://github.com/sbcgua/benchmarks.git)
@@ -1547,47 +1542,32 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
     LOOP AT lt_comps ASSIGNING <c>.
       CLEAR lv_mapping_prefix_name.
 
-      IF <c>-as_include = abap_true.
+      <root>-children = <root>-children + 1.
+      ls_next_prefix-name = to_lower( <c>-name ).
+      ASSIGN COMPONENT <c>-name OF STRUCTURE iv_data TO <val>.
+      ASSERT sy-subrc = 0.
 
-        convert_struc(
-          EXPORTING
-            iv_data   = iv_data
-            io_type   = <c>-type
-            is_prefix = is_prefix
-          CHANGING
-            cs_root  = <root>
-            ct_nodes = ct_nodes ).
-
-      ELSE.
-
-        <root>-children = <root>-children + 1.
-        ls_next_prefix-name = to_lower( <c>-name ).
-        ASSIGN COMPONENT <c>-name OF STRUCTURE iv_data TO <val>.
-        ASSERT sy-subrc = 0.
-
-        IF mi_custom_mapping IS BOUND AND <c>-type->kind = cl_abap_typedescr=>kind_elem.
-          lv_mapping_prefix_name = mi_custom_mapping->to_json( iv_path = ls_next_prefix-path
-                                                               iv_name = ls_next_prefix-name ).
-        ENDIF.
-
-        IF lv_mapping_prefix_name IS NOT INITIAL.
-          ls_next_prefix-name = lv_mapping_prefix_name.
-        ENDIF.
-
-        IF mv_keep_item_order = abap_true.
-          lv_item_order = <root>-children.
-        ENDIF.
-
-        convert_any(
-          EXPORTING
-            iv_data   = <val>
-            io_type   = <c>-type
-            is_prefix = ls_next_prefix
-            iv_item_order = lv_item_order
-          CHANGING
-            ct_nodes = ct_nodes ).
-
+      IF mi_custom_mapping IS BOUND AND <c>-type->kind = cl_abap_typedescr=>kind_elem.
+        lv_mapping_prefix_name = mi_custom_mapping->to_json( iv_path = ls_next_prefix-path
+                                                             iv_name = ls_next_prefix-name ).
       ENDIF.
+
+      IF lv_mapping_prefix_name IS NOT INITIAL.
+        ls_next_prefix-name = lv_mapping_prefix_name.
+      ENDIF.
+
+      IF mv_keep_item_order = abap_true.
+        lv_item_order = <root>-children.
+      ENDIF.
+
+      convert_any(
+        EXPORTING
+          iv_data   = <val>
+          io_type   = <c>-type
+          is_prefix = ls_next_prefix
+          iv_item_order = lv_item_order
+        CHANGING
+          ct_nodes = ct_nodes ).
 
     ENDLOOP.
 
@@ -1659,7 +1639,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lo_type = cl_abap_typedescr=>describe_by_data( iv_data ).
 
-    lo_converter = NEW #( ).
+    CREATE OBJECT lo_converter.
     lo_converter->mi_custom_mapping  = ii_custom_mapping.
     lo_converter->mv_keep_item_order = is_opts-keep_item_order.
     lo_converter->mv_format_datetime = is_opts-format_datetime.
@@ -1775,7 +1755,7 @@ ENDCLASS.
 CLASS lcl_filter_runner IMPLEMENTATION.
 
   METHOD new.
-    ro_instance = NEW #( ii_filter = ii_filter ).
+    CREATE OBJECT ro_instance EXPORTING ii_filter = ii_filter.
   ENDMETHOD.
 
   METHOD constructor.
@@ -1882,7 +1862,7 @@ ENDCLASS.
 CLASS lcl_mapper_runner IMPLEMENTATION.
 
   METHOD new.
-    ro_instance = NEW #( ii_mapper = ii_mapper ).
+    CREATE OBJECT ro_instance EXPORTING ii_mapper = ii_mapper.
   ENDMETHOD.
 
   METHOD constructor.
@@ -1990,7 +1970,7 @@ CLASS lcl_mutator_queue IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD new.
-    ro_instance = NEW #( ).
+    CREATE OBJECT ro_instance.
   ENDMETHOD.
 
   METHOD lif_mutator_runner~run.
