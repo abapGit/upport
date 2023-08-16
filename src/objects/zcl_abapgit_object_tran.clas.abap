@@ -373,7 +373,7 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
 
   METHOD is_variant_transaction.
 
-    rv_variant_transaction = xsdbool( is_tstcp-param(1) = '@' ).
+    rv_variant_transaction = boolc( is_tstcp-param(1) = '@' ).
 
   ENDMETHOD.
 
@@ -634,8 +634,20 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
 
 
   METHOD zif_abapgit_object~changed_by.
-* looks like "changed by user" is not stored in the database
-    rv_user = c_user_unknown.
+    " Changed-by-user is not stored in transaction metadata
+    " Instead, use owner of last transport or object directory
+
+    DATA lv_transport TYPE trkorr.
+
+    lv_transport = zcl_abapgit_factory=>get_cts_api( )->get_transport_for_object( ms_item ).
+
+    IF lv_transport IS NOT INITIAL.
+      SELECT SINGLE as4user FROM e070 INTO rv_user WHERE trkorr = lv_transport.
+    ELSE.
+      SELECT SINGLE author FROM tadir INTO rv_user
+        WHERE pgmid = 'R3TR' AND object = ms_item-obj_type AND obj_name = ms_item-obj_name.
+    ENDIF.
+
   ENDMETHOD.
 
 
@@ -790,7 +802,7 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
 
     SELECT SINGLE tcode FROM tstc INTO lv_tcode
       WHERE tcode = ms_item-obj_name.                   "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 

@@ -23,14 +23,16 @@ CLASS zcl_abapgit_object_sppf IMPLEMENTATION.
 
   METHOD get_generic.
 
-    ro_generic = NEW #( is_item = ms_item
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        is_item     = ms_item
+        iv_language = mv_language.
 
   ENDMETHOD.
 
 
   METHOD zif_abapgit_object~changed_by.
-    rv_user = zcl_abapgit_objects_super=>c_user_unknown.
+    rv_user = c_user_unknown.
   ENDMETHOD.
 
 
