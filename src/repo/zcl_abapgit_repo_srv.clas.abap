@@ -114,7 +114,7 @@ CLASS zcl_abapgit_repo_srv IMPLEMENTATION.
 
   METHOD get_instance.
     IF gi_ref IS INITIAL.
-      gi_ref = NEW zcl_abapgit_repo_srv( ).
+      CREATE OBJECT gi_ref TYPE zcl_abapgit_repo_srv.
     ENDIF.
     ri_srv = gi_ref.
   ENDMETHOD.
@@ -128,9 +128,13 @@ CLASS zcl_abapgit_repo_srv IMPLEMENTATION.
   METHOD instantiate_and_add.
 
     IF is_repo_meta-offline = abap_false.
-      ri_repo = NEW zcl_abapgit_repo_online( is_data = is_repo_meta ).
+      CREATE OBJECT ri_repo TYPE zcl_abapgit_repo_online
+        EXPORTING
+          is_data = is_repo_meta.
     ELSE.
-      ri_repo = NEW zcl_abapgit_repo_offline( is_data = is_repo_meta ).
+      CREATE OBJECT ri_repo TYPE zcl_abapgit_repo_offline
+        EXPORTING
+          is_data = is_repo_meta.
     ENDIF.
     add( ri_repo ).
 
@@ -549,7 +553,6 @@ CLASS zcl_abapgit_repo_srv IMPLEMENTATION.
     ls_repo-local_settings-labels = iv_labels.
 
     lo_repo->set_local_settings( ls_repo-local_settings ).
-    lo_repo->check_and_create_package( iv_package ).
 
     ri_repo = lo_repo.
 
@@ -611,9 +614,9 @@ CLASS zcl_abapgit_repo_srv IMPLEMENTATION.
     ls_repo-local_settings-labels = iv_labels.
 
     lo_repo->set_local_settings( ls_repo-local_settings ).
+
     lo_repo->refresh( ).
     lo_repo->find_remote_dot_abapgit( ).
-    lo_repo->check_and_create_package( iv_package ).
 
     ri_repo = lo_repo.
 
