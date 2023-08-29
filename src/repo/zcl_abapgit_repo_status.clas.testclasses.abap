@@ -54,6 +54,7 @@ CLASS ltcl_run_checks DEFINITION FOR TESTING RISK LEVEL HARMLESS
                               iv_filename TYPE string
                               iv_packmove TYPE abap_bool OPTIONAL,
       setup,
+      teardown,
       positive FOR TESTING RAISING zcx_abapgit_exception,
       neg_diff_path_for_same_obj FOR TESTING RAISING zcx_abapgit_exception,
       neg_incorrect_path_vs_pack FOR TESTING RAISING zcx_abapgit_exception,
@@ -121,7 +122,7 @@ CLASS ltcl_run_checks IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_abapgit_sap_namespace~exists.
-    rv_yes = xsdbool( iv_namespace <> 'NOTEXIST' ).
+    rv_yes = boolc( iv_namespace <> 'NOTEXIST' ).
   ENDMETHOD.
 
   METHOD zif_abapgit_sap_namespace~is_editable.
@@ -149,7 +150,7 @@ CLASS ltcl_run_checks IMPLEMENTATION.
 
   METHOD setup.
 
-    mi_log = NEW zcl_abapgit_log( ).
+    CREATE OBJECT mi_log TYPE zcl_abapgit_log.
 
     mo_dot = zcl_abapgit_dot_abapgit=>build_default( ).
     mo_dot->set_starting_folder( '/' ).  " assumed by unit tests
@@ -162,9 +163,16 @@ CLASS ltcl_run_checks IMPLEMENTATION.
 
     zcl_abapgit_injector=>set_sap_namespace( me ).
 
-    mo_instance = NEW #( iv_root_package = '$Z$'
-                         io_dot = mo_dot ).
+    CREATE OBJECT mo_instance
+      EXPORTING
+        iv_root_package = '$Z$'
+        io_dot          = mo_dot.
 
+  ENDMETHOD.
+
+  METHOD teardown.
+    DATA li_empty TYPE REF TO zif_abapgit_sap_namespace.
+    zcl_abapgit_injector=>set_sap_namespace( li_empty ).
   ENDMETHOD.
 
   METHOD positive.
@@ -498,8 +506,10 @@ CLASS ltcl_run_checks IMPLEMENTATION.
                    iv_path     = '/'
                    iv_filename = '#notexist#zclass1.clas.xml' ).
 
-    mo_instance = NEW #( iv_root_package = '/NOTEXIST/Z'
-                         io_dot = mo_dot ).
+    CREATE OBJECT mo_instance
+      EXPORTING
+        iv_root_package = '/NOTEXIST/Z'
+        io_dot          = mo_dot.
 
     mi_log = mo_instance->run_checks( mt_results ).
 
@@ -525,8 +535,10 @@ CLASS ltcl_run_checks IMPLEMENTATION.
                    iv_path     = '/'
                    iv_filename = '(notexist)zclass1.clas.json' ).
 
-    mo_instance = NEW #( iv_root_package = '/NOTEXIST/Z'
-                         io_dot = mo_dot ).
+    CREATE OBJECT mo_instance
+      EXPORTING
+        iv_root_package = '/NOTEXIST/Z'
+        io_dot          = mo_dot.
 
     mi_log = mo_instance->run_checks( mt_results ).
 
@@ -560,8 +572,10 @@ CLASS ltcl_run_checks IMPLEMENTATION.
                    iv_path     = ''
                    iv_filename = 'package.devc.xml' ).
 
-    mo_instance = NEW #( iv_root_package = '$MAIN'
-                         io_dot = mo_dot ).
+    CREATE OBJECT mo_instance
+      EXPORTING
+        iv_root_package = '$MAIN'
+        io_dot          = mo_dot.
 
     mi_log = mo_instance->run_checks( mt_results ).
 
@@ -766,15 +780,19 @@ CLASS ltcl_status_helper IMPLEMENTATION.
     lo_dot = zcl_abapgit_dot_abapgit=>build_default( ).
     lo_dot->set_starting_folder( '/' ). " assumed by unit tests
 
-    lo_instance = NEW #( iv_root_package = iv_devclass
-                         io_dot = lo_dot ).
+    CREATE OBJECT lo_instance
+      EXPORTING
+        iv_root_package = iv_devclass
+        io_dot          = lo_dot.
 
     lt_results = lo_instance->calculate_status(
       it_local     = mt_local
       it_remote    = mt_remote
       it_cur_state = mt_state ).
 
-    ro_result = NEW #( it_results = lt_results ).
+    CREATE OBJECT ro_result
+      EXPORTING
+        it_results = lt_results.
 
   ENDMETHOD.
 
@@ -815,7 +833,7 @@ CLASS ltcl_calculate_status IMPLEMENTATION.
 
   METHOD setup.
 
-    mo_helper = NEW #( ).
+    CREATE OBJECT mo_helper.
     zcl_abapgit_injector=>set_tadir( mo_helper ).
 
   ENDMETHOD.
@@ -915,7 +933,7 @@ CLASS ltcl_calculate_status IMPLEMENTATION.
   METHOD diff.
 
     " Modified both
-    mo_helper = NEW #( ).
+    CREATE OBJECT mo_helper.
     mo_helper->add_local(
       iv_obj_type = 'DOMA'
       iv_obj_name = '$$ZDOMA1'
@@ -943,7 +961,7 @@ CLASS ltcl_calculate_status IMPLEMENTATION.
       exp = zif_abapgit_definitions=>c_state-modified ).
 
     " Modified local only
-    mo_helper = NEW #( ).
+    CREATE OBJECT mo_helper.
     mo_helper->add_local(
       iv_obj_type = 'DOMA'
       iv_obj_name = '$$ZDOMA1'
@@ -971,7 +989,7 @@ CLASS ltcl_calculate_status IMPLEMENTATION.
       exp = zif_abapgit_definitions=>c_state-unchanged ).
 
     " Modified remote only
-    mo_helper = NEW #( ).
+    CREATE OBJECT mo_helper.
     mo_helper->add_local(
       iv_obj_type = 'DOMA'
       iv_obj_name = '$$ZDOMA1'
