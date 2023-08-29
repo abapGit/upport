@@ -38,7 +38,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_OBJECT_DSYS IMPLEMENTATION.
+CLASS zcl_abapgit_object_dsys IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -49,14 +49,20 @@ CLASS ZCL_ABAPGIT_OBJECT_DSYS IMPLEMENTATION.
     super->constructor( is_item = is_item
                         iv_language = iv_language ).
 
-    CALL FUNCTION 'RS_NAME_SPLIT_NAMESPACE'
-      EXPORTING
-        name_with_namespace    = ms_item-obj_name
-      IMPORTING
-        namespace              = lv_prefix
-        name_without_namespace = lv_bare_name.
+    IF ms_item-obj_name(1) = '/'.
 
-    mv_doc_object = |{ lv_bare_name+0(4) }{ lv_prefix }{ lv_bare_name+4(*) }|.
+      CALL FUNCTION 'RS_NAME_SPLIT_NAMESPACE'
+        EXPORTING
+          name_with_namespace    = ms_item-obj_name
+        IMPORTING
+          namespace              = lv_prefix
+          name_without_namespace = lv_bare_name.
+
+      mv_doc_object = |{ lv_bare_name+0(4) }{ lv_prefix }{ lv_bare_name+4(*) }|.
+    ELSE.
+
+      mv_doc_object = ms_item-obj_name.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -167,7 +173,7 @@ CLASS ZCL_ABAPGIT_OBJECT_DSYS IMPLEMENTATION.
            WHERE id   = c_id
            AND object = mv_doc_object.                  "#EC CI_GENBUFF
 
-    rv_bool = xsdbool( lv_count > 0 ).
+    rv_bool = boolc( lv_count > 0 ).
 
   ENDMETHOD.
 
@@ -219,7 +225,7 @@ CLASS ZCL_ABAPGIT_OBJECT_DSYS IMPLEMENTATION.
         no_editor           = 2
         OTHERS              = 3.
 
-    rv_exit = xsdbool( sy-subrc = 0 ).
+    rv_exit = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
