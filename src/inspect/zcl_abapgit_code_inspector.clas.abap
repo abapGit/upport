@@ -81,7 +81,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_CODE_INSPECTOR IMPLEMENTATION.
+CLASS zcl_abapgit_code_inspector IMPLEMENTATION.
 
 
   METHOD cleanup.
@@ -302,7 +302,7 @@ CLASS ZCL_ABAPGIT_CODE_INSPECTOR IMPLEMENTATION.
           FROM trdir
           WHERE name = is_obj-objname.
 
-        rv_skip = xsdbool( ls_program_type = 'I' ). " Include program.
+        rv_skip = boolc( ls_program_type = 'I' ). " Include program.
 
       WHEN OTHERS.
         rv_skip = abap_false.
@@ -334,7 +334,8 @@ CLASS ZCL_ABAPGIT_CODE_INSPECTOR IMPLEMENTATION.
       ON scichkv_hd~checkvid = scichkv_tx~checkvid
       AND scichkv_hd~ciuser  = scichkv_tx~ciuser
       AND scichkv_tx~language = sy-langu
-      WHERE scichkv_hd~ciuser = space.
+      WHERE scichkv_hd~ciuser = space
+      ORDER BY name.
 
   ENDMETHOD.
 
@@ -378,7 +379,7 @@ CLASS ZCL_ABAPGIT_CODE_INSPECTOR IMPLEMENTATION.
 
         IF iv_save = abap_true.
           READ TABLE rt_list TRANSPORTING NO FIELDS WITH KEY kind = 'E'.
-          mv_success = xsdbool( sy-subrc <> 0 ).
+          mv_success = boolc( sy-subrc <> 0 ).
         ENDIF.
 
       CATCH zcx_abapgit_exception INTO lx_error.
