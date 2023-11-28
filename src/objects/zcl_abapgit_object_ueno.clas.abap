@@ -443,9 +443,11 @@ CLASS zcl_abapgit_object_ueno IMPLEMENTATION.
 
   METHOD get_generic.
 
-    ro_generic = NEW #( io_field_rules = get_field_rules( )
-                        is_item = ms_item
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        io_field_rules = get_field_rules( )
+        is_item        = ms_item
+        iv_language    = mv_language.
 
   ENDMETHOD.
 
@@ -542,7 +544,7 @@ CLASS zcl_abapgit_object_ueno IMPLEMENTATION.
       INTO CORRESPONDING FIELDS OF TABLE lt_dokvl
       WHERE id = c_text_object_type
       AND   object LIKE ls_dokvl-object
-      ORDER BY PRIMARY KEY ##TOO_MANY_ITAB_FIELDS.
+      ORDER BY id object langu ##TOO_MANY_ITAB_FIELDS.
 
     LOOP AT lt_dokvl INTO ls_dokvl.
 

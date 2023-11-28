@@ -207,6 +207,7 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
           li_iterator  TYPE REF TO if_ixml_node_iterator,
           li_items     TYPE REF TO if_ixml_node_iterator,
           lv_index     TYPE i,
+          lv_field     TYPE fieldname,
           ls_item      TYPE stxfobjt,
           lt_items     TYPE STANDARD TABLE OF stxfobjt.
 
@@ -229,7 +230,8 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
           CLEAR ls_item.
           li_field = li_item->get_first_child( ).
           WHILE NOT li_field IS INITIAL.
-            ASSIGN COMPONENT li_field->get_name( ) OF STRUCTURE ls_item TO <lv_field>.
+            lv_field = li_field->get_name( ).
+            ASSIGN COMPONENT lv_field OF STRUCTURE ls_item TO <lv_field>.
             ASSERT sy-subrc = 0.
             <lv_field> = li_field->get_value( ).
             li_field = li_field->get_next( ).
@@ -250,7 +252,8 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
           READ TABLE lt_items INTO ls_item INDEX lv_index.
           li_field = li_item->get_first_child( ).
           WHILE NOT li_field IS INITIAL.
-            ASSIGN COMPONENT li_field->get_name( ) OF STRUCTURE ls_item TO <lv_field>.
+            lv_field = li_field->get_name( ).
+            ASSIGN COMPONENT lv_field OF STRUCTURE ls_item TO <lv_field>.
             ASSERT sy-subrc = 0.
             li_field->set_value( |{ <lv_field> }| ).
             li_field = li_field->get_next( ).
@@ -310,7 +313,7 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
           lv_text                TYPE string,
           lv_within_code_section TYPE abap_bool.
 
-    lo_sf = NEW #( ).
+    CREATE OBJECT lo_sf.
 
 * set "created by" and "changed by" to current user
     li_iterator = io_xml->get_raw( )->get_root_element( )->create_iterator( ).
@@ -369,7 +372,7 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
 
     SELECT SINGLE formname FROM stxfadm INTO lv_formname
       WHERE formname = ms_item-obj_name.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -407,7 +410,7 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
       IMPORTING
         o_inactive = lv_inactive.
 
-    rv_active = xsdbool( lv_inactive = abap_false ).
+    rv_active = boolc( lv_inactive = abap_false ).
 
   ENDMETHOD.
 
@@ -500,7 +503,7 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
     li_ixml = cl_ixml=>create( ).
     li_xml_doc = li_ixml->create_document( ).
 
-    lo_sf = NEW #( ).
+    CREATE OBJECT lo_sf.
     lv_formname = ms_item-obj_name. " convert type
     TRY.
         lo_sf->load( im_formname = lv_formname
