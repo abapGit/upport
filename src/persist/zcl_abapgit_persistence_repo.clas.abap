@@ -41,7 +41,7 @@ CLASS zcl_abapgit_persistence_repo DEFINITION
         zcx_abapgit_exception .
     METHODS get_repo_from_content
       IMPORTING
-        is_content    TYPE zif_abapgit_persistence=>ty_content
+        is_content       TYPE zif_abapgit_persistence=>ty_content
       RETURNING
         VALUE(rs_result) TYPE zif_abapgit_persistence=>ty_repo
       RAISING
@@ -50,7 +50,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_PERSISTENCE_REPO IMPLEMENTATION.
+CLASS zcl_abapgit_persistence_repo IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -158,10 +158,14 @@ CLASS ZCL_ABAPGIT_PERSISTENCE_REPO IMPLEMENTATION.
     MOVE-CORRESPONDING from_xml( lv_old_blob ) TO ls_repo_meta.
     lv_new_blob = to_xml( ls_repo_meta ).
 
-    mo_db->update(
-      iv_type  = zcl_abapgit_persistence_db=>c_type_repo
-      iv_value = iv_repo_key
-      iv_data  = lv_new_blob ).
+    IF lv_new_blob <> lv_old_blob.
+      mo_db->update(
+        iv_type  = zcl_abapgit_persistence_db=>c_type_repo
+        iv_value = iv_repo_key
+        iv_data  = lv_new_blob ).
+
+      COMMIT WORK.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -238,7 +242,7 @@ CLASS ZCL_ABAPGIT_PERSISTENCE_REPO IMPLEMENTATION.
 
     DATA: lo_background TYPE REF TO zcl_abapgit_persist_background.
 
-    lo_background = NEW #( ).
+    CREATE OBJECT lo_background.
     lo_background->delete( iv_key ).
 
     mo_db->delete( iv_type  = zcl_abapgit_persistence_db=>c_type_repo
@@ -258,7 +262,7 @@ CLASS ZCL_ABAPGIT_PERSISTENCE_REPO IMPLEMENTATION.
       it_keys = lt_keys
       iv_type = zcl_abapgit_persistence_db=>c_type_repo ).
 
-    rv_yes = xsdbool( lines( lt_content ) > 0 ).
+    rv_yes = boolc( lines( lt_content ) > 0 ).
 
   ENDMETHOD.
 

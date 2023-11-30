@@ -623,7 +623,7 @@ CLASS zcl_abapgit_popups IMPLEMENTATION.
         p_object_data    = ls_data
       EXCEPTIONS
         action_cancelled = 1.
-    ev_create = xsdbool( sy-subrc = 0 ).
+    ev_create = boolc( sy-subrc = 0 ).
     MOVE-CORRESPONDING ls_data TO es_package_data.
   ENDMETHOD.
 
@@ -673,16 +673,18 @@ CLASS zcl_abapgit_popups IMPLEMENTATION.
       iv_width  = iv_end_column - iv_start_column
       iv_height = iv_end_line - iv_start_line ).
 
-    lo_popup = NEW #( it_list = it_list
-                      iv_title = iv_title
-                      iv_header_text = iv_header_text
-                      is_position = ms_position
-                      iv_striped_pattern = iv_striped_pattern
-                      iv_optimize_col_width = iv_optimize_col_width
-                      iv_selection_mode = iv_selection_mode
-                      iv_select_column_text = iv_select_column_text
-                      it_columns_to_display = it_columns_to_display
-                      it_preselected_rows = it_preselected_rows ).
+    CREATE OBJECT lo_popup
+      EXPORTING
+        it_list               = it_list
+        iv_title              = iv_title
+        iv_header_text        = iv_header_text
+        is_position           = ms_position
+        iv_striped_pattern    = iv_striped_pattern
+        iv_optimize_col_width = iv_optimize_col_width
+        iv_selection_mode     = iv_selection_mode
+        iv_select_column_text = iv_select_column_text
+        it_columns_to_display = it_columns_to_display
+        it_preselected_rows   = it_preselected_rows.
 
     lo_popup->display( ).
     lo_popup->get_selected( IMPORTING et_list = et_list ).
@@ -785,15 +787,15 @@ CLASS zcl_abapgit_popups IMPLEMENTATION.
     DATA: lt_e071    TYPE STANDARD TABLE OF e071,
           lt_e071k   TYPE STANDARD TABLE OF e071k,
           lv_order   TYPE trkorr,
-          ls_e070use TYPE e070use.
+          ls_default TYPE zif_abapgit_default_transport=>ty_get.
     DATA lv_category TYPE e070-korrdev.
 
     " If default transport is set and its type matches, then use it as default for the popup
-    ls_e070use = zcl_abapgit_default_transport=>get_instance( )->get( ).
+    ls_default = zcl_abapgit_factory=>get_default_transport( )->get( ).
 
-    IF ( ls_e070use-trfunction = is_transport_type-request OR ls_e070use-trfunction IS INITIAL )
+    IF ( ls_default-trfunction = is_transport_type-request OR ls_default-trfunction IS INITIAL )
       AND iv_use_default_transport = abap_true.
-      lv_order = ls_e070use-ordernum.
+      lv_order = ls_default-ordernum.
     ENDIF.
 
     " Differentiate between customizing and WB requests
