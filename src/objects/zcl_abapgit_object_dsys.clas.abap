@@ -6,8 +6,12 @@ CLASS zcl_abapgit_object_dsys DEFINITION PUBLIC INHERITING FROM zcl_abapgit_obje
 
     METHODS constructor
       IMPORTING
-        is_item     TYPE zif_abapgit_definitions=>ty_item
-        iv_language TYPE spras.
+        !is_item        TYPE zif_abapgit_definitions=>ty_item
+        !iv_language    TYPE spras
+        !io_files       TYPE REF TO zcl_abapgit_objects_files OPTIONAL
+        !io_i18n_params TYPE REF TO zcl_abapgit_i18n_params OPTIONAL
+      RAISING
+        zcx_abapgit_exception.
 
   PROTECTED SECTION.
 
@@ -46,8 +50,11 @@ CLASS zcl_abapgit_object_dsys IMPLEMENTATION.
     DATA: lv_prefix    TYPE namespace,
           lv_bare_name TYPE progname.
 
-    super->constructor( is_item = is_item
-                        iv_language = iv_language ).
+    super->constructor(
+      is_item        = is_item
+      iv_language    = iv_language
+      io_files       = io_files
+      io_i18n_params = io_i18n_params ).
 
     IF ms_item-obj_name(1) = '/'.
 
@@ -173,7 +180,7 @@ CLASS zcl_abapgit_object_dsys IMPLEMENTATION.
            WHERE id   = c_id
            AND object = mv_doc_object.  "#EC CI_GENBUFF "#EC CI_NOORDER
 
-    rv_bool = xsdbool( lv_count > 0 ).
+    rv_bool = boolc( lv_count > 0 ).
 
   ENDMETHOD.
 
@@ -225,7 +232,7 @@ CLASS zcl_abapgit_object_dsys IMPLEMENTATION.
         no_editor           = 2
         OTHERS              = 3.
 
-    rv_exit = xsdbool( sy-subrc = 0 ).
+    rv_exit = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 

@@ -68,8 +68,10 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
     ls_key = ms_item-obj_name.
 
     TRY.
-        lo_cfg = NEW #( config_key = ls_key
-                        object_name = lv_name ).
+        CREATE OBJECT lo_cfg
+          EXPORTING
+            config_key  = ls_key
+            object_name = lv_name.
 
         MOVE-CORRESPONDING ls_key TO ls_outline.
 
@@ -128,8 +130,10 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
     ls_key = ms_item-obj_name.
 
     TRY.
-        lo_cfg = NEW #( config_key = ls_key
-                        object_name = lv_name ).
+        CREATE OBJECT lo_cfg
+          EXPORTING
+            config_key  = ls_key
+            object_name = lv_name.
 
         MOVE-CORRESPONDING ls_key TO es_outline.
 
@@ -184,8 +188,10 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
     MOVE-CORRESPONDING is_outline TO ls_key.
 
     TRY.
-        lo_cfg = NEW #( config_key = ls_key
-                        object_name = lv_name ).
+        CREATE OBJECT lo_cfg
+          EXPORTING
+            config_key  = ls_key
+            object_name = lv_name.
 
         READ TABLE it_data INDEX 1 INTO ls_data.
         ASSERT sy-subrc = 0.
@@ -273,7 +279,7 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
           iv_transport = iv_transport ).
 
     TRY.
-        lv_xml_string = zif_abapgit_object~mo_files->read_string(
+        lv_xml_string = mo_files->read_string(
           iv_extra = 'appl_config'
           iv_ext   = 'xml' ).
 
@@ -329,7 +335,7 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
       WHERE config_id = ls_wdy_config_key-config_id
         AND config_type = ls_wdy_config_key-config_type
         AND config_var = ls_wdy_config_key-config_var.  "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
   ENDMETHOD.
 
 
@@ -422,7 +428,7 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
       ASSERT sy-subrc = 0.
     ENDIF.
 
-    zif_abapgit_object~mo_files->add_string(
+    mo_files->add_string(
       iv_extra  = 'appl_config'
       iv_ext    = 'xml'
       iv_string = lv_xml_string ).
