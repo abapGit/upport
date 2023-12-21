@@ -358,7 +358,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
     ms_settings_snapshot = get_remote_settings_from_repo( mo_repo ).
     mo_form              = get_form_schema( ).
     mo_form_data         = initialize_form_data( ).
-    mo_validation_log = NEW #( ).
+    CREATE OBJECT mo_validation_log.
 
   ENDMETHOD.
 
@@ -367,7 +367,9 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_remo.
 
-    lo_component = NEW #( io_repo = io_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        io_repo = io_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Remote Settings'
@@ -606,7 +608,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
       lv_type TYPE string,
       lv_head TYPE string.
 
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     IF ms_settings_snapshot-offline = abap_true.
       lv_type = c_repo_type-offline.
@@ -655,7 +657,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
   METHOD render_content.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
       io_repo               = mo_repo
@@ -729,7 +731,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
           lv_url         TYPE ty_remote_settings-url,
           lv_branch      TYPE ty_remote_settings-branch.
 
-    lv_offline_new = xsdbool( mo_form_data->get( c_id-offline ) = abap_false ).
+    lv_offline_new = boolc( mo_form_data->get( c_id-offline ) = abap_false ).
     mo_form_data->set(
       iv_key = c_id-offline
       iv_val = lv_offline_new ).
@@ -761,7 +763,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
               iv_val = c_head_types-branch ).
 
             IF lv_url CP 'http*'.
-              lv_branch = zcl_abapgit_git_transport=>branches( lv_url )->get_head_symref( ).
+              lv_branch = zcl_abapgit_git_factory=>get_git_transport( )->branches( lv_url )->get_head_symref( ).
               mo_form_data->set(
                 iv_key = c_id-branch
                 iv_val = lv_branch ).
@@ -855,7 +857,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
             iv_validate = abap_true ).
 
           " Provider-specific URL check
-          lo_url = NEW #( ).
+          CREATE OBJECT lo_url.
           lo_url->validate_url( lv_url ).
         CATCH zcx_abapgit_exception INTO lx_error.
           ro_validation_log->set(
@@ -901,7 +903,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
       TRY.
           IF lv_branch IS NOT INITIAL.
-            lo_branch_list = zcl_abapgit_git_transport=>branches( lv_url ).
+            lo_branch_list = zcl_abapgit_git_factory=>get_git_transport( )->branches( lv_url ).
             lo_branch_list->find_by_name( lv_branch ).
           ENDIF.
         CATCH zcx_abapgit_exception INTO lx_error.
@@ -1080,7 +1082,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
     handle_picklist_state( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->wrap(
       iv_tag     = 'div'
