@@ -235,7 +235,7 @@ CLASS lcl_object_descision_list IMPLEMENTATION.
         ENDIF.
 
         IF iv_header_text CN ' _0'.
-          lo_table_header = NEW #( text = iv_header_text ).
+          CREATE OBJECT lo_table_header EXPORTING text = iv_header_text.
           mo_alv->set_top_of_list( lo_table_header ).
         ENDIF.
 
@@ -476,7 +476,7 @@ CLASS lcl_object_descision_list IMPLEMENTATION.
     IF lines( lt_scope ) > 0.
       mark_indexed(
         it_scope    = lt_scope
-        iv_selected = xsdbool( are_all_marked( lt_scope ) = abap_false ) ).
+        iv_selected = boolc( are_all_marked( lt_scope ) = abap_false ) ).
       mo_alv->get_selections( )->set_selected_rows( lt_clear ).
     ELSE.
       MESSAGE 'Select rows first to mark them' TYPE 'S'.
@@ -536,7 +536,7 @@ CLASS lcl_object_descision_list IMPLEMENTATION.
       ASSERT sy-subrc = 0.
 
       IF iv_invert = abap_true.
-        <lv_selected> = xsdbool( <lv_selected> = abap_false ).
+        <lv_selected> = boolc( <lv_selected> = abap_false ).
       ELSE.
         <lv_selected> = iv_selected.
       ENDIF.
@@ -654,7 +654,7 @@ CLASS lcl_object_descision_list IMPLEMENTATION.
 
       ASSIGN COMPONENT c_fieldname_selected OF STRUCTURE <ls_line> TO <lv_selected>.
       ASSERT sy-subrc = 0.
-      <lv_selected> = xsdbool( <lv_selected> = abap_false ).
+      <lv_selected> = boolc( <lv_selected> = abap_false ).
 
     ENDIF.
 
@@ -765,7 +765,8 @@ CLASS lcl_object_descision_list IMPLEMENTATION.
     lt_func_list = lo_functions->get_functions( ).
     LOOP AT lt_func_list INTO ls_func.
       lv_fn = ls_func-r_function->get_name( ).
-      IF lv_fn = 'OK' OR lv_fn = 'CANCEL'.
+      IF lv_fn = 'OK'   OR lv_fn = 'CANCEL'
+      OR lv_fn = 'O.K.' OR lv_fn = 'EABR'.
         ls_func-r_function->set_visible( abap_true ).
       ELSEIF iv_object_list = abap_true.
         ls_func-r_function->set_visible( abap_true ).
