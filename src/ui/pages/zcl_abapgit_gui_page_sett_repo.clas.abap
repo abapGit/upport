@@ -64,6 +64,11 @@ CLASS zcl_abapgit_gui_page_sett_repo DEFINITION
         VALUE(ro_validation_log) TYPE REF TO zcl_abapgit_string_map
       RAISING
         zcx_abapgit_exception .
+    METHODS validate_version_constant
+      IMPORTING
+        !iv_version_constant TYPE string
+      RAISING
+        zcx_abapgit_exception .
     METHODS get_form_schema
       RETURNING
         VALUE(ro_form) TYPE REF TO zcl_abapgit_html_form
@@ -88,8 +93,8 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     super->constructor( ).
 
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
 
     mo_repo = io_repo.
     mo_form = get_form_schema( ).
@@ -102,7 +107,9 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_repo.
 
-    lo_component = NEW #( io_repo = io_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        io_repo = io_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Repository Settings'
@@ -131,7 +138,8 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
     )->text(
       iv_name        = c_id-version_constant
       iv_label       = 'Version Constant'
-      iv_placeholder = 'ZVERSION_CLASS=>VERSION_CONSTANT'
+      iv_placeholder = 'CLASS=>VERSION_CONSTANT or INTERFACE=>VERSION_CONSTANT'
+      iv_upper_case  = abap_true
     )->text(
       iv_name        = c_id-version_value
       iv_label       = 'Version Value'
@@ -251,7 +259,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
     lo_dot = mo_repo->get_dot_abapgit( ).
     ls_dot = lo_dot->get_data( ).
     lv_main_lang = lo_dot->get_main_language( ).
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     " Repository Settings
     SELECT SINGLE sptxt INTO lv_language FROM t002t
@@ -271,7 +279,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       iv_val = zcl_abapgit_lxe_texts=>convert_table_to_lang_string( lo_dot->get_i18n_languages( ) ) ).
     ro_form_data->set(
       iv_key = c_id-use_lxe
-      iv_val = xsdbool( lo_dot->use_lxe( ) = abap_true ) ) ##TYPE.
+      iv_val = boolc( lo_dot->use_lxe( ) = abap_true ) ) ##TYPE.
     ro_form_data->set(
       iv_key = c_id-folder_logic
       iv_val = ls_dot-folder_logic ).
@@ -369,7 +377,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       zcl_abapgit_lxe_texts=>convert_lang_string_to_table(
         iv_langs              = mo_form_data->get( c_id-i18n_langs )
         iv_skip_main_language = lo_dot->get_main_language( ) ) ).
-    lo_dot->use_lxe( xsdbool( mo_form_data->get( c_id-use_lxe ) = abap_true ) ).
+    lo_dot->use_lxe( boolc( mo_form_data->get( c_id-use_lxe ) = abap_true ) ).
 
     " Remove all ignores
     lt_ignore = lo_dot->get_data( )-ignore.
@@ -468,6 +476,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
         IF lv_version_constant IS NOT INITIAL.
           zcl_abapgit_version=>get_version_constant_value( lv_version_constant ).
         ENDIF.
+        validate_version_constant( lv_version_constant ).
       CATCH zcx_abapgit_exception INTO lx_exception.
         ro_validation_log->set(
           iv_key = c_id-version_constant
@@ -488,6 +497,29 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       ro_validation_log->set(
         iv_key = c_id-original_system
         iv_val = 'System name must be alphanumerical' ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD validate_version_constant.
+
+    DATA: lv_version_class     TYPE seoclsname,
+          lv_version_component TYPE string,
+          lt_local             TYPE zif_abapgit_definitions=>ty_files_item_tt.
+
+    SPLIT iv_version_constant AT '=>' INTO lv_version_class lv_version_component.
+
+    lt_local = mo_repo->get_files_local( ).
+
+    READ TABLE lt_local TRANSPORTING NO FIELDS WITH KEY
+      item-obj_type = 'CLAS' item-obj_name = lv_version_class.
+    IF sy-subrc <> 0.
+      READ TABLE lt_local TRANSPORTING NO FIELDS WITH KEY
+        item-obj_type = 'INTF' item-obj_name = lv_version_class.
+      IF sy-subrc <> 0.
+        zcx_abapgit_exception=>raise( |Object { lv_version_class } is not included in this repository| ).
+      ENDIF.
     ENDIF.
 
   ENDMETHOD.
@@ -522,7 +554,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     register_handlers( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( `<div class="repo">` ).
 

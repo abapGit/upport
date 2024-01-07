@@ -84,7 +84,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_OBJECT_TABL IMPLEMENTATION.
+CLASS zcl_abapgit_object_tabl IMPLEMENTATION.
 
 
   METHOD clear_dd03p_fields.
@@ -332,7 +332,7 @@ CLASS ZCL_ABAPGIT_OBJECT_TABL IMPLEMENTATION.
     DATA:
       lv_name      TYPE ddobjname,
       lv_subrc     TYPE sy-subrc,
-      lt_dd12v_db  TYPE dd12vtab,
+      lt_dd12v_db  LIKE is_internal-dd12v,
       ls_dd12v     LIKE LINE OF is_internal-dd12v,
       ls_dd17v     LIKE LINE OF is_internal-dd17v,
       lt_secondary LIKE is_internal-dd17v.
@@ -451,7 +451,7 @@ CLASS ZCL_ABAPGIT_OBJECT_TABL IMPLEMENTATION.
   METHOD is_db_table_category.
 
     " values from domain TABCLASS
-    rv_is_db_table_type = xsdbool( iv_tabclass = 'TRANSP'
+    rv_is_db_table_type = boolc( iv_tabclass = 'TRANSP'
                               OR iv_tabclass = 'CLUSTER'
                               OR iv_tabclass = 'POOL' ).
 
@@ -468,7 +468,7 @@ CLASS ZCL_ABAPGIT_OBJECT_TABL IMPLEMENTATION.
            FROM edisegment
            INTO lv_segment_type
            WHERE segtyp = lv_segment_type.
-    rv_is_idoc_segment = xsdbool( sy-subrc = 0 ).
+    rv_is_idoc_segment = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -835,7 +835,7 @@ CLASS ZCL_ABAPGIT_OBJECT_TABL IMPLEMENTATION.
       SELECT SINGLE tabname FROM dd02l INTO lv_tabname
         WHERE tabname = lv_tabname.                     "#EC CI_NOORDER
     ENDIF.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -846,13 +846,18 @@ CLASS ZCL_ABAPGIT_OBJECT_TABL IMPLEMENTATION.
           li_local_version_input  TYPE REF TO zif_abapgit_xml_input.
 
 
-    li_local_version_output = NEW zcl_abapgit_xml_output( ).
+    CREATE OBJECT li_local_version_output TYPE zcl_abapgit_xml_output.
 
     zif_abapgit_object~serialize( li_local_version_output ).
 
-    li_local_version_input = NEW zcl_abapgit_xml_input( iv_xml = li_local_version_output->render( ) ).
+    CREATE OBJECT li_local_version_input
+      TYPE zcl_abapgit_xml_input
+      EXPORTING
+        iv_xml = li_local_version_output->render( ).
 
-    ri_comparator = NEW zcl_abapgit_object_tabl_compar( ii_local = li_local_version_input ).
+    CREATE OBJECT ri_comparator TYPE zcl_abapgit_object_tabl_compar
+      EXPORTING
+        ii_local = li_local_version_input.
 
   ENDMETHOD.
 
