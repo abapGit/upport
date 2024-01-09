@@ -63,7 +63,7 @@ CLASS zcl_abapgit_repo_content_list IMPLEMENTATION.
           ls_subitem  LIKE LINE OF ct_repo_items,
           ls_folder   LIKE LINE OF ct_repo_items.
 
-    DATA lo_state TYPE REF TO zcl_abapgit_item_state.
+    DATA lo_state TYPE REF TO zcl_abapgit_repo_item_state.
 
     FIELD-SYMBOLS <ls_item> LIKE LINE OF ct_repo_items.
 
@@ -92,7 +92,7 @@ CLASS zcl_abapgit_repo_content_list IMPLEMENTATION.
         ls_folder-path    = <ls_item>-path.
         ls_folder-sortkey = c_sortkey-dir. " Directory
         ls_folder-is_dir  = abap_true.
-        lo_state = NEW #( ).
+        CREATE OBJECT lo_state.
       ENDAT.
 
       ls_folder-changes = ls_folder-changes + <ls_item>-changes.
@@ -111,7 +111,7 @@ CLASS zcl_abapgit_repo_content_list IMPLEMENTATION.
   METHOD build_repo_items.
 
     DATA:
-      lo_state      TYPE REF TO zcl_abapgit_item_state,
+      lo_state      TYPE REF TO zcl_abapgit_repo_item_state,
       ls_file       TYPE zif_abapgit_definitions=>ty_repo_file,
       lt_status     TYPE zif_abapgit_definitions=>ty_results_tt,
       ls_item       TYPE zif_abapgit_definitions=>ty_item,
@@ -136,12 +136,12 @@ CLASS zcl_abapgit_repo_content_list IMPLEMENTATION.
         <ls_repo_item>-changes   = 0.
         <ls_repo_item>-path      = <ls_status>-path.
         <ls_repo_item>-srcsystem = <ls_status>-srcsystem.
-        lo_state = NEW #( ).
+        CREATE OBJECT lo_state.
       ENDAT.
 
       IF <ls_status>-filename IS NOT INITIAL.
         MOVE-CORRESPONDING <ls_status> TO ls_file.
-        ls_file-is_changed = xsdbool( <ls_status>-match = abap_false ). " TODO refactor
+        ls_file-is_changed = boolc( <ls_status>-match = abap_false ). " TODO refactor
         APPEND ls_file TO <ls_repo_item>-files.
 
         IF <ls_status>-inactive = abap_true AND <ls_repo_item>-sortkey > c_sortkey-changed.
@@ -204,7 +204,7 @@ CLASS zcl_abapgit_repo_content_list IMPLEMENTATION.
 
   METHOD constructor.
     mo_repo = io_repo.
-    mi_log = NEW zcl_abapgit_log( ).
+    CREATE OBJECT mi_log TYPE zcl_abapgit_log.
   ENDMETHOD.
 
 

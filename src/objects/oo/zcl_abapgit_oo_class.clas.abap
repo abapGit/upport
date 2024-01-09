@@ -1,7 +1,8 @@
 CLASS zcl_abapgit_oo_class DEFINITION
   PUBLIC
   INHERITING FROM zcl_abapgit_oo_base
-  CREATE PUBLIC .
+  CREATE PUBLIC
+  GLOBAL FRIENDS zcl_abapgit_oo_factory.
 
   PUBLIC SECTION.
 
@@ -805,7 +806,7 @@ CLASS zcl_abapgit_oo_class IMPLEMENTATION.
         no_text       = 4
         inconsistent  = 5
         OTHERS        = 6.
-    rv_exists = xsdbool( sy-subrc = 0 OR sy-subrc = 4 ).
+    rv_exists = boolc( sy-subrc = 0 OR sy-subrc = 4 ).
   ENDMETHOD.
 
 
