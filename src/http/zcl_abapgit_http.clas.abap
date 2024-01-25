@@ -94,9 +94,11 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
       WHEN c_scheme-digest.
 * https://en.wikipedia.org/wiki/Digest_access_authentication
 * e.g. used by https://www.gerritcodereview.com/
-        lo_digest = NEW #( ii_client = ii_client
-                           iv_username = lv_user
-                           iv_password = lv_pass ).
+        CREATE OBJECT lo_digest
+          EXPORTING
+            ii_client   = ii_client
+            iv_username = lv_user
+            iv_password = lv_pass.
         lo_digest->run( ii_client ).
         io_client->set_digest( lo_digest ).
       WHEN OTHERS.
@@ -132,7 +134,7 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
           lv_text                TYPE string.
 
 
-    lo_proxy_configuration = NEW #( ).
+    CREATE OBJECT lo_proxy_configuration.
 
     li_client = zcl_abapgit_exit=>get_instance( )->create_http_client( iv_url ).
 
@@ -158,6 +160,7 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
             " a) SSL is setup properly in STRUST
             lv_text = 'HTTPS ARGUMENT_NOT_FOUND | STRUST/SSL Setup correct?'.
           WHEN OTHERS.
+            " Make sure ANONYM PSE exists in transaction STRUST, https://github.com/abapGit/abapGit/issues/6768
             lv_text = 'While creating HTTP Client'.
 
         ENDCASE.
@@ -170,7 +173,9 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
       zcl_abapgit_proxy_auth=>run( li_client ).
     ENDIF.
 
-    ro_client = NEW #( ii_client = li_client ).
+    CREATE OBJECT ro_client
+      EXPORTING
+        ii_client = li_client.
 
     IF is_local_system( iv_url ) = abap_true.
       li_client->send_sap_logon_ticket( ).
@@ -257,7 +262,7 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
     FIND REGEX 'https?://([^/^:]*)' IN iv_url SUBMATCHES lv_host.
 
     READ TABLE lt_list WITH KEY table_line = lv_host TRANSPORTING NO FIELDS.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 ENDCLASS.
