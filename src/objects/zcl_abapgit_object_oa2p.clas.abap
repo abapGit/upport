@@ -69,7 +69,7 @@ CLASS zcl_abapgit_object_oa2p IMPLEMENTATION.
       CATCH cx_swb_object_does_not_exist.
         zcx_abapgit_exception=>raise( |OAuth2 Profile { lv_profile_key } doesn't exist.| ).
       CATCH cx_swb_exception.
-        zcx_abapgit_exception=>raise( |Error when geting details of OAuth2 Profile { lv_profile_key }.| ).
+        zcx_abapgit_exception=>raise( |Error when getting details of OAuth2 Profile { lv_profile_key }.| ).
     ENDTRY.
 
     lo_profile = <lo_wb>.
@@ -211,7 +211,7 @@ CLASS zcl_abapgit_object_oa2p IMPLEMENTATION.
         enq     = lt_locks.    " Number of chosen lock entries
 
 
-    rv_is_locked = xsdbool( lv_lock_number > 0 ).
+    rv_is_locked = boolc( lv_lock_number > 0 ).
 
   ENDMETHOD.
 
@@ -265,7 +265,7 @@ CLASS zcl_abapgit_object_oa2p IMPLEMENTATION.
       CATCH cx_swb_object_does_not_exist.
         zcx_abapgit_exception=>raise( |OAuth2 Profile { lv_profile_key } doesn't exist.| ).
       CATCH cx_swb_exception.
-        zcx_abapgit_exception=>raise( |Error when geting details of OAuth2 Profile { lv_profile_key }.| ).
+        zcx_abapgit_exception=>raise( |Error when getting details of OAuth2 Profile { lv_profile_key }.| ).
     ENDTRY.
 
     "remove system specific information
