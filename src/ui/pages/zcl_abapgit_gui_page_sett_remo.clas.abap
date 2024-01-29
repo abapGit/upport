@@ -358,7 +358,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
     ms_settings_snapshot = get_remote_settings_from_repo( mo_repo ).
     mo_form              = get_form_schema( ).
     mo_form_data         = initialize_form_data( ).
-    mo_validation_log = NEW #( ).
+    CREATE OBJECT mo_validation_log.
 
   ENDMETHOD.
 
@@ -367,7 +367,9 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_remo.
 
-    lo_component = NEW #( io_repo = io_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        io_repo = io_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Remote Settings'
@@ -581,7 +583,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
     IF mo_popup_picklist IS BOUND AND
       ( mo_popup_picklist->is_fulfilled( ) = abap_true OR mo_popup_picklist->is_in_page( ) = abap_false ).
-      " Picklist is either fullfilled OR
+      " Picklist is either fulfilled OR
       " it was on its own page and user went back from it via F3/ESC and the picklist had no "graceful back" handler
       CASE mo_popup_picklist->id( ).
         WHEN c_event-choose_pull_request.
@@ -606,7 +608,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
       lv_type TYPE string,
       lv_head TYPE string.
 
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     IF ms_settings_snapshot-offline = abap_true.
       lv_type = c_repo_type-offline.
@@ -655,7 +657,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
   METHOD render_content.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
       io_repo               = mo_repo
@@ -715,7 +717,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
     COMMIT WORK AND WAIT.
 
-    MESSAGE 'Settings succesfully saved' TYPE 'S'.
+    MESSAGE 'Settings successfully saved' TYPE 'S'.
 
     mv_refresh_on_back = abap_true.
     ms_settings_snapshot = get_remote_settings_from_repo( mo_repo ).
@@ -729,7 +731,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
           lv_url         TYPE ty_remote_settings-url,
           lv_branch      TYPE ty_remote_settings-branch.
 
-    lv_offline_new = xsdbool( mo_form_data->get( c_id-offline ) = abap_false ).
+    lv_offline_new = boolc( mo_form_data->get( c_id-offline ) = abap_false ).
     mo_form_data->set(
       iv_key = c_id-offline
       iv_val = lv_offline_new ).
@@ -855,7 +857,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
             iv_validate = abap_true ).
 
           " Provider-specific URL check
-          lo_url = NEW #( ).
+          CREATE OBJECT lo_url.
           lo_url->validate_url( lv_url ).
         CATCH zcx_abapgit_exception INTO lx_error.
           ro_validation_log->set(
@@ -987,7 +989,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
     IF mo_popup_picklist IS BOUND. " Uniform popup state handling
       " This should happen only for a new popup because
       " on the first re-render main component event handling is blocked
-      " and not called again until the popup distruction
+      " and not called again until the popup destruction
       IF mo_popup_picklist->is_in_page( ) = abap_true.
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
       ELSE.
@@ -1080,7 +1082,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
     handle_picklist_state( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->wrap(
       iv_tag     = 'div'
