@@ -142,7 +142,7 @@ CLASS zcl_abapgit_convert IMPLEMENTATION.
     DO lv_len TIMES.
 
       IF sy-index = 1.
-        "Intialize
+        "Initialize
         IF lv_bitbyte+lv_offset(1) = '1'.
           rv_int = 1.
         ENDIF.
@@ -339,7 +339,7 @@ CLASS zcl_abapgit_convert IMPLEMENTATION.
     ev_size = xstrlen( iv_xstr ).
 
     APPEND INITIAL LINE TO et_bintab ASSIGNING <lg_line>.
-    lv_struct = xsdbool(
+    lv_struct = boolc(
       cl_abap_typedescr=>describe_by_data( <lg_line> )->type_kind = cl_abap_typedescr=>typekind_struct1 ).
     IF lv_struct = abap_true.
       ASSIGN COMPONENT 1 OF STRUCTURE <lg_line> TO <lg_line>.
