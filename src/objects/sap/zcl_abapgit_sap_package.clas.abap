@@ -54,7 +54,7 @@ CLASS zcl_abapgit_sap_package IMPLEMENTATION.
         rv_are_changes_rec_in_tr_req = li_package->wbo_korr_flag.
       WHEN 1.
         " For new packages, derive from package name
-        rv_are_changes_rec_in_tr_req = xsdbool( mv_package(1) <> '$' AND mv_package(1) <> 'T' ).
+        rv_are_changes_rec_in_tr_req = boolc( mv_package(1) <> '$' AND mv_package(1) <> 'T' ).
       WHEN OTHERS.
         zcx_abapgit_exception=>raise_t100( ).
     ENDCASE.
@@ -231,7 +231,7 @@ CLASS zcl_abapgit_sap_package IMPLEMENTATION.
         intern_err                 = 3
         no_access                  = 4
         object_locked_and_modified = 5 ).
-    rv_bool = xsdbool( sy-subrc <> 1 ).
+    rv_bool = boolc( sy-subrc <> 1 ).
 
   ENDMETHOD.
 
@@ -305,7 +305,7 @@ CLASS zcl_abapgit_sap_package IMPLEMENTATION.
           " Namespace with repair license requires repair task
           rs_transport_type-task = 'R'.
         ELSE.
-          " Otherweise use correction task
+          " Otherwise use correction task
           rs_transport_type-task = 'S'.
         ENDIF.
       WHEN OTHERS.

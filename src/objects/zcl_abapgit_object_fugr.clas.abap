@@ -249,7 +249,7 @@ CLASS zcl_abapgit_object_fugr IMPLEMENTATION.
 
       IF zcl_abapgit_factory=>get_function_module( )->function_exists( <ls_func>-funcname ) = abap_true.
 * delete the function module to make sure the parameters are updated
-* havent found a nice way to update the paramters
+* havent found a nice way to update the parameters
         CALL FUNCTION 'FUNCTION_DELETE'
           EXPORTING
             funcname                 = <ls_func>-funcname
@@ -1048,8 +1048,10 @@ CLASS zcl_abapgit_object_fugr IMPLEMENTATION.
 
     LOOP AT it_includes INTO lv_include.
 
-      lo_cross = NEW #( p_name = lv_include
-                        p_include = lv_include ).
+      CREATE OBJECT lo_cross
+        EXPORTING
+          p_name    = lv_include
+          p_include = lv_include.
 
       lo_cross->index_actualize( ).
 
@@ -1260,7 +1262,7 @@ CLASS zcl_abapgit_object_fugr IMPLEMENTATION.
         function_pool   = lv_pool
       EXCEPTIONS
         pool_not_exists = 1.
-    rv_bool = xsdbool( sy-subrc <> 1 ).
+    rv_bool = boolc( sy-subrc <> 1 ).
 
   ENDMETHOD.
 

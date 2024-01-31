@@ -288,7 +288,7 @@ FORM exit.
 
   " The exit logic should only be applied for our 'main' selection screen 1001.
   " All other selection-screens are called as popups and shouldn't influence
-  " the gui navigation as it would lead to inpredictable behaviour like dumps.
+  " the gui navigation as it would lead to unpredictable behaviour like dumps.
   IF sy-dynnr <> 1001.
     RETURN.
   ENDIF.
@@ -337,7 +337,7 @@ FORM adjust_toolbar USING pv_dynnr TYPE sy-dynnr.
 
   " Remove toolbar on html screen but re-insert toolbar for variant maintenance.
   " Because otherwise important buttons are missing and variant maintenance is not possible.
-  lv_no_toolbar = xsdbool( zcl_abapgit_factory=>get_environment(
+  lv_no_toolbar = boolc( zcl_abapgit_factory=>get_environment(
                                            )->is_variant_maintenance( ) = abap_false ).
 
   IF ls_header-no_toolbar = lv_no_toolbar.

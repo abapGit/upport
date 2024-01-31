@@ -244,7 +244,7 @@ CLASS zcl_abapgit_object_dtel IMPLEMENTATION.
       SELECT SINGLE rollname FROM dd04l INTO lv_rollname
         WHERE rollname = lv_rollname.
     ENDIF.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -338,7 +338,7 @@ CLASS zcl_abapgit_object_dtel IMPLEMENTATION.
     ENDIF.
 
     IF ls_dd04v-routputlen = ''.
-* numeric field, make sure it is initial or XML serilization will dump
+* numeric field, make sure it is initial or XML serialization will dump
       CLEAR ls_dd04v-routputlen.
     ENDIF.
     IF ls_dd04v-authclass = ''.

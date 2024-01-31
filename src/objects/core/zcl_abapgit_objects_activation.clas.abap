@@ -283,7 +283,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         lv_popup = abap_false.
       ENDIF.
 
-      lv_no_ui = xsdbool( lv_popup = abap_false ).
+      lv_no_ui = boolc( lv_popup = abap_false ).
 
       IF iv_ddic = abap_true.
         lv_msg = |(with DDIC)|.
@@ -381,7 +381,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
     io_checklist->get_error_messages( IMPORTING p_error_tab = lt_message ).
 
     LOOP AT lt_message ASSIGNING <ls_message> WHERE mtype = 'E'.
-      " When activting without popup, includes used in multiple main programs cause error
+      " When activating without popup, includes used in multiple main programs cause error
       " Run again WITH activation popup (see abapGit, Personal Settings)
       IF <ls_message>-message-msgid = 'EU' AND <ls_message>-message-msgno = '404'.
         rv_try_again = abap_true.
@@ -430,7 +430,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    " Only error messsages
+    " Only error messages
     DELETE lt_lines WHERE severity <> 'E'
                       AND severity <> 'W'.
     " Remove "Return code..." message
@@ -538,7 +538,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         illegal_input = 1
         OTHERS        = 2.
 
-    rv_active = xsdbool( sy-subrc = 0 AND ( lv_state = '' OR lv_state = 'A' ) ).
+    rv_active = boolc( sy-subrc = 0 AND ( lv_state = '' OR lv_state = 'A' ) ).
 
   ENDMETHOD.
 
@@ -581,7 +581,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         p_e071                    = lt_e071
         p_xmsg                    = lt_messages.
 
-    rv_active = xsdbool( lt_messages IS INITIAL ).
+    rv_active = boolc( lt_messages IS INITIAL ).
 
   ENDMETHOD.
 
@@ -603,8 +603,10 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
           lv_include = cl_oo_classname_service=>get_interfacepool_name( ls_class-clsname ).
       ENDCASE.
 
-      lo_cross = NEW #( p_name = lv_include
-                        p_include = lv_include ).
+      CREATE OBJECT lo_cross
+        EXPORTING
+          p_name    = lv_include
+          p_include = lv_include.
 
       lo_cross->index_actualize( IMPORTING p_error = lv_error ).
 
