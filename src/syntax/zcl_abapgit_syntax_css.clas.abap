@@ -313,7 +313,7 @@ CLASS zcl_abapgit_syntax_css IMPLEMENTATION.
     insert_keywords( iv_keywords = lv_keywords
                      iv_token = c_token-at_rules ).
 
-    " 7) HTML tage
+    " 7) HTML tag
     lv_keywords =
     'doctyype|a|abbr|acronym|address|applet|area|b|base|basefont|bdo|bgsound|big|blink|blockquote|' &&
     'body|br|button|caption|center|cite|code|col|colgroup|dd|del|dfn|dir|div|dl|dt|em|embed|fieldset|' &&
@@ -365,7 +365,7 @@ CLASS zcl_abapgit_syntax_css IMPLEMENTATION.
 
     lv_str = to_lower( iv_chunk ).
     READ TABLE gt_keywords WITH TABLE KEY keyword = lv_str TRANSPORTING NO FIELDS.
-    rv_yes = xsdbool( sy-subrc = 0 ).
+    rv_yes = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
