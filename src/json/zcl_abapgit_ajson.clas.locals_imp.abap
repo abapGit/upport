@@ -462,7 +462,7 @@ CLASS lcl_json_serializer IMPLEMENTATION.
   METHOD stringify.
 
     DATA lo TYPE REF TO lcl_json_serializer.
-    lo = NEW #( ).
+    CREATE OBJECT lo.
     lo->mt_json_tree = it_json_tree.
     lo->mv_indent_step = iv_indent.
     lo->mv_keep_item_order = iv_keep_item_order.
@@ -669,6 +669,14 @@ CLASS lcl_json_to_abap DEFINITION FINAL.
         iv_value         TYPE zif_abapgit_ajson_types=>ty_node-value
       RETURNING
         VALUE(rv_result) TYPE d
+      RAISING
+        zcx_abapgit_ajson_error.
+
+    METHODS to_time
+      IMPORTING
+        iv_value         TYPE zif_abapgit_ajson_types=>ty_node-value
+      RETURNING
+        VALUE(rv_result) TYPE t
       RAISING
         zcx_abapgit_ajson_error.
 
@@ -977,7 +985,7 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
         " Do nothing
       WHEN zif_abapgit_ajson_types=>node_type-boolean.
         " TODO: check type ?
-        <container> = xsdbool( is_node-value = 'true' ).
+        <container> = boolc( is_node-value = 'true' ).
       WHEN zif_abapgit_ajson_types=>node_type-number.
         " TODO: check type ?
         <container> = is_node-value.
@@ -986,6 +994,8 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
         " TODO: check type ?
         IF is_node_type-type_kind = lif_kind=>date AND is_node-value IS NOT INITIAL.
           <container> = to_date( is_node-value ).
+        ELSEIF is_node_type-type_kind = lif_kind=>time AND is_node-value IS NOT INITIAL.
+          <container> = to_time( is_node-value ).
         ELSEIF is_node_type-type_kind = lif_kind=>packed AND is_node-value IS NOT INITIAL.
           <container> = to_timestamp( is_node-value ).
         ELSE.
@@ -1092,6 +1102,22 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
         IMPORTING
           tstmp_tgt = rv_result ).
     ENDIF.
+
+  ENDMETHOD.
+
+  METHOD to_time.
+
+    DATA lv_h TYPE c LENGTH 2.
+    DATA lv_m TYPE c LENGTH 2.
+    DATA lv_s TYPE c LENGTH 2.
+
+    FIND FIRST OCCURRENCE OF REGEX '^(\d{2}):(\d{2}):(\d{2})(T|$)'
+      IN iv_value
+      SUBMATCHES lv_h lv_m lv_s.
+    IF sy-subrc <> 0.
+      zcx_abapgit_ajson_error=>raise( 'Unexpected time format' ).
+    ENDIF.
+    CONCATENATE lv_h lv_m lv_s INTO rv_result.
 
   ENDMETHOD.
 
@@ -1259,7 +1285,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lo_type = cl_abap_typedescr=>describe_by_data( iv_data ).
 
-    lo_converter = NEW #( ).
+    CREATE OBJECT lo_converter.
     lo_converter->mi_custom_mapping  = ii_custom_mapping.
     lo_converter->mv_keep_item_order = is_opts-keep_item_order.
     lo_converter->mv_format_datetime = is_opts-format_datetime.
@@ -1639,7 +1665,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lo_type = cl_abap_typedescr=>describe_by_data( iv_data ).
 
-    lo_converter = NEW #( ).
+    CREATE OBJECT lo_converter.
     lo_converter->mi_custom_mapping  = ii_custom_mapping.
     lo_converter->mv_keep_item_order = is_opts-keep_item_order.
     lo_converter->mv_format_datetime = is_opts-format_datetime.
@@ -1755,7 +1781,7 @@ ENDCLASS.
 CLASS lcl_filter_runner IMPLEMENTATION.
 
   METHOD new.
-    ro_instance = NEW #( ii_filter = ii_filter ).
+    CREATE OBJECT ro_instance EXPORTING ii_filter = ii_filter.
   ENDMETHOD.
 
   METHOD constructor.
@@ -1862,7 +1888,7 @@ ENDCLASS.
 CLASS lcl_mapper_runner IMPLEMENTATION.
 
   METHOD new.
-    ro_instance = NEW #( ii_mapper = ii_mapper ).
+    CREATE OBJECT ro_instance EXPORTING ii_mapper = ii_mapper.
   ENDMETHOD.
 
   METHOD constructor.
@@ -1970,7 +1996,7 @@ CLASS lcl_mutator_queue IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD new.
-    ro_instance = NEW #( ).
+    CREATE OBJECT ro_instance.
   ENDMETHOD.
 
   METHOD lif_mutator_runner~run.
