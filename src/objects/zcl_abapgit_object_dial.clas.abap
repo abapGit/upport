@@ -86,6 +86,9 @@ CLASS zcl_abapgit_object_dial IMPLEMENTATION.
 
     DATA: ls_dialog_module TYPE ty_dialog_module.
 
+    " Prefill popup asking for package
+    set_default_package( iv_package ).
+
     io_xml->read(
       EXPORTING
         iv_name = 'DIAL'
@@ -123,7 +126,7 @@ CLASS zcl_abapgit_object_dial IMPLEMENTATION.
 
     ls_tdct = _read_tdct( ).
 
-    rv_bool = xsdbool( ls_tdct IS NOT INITIAL ).
+    rv_bool = boolc( ls_tdct IS NOT INITIAL ).
 
   ENDMETHOD.
 
@@ -174,7 +177,7 @@ CLASS zcl_abapgit_object_dial IMPLEMENTATION.
         object_not_found = 1
         OTHERS           = 2.
 
-    rv_exit = xsdbool( sy-subrc = 0 ).
+    rv_exit = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
