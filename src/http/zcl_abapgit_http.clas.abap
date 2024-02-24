@@ -118,9 +118,11 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
       WHEN c_scheme-digest.
 * https://en.wikipedia.org/wiki/Digest_access_authentication
 * e.g. used by https://www.gerritcodereview.com/
-        lo_digest = NEW #( ii_client = ii_client
-                           iv_username = lv_user
-                           iv_password = lv_pass ).
+        CREATE OBJECT lo_digest
+          EXPORTING
+            ii_client   = ii_client
+            iv_username = lv_user
+            iv_password = lv_pass.
         lo_digest->run( ii_client ).
         io_client->set_digest( lo_digest ).
       WHEN OTHERS.
@@ -162,7 +164,9 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
 
     li_client = get_http_client( iv_url ).
 
-    ro_client = NEW #( ii_client = li_client ).
+    CREATE OBJECT ro_client
+      EXPORTING
+        ii_client = li_client.
 
     IF is_local_system( iv_url ) = abap_true.
       li_client->send_sap_logon_ticket( ).
@@ -293,7 +297,7 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
       lv_proxy_service       TYPE string,
       lo_proxy_configuration TYPE REF TO zcl_abapgit_proxy_config.
 
-    lo_proxy_configuration = NEW #( ).
+    CREATE OBJECT lo_proxy_configuration.
 
     ri_client = zcl_abapgit_exit=>get_instance( )->create_http_client( iv_url ).
 
@@ -322,10 +326,7 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
           argument_not_found = 1
           plugin_not_active  = 2
           internal_error     = 3
-          pse_not_found      = 4
-          pse_not_distrib    = 5
-          pse_errors         = 6
-          OTHERS             = 7 ).
+          OTHERS             = 4 ).
       IF sy-subrc <> 0.
         CASE sy-subrc.
           WHEN 1.
@@ -334,22 +335,12 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
             lv_error = 'PLUGIN_NOT_ACTIVE'.
           WHEN 3.
             lv_error = 'INTERNAL_ERROR'.
-          WHEN 4.
-            lv_error = 'PSE_NOT_FOUND'.
-          WHEN 5.
-            lv_error = 'PSE_NOT_DISTRIB'.
-          WHEN 6.
-            lv_error = 'PSE_ERRORS'.
           WHEN OTHERS.
             lv_error = |OTHER_ERROR_{ sy-subrc }|.
         ENDCASE.
-        IF sy-subrc BETWEEN 4 AND 6.
-          zcx_abapgit_exception=>raise_t100( iv_longtext = lv_longtext ).
-        ELSE.
-          zcx_abapgit_exception=>raise(
-            iv_text     = |Error { lv_error } creating HTTP connection. Check the configuration|
-            iv_longtext = lv_longtext ).
-        ENDIF.
+        zcx_abapgit_exception=>raise(
+          iv_text     = |Error { lv_error } creating HTTP connection. Check the configuration|
+          iv_longtext = lv_longtext ).
       ENDIF.
 
     ENDIF.
@@ -379,7 +370,7 @@ CLASS zcl_abapgit_http IMPLEMENTATION.
     FIND REGEX 'https?://([^/^:]*)' IN iv_url SUBMATCHES lv_host.
 
     READ TABLE lt_list WITH KEY table_line = lv_host TRANSPORTING NO FIELDS.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 ENDCLASS.
