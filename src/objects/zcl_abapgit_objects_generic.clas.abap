@@ -422,7 +422,7 @@ CLASS zcl_abapgit_objects_generic IMPLEMENTATION.
     ASSIGN lr_table_line->* TO <lg_table_line>.
 
     SELECT SINGLE * FROM (lv_primary) INTO <lg_table_line> WHERE (lv_where_clause).
-    rv_bool = xsdbool( sy-dbcnt > 0 ).
+    rv_bool = boolc( sy-dbcnt > 0 ).
 
   ENDMETHOD.
 
@@ -671,7 +671,7 @@ CLASS zcl_abapgit_objects_generic IMPLEMENTATION.
 
     lt_key_component_uncovered = it_key_component.
 
-*    we want to fill the atribute values which are not covered by explicit key components yet
+*    we want to fill the attribute values which are not covered by explicit key components yet
     LOOP AT ct_objkey INTO ls_dummy.
       DELETE lt_key_component_uncovered INDEX 1.
     ENDLOOP.

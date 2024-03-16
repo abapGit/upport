@@ -125,7 +125,7 @@ CLASS zcl_abapgit_object_wapa IMPLEMENTATION.
     DATA: ls_pagekey TYPE o2pagkey.
     FIELD-SYMBOLS: <ls_local_page> LIKE LINE OF it_local_pages.
 
-    " delete local pages which doesn't exists remotely
+    " delete local pages which doesn't exist remotely
     LOOP AT it_local_pages ASSIGNING <ls_local_page>.
 
       READ TABLE it_remote_pages WITH KEY attributes-pagekey = <ls_local_page>-pagekey
@@ -544,7 +544,7 @@ CLASS zcl_abapgit_object_wapa IMPLEMENTATION.
         object_not_existing = 1
         permission_failure  = 2
         error_occured       = 3 ).
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 

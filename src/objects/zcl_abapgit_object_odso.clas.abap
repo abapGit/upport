@@ -64,7 +64,7 @@ CLASS zcl_abapgit_object_odso IMPLEMENTATION.
         return    = ls_return.
 
     IF ls_return-type = 'E'.
-      zcx_abapgit_exception=>raise( |Error when geting changed by of ODSO: { ls_return-message }| ).
+      zcx_abapgit_exception=>raise( |Error when getting changed by of ODSO: { ls_return-message }| ).
     ENDIF.
 
     ASSIGN COMPONENT 'TSTPNM' OF STRUCTURE <lg_details> TO <lg_tstpnm>.
@@ -232,7 +232,7 @@ CLASS zcl_abapgit_object_odso IMPLEMENTATION.
     INTO lv_iobjnm
     WHERE odsobject = ms_item-obj_name.
 
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -357,7 +357,7 @@ CLASS zcl_abapgit_object_odso IMPLEMENTATION.
         indexesinfoobjects   = <lt_index_iobj>.
 
     IF ls_return-type = 'E'.
-      zcx_abapgit_exception=>raise( |Error when geting details of ODSO: { ls_return-message }| ).
+      zcx_abapgit_exception=>raise( |Error when getting details of ODSO: { ls_return-message }| ).
     ENDIF.
 
     clear_field( EXPORTING iv_fieldname = 'TSTPNM'

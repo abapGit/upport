@@ -118,7 +118,7 @@ CLASS zcl_abapgit_object_suso IMPLEMENTATION.
 
     IF sy-subrc = 0.
 
-      " so these check are not executed in 702
+      " so these checks are not executed in 702
 
       CREATE OBJECT lo_suso
         TYPE
@@ -286,7 +286,7 @@ CLASS zcl_abapgit_object_suso IMPLEMENTATION.
     SELECT SINGLE objct FROM tobj INTO lv_objct
       WHERE objct = ms_item-obj_name.
 
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
