@@ -142,7 +142,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_gui_router IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_GUI_ROUTER IMPLEMENTATION.
 
 
   METHOD abapgit_services_actions.
@@ -288,7 +288,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
 
         lo_repo ?= zcl_abapgit_repo_srv=>get_instance( )->get( lv_key ).
 
-        lo_obj_filter_trans = NEW #( ).
+        CREATE OBJECT lo_obj_filter_trans.
         lo_obj_filter_trans->set_filter_values( iv_package  = lo_repo->get_package( )
                                                 it_r_trkorr = lt_r_trkorr ).
 
@@ -402,9 +402,6 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
     ENDIF.
 
     IF ri_page IS INITIAL.
-      " force refresh on stage, to make sure the latest local and remote files are used
-      lo_repo->refresh( ).
-
       ri_page = zcl_abapgit_gui_page_stage=>create(
         io_repo       = lo_repo
         iv_seed       = lv_seed
@@ -536,7 +533,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
     IF iv_line CO '0123456789'.
       lv_line_number = iv_line.
     ENDIF.
-    lv_new_window = xsdbool( iv_new_window IS NOT INITIAL ).
+    lv_new_window = boolc( iv_new_window IS NOT INITIAL ).
 
     TRY.
         li_html_viewer = zcl_abapgit_ui_factory=>get_html_viewer( ).
@@ -850,7 +847,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
         lt_r_trkorr = zcl_abapgit_ui_factory=>get_popups( )->popup_select_wb_tc_tr_and_tsk( ).
         lo_repo ?= zcl_abapgit_repo_srv=>get_instance( )->get( lv_key ).
         lo_repo->refresh( ).
-        lo_obj_filter_trans = NEW #( ).
+        CREATE OBJECT lo_obj_filter_trans.
         lo_obj_filter_trans->set_filter_values( iv_package  = lo_repo->get_package( )
                                                 it_r_trkorr = lt_r_trkorr ).
 
