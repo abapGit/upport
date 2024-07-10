@@ -462,7 +462,7 @@ CLASS lcl_json_serializer IMPLEMENTATION.
   METHOD stringify.
 
     DATA lo TYPE REF TO lcl_json_serializer.
-    lo = NEW #( ).
+    CREATE OBJECT lo.
     lo->mt_json_tree = it_json_tree.
     lo->mv_indent_step = iv_indent.
     lo->mv_keep_item_order = iv_keep_item_order.
@@ -896,6 +896,8 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
               IF is_parent_type-tab_item_buf IS NOT BOUND. " Indirect hint that table was srt/hsh, see get_node_type
                 APPEND INITIAL LINE TO <parent_stdtab> REFERENCE INTO lr_target_field.
                 ASSERT sy-subrc = 0.
+              ELSE.
+                CLEAR <tab_item>.
               ENDIF.
 
             WHEN lif_kind=>struct_flat OR lif_kind=>struct_deep.
@@ -985,7 +987,7 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
         " Do nothing
       WHEN zif_abapgit_ajson_types=>node_type-boolean.
         " TODO: check type ?
-        <container> = xsdbool( is_node-value = 'true' ).
+        <container> = boolc( is_node-value = 'true' ).
       WHEN zif_abapgit_ajson_types=>node_type-number.
         " TODO: check type ?
         <container> = is_node-value.
@@ -1292,7 +1294,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lo_type = cl_abap_typedescr=>describe_by_data( iv_data ).
 
-    lo_converter = NEW #( ).
+    CREATE OBJECT lo_converter.
     lo_converter->mi_custom_mapping  = ii_custom_mapping.
     lo_converter->mv_keep_item_order = is_opts-keep_item_order.
     lo_converter->mv_format_datetime = is_opts-format_datetime.
@@ -1672,7 +1674,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lo_type = cl_abap_typedescr=>describe_by_data( iv_data ).
 
-    lo_converter = NEW #( ).
+    CREATE OBJECT lo_converter.
     lo_converter->mi_custom_mapping  = ii_custom_mapping.
     lo_converter->mv_keep_item_order = is_opts-keep_item_order.
     lo_converter->mv_format_datetime = is_opts-format_datetime.
@@ -1788,7 +1790,7 @@ ENDCLASS.
 CLASS lcl_filter_runner IMPLEMENTATION.
 
   METHOD new.
-    ro_instance = NEW #( ii_filter = ii_filter ).
+    CREATE OBJECT ro_instance EXPORTING ii_filter = ii_filter.
   ENDMETHOD.
 
   METHOD constructor.
@@ -1809,8 +1811,13 @@ CLASS lcl_filter_runner IMPLEMENTATION.
   METHOD walk.
 
     DATA ls_node TYPE zif_abapgit_ajson_types=>ty_node.
+    DATA lv_tab_key TYPE string.
 
-    LOOP AT mr_source_tree->* INTO ls_node WHERE path = iv_path.
+    IF cs_parent-type = zif_abapgit_ajson_types=>node_type-array.
+      lv_tab_key = 'array_index'. " path + index
+    ENDIF.
+
+    LOOP AT mr_source_tree->* INTO ls_node USING KEY (lv_tab_key) WHERE path = iv_path.
       CASE ls_node-type.
         WHEN zif_abapgit_ajson_types=>node_type-boolean OR zif_abapgit_ajson_types=>node_type-null
           OR zif_abapgit_ajson_types=>node_type-number OR zif_abapgit_ajson_types=>node_type-string.
@@ -1895,7 +1902,7 @@ ENDCLASS.
 CLASS lcl_mapper_runner IMPLEMENTATION.
 
   METHOD new.
-    ro_instance = NEW #( ii_mapper = ii_mapper ).
+    CREATE OBJECT ro_instance EXPORTING ii_mapper = ii_mapper.
   ENDMETHOD.
 
   METHOD constructor.
@@ -2003,7 +2010,7 @@ CLASS lcl_mutator_queue IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD new.
-    ro_instance = NEW #( ).
+    CREATE OBJECT ro_instance.
   ENDMETHOD.
 
   METHOD lif_mutator_runner~run.
