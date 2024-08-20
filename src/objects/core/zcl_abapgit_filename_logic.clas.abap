@@ -130,8 +130,8 @@ CLASS zcl_abapgit_filename_logic IMPLEMENTATION.
 
   METHOD detect_obj_definition.
 
-    ev_is_xml  = xsdbool( iv_ext = to_upper( c_package_file-extension ) AND strlen( iv_type ) = 4 ).
-    ev_is_json = xsdbool( iv_ext = to_upper( c_json_file-extension ) AND strlen( iv_type ) = 4 ).
+    ev_is_xml  = boolc( iv_ext = to_upper( c_package_file-extension ) AND strlen( iv_type ) = 4 ).
+    ev_is_json = boolc( iv_ext = to_upper( c_json_file-extension ) AND strlen( iv_type ) = 4 ).
 
   ENDMETHOD.
 
@@ -153,7 +153,7 @@ CLASS zcl_abapgit_filename_logic IMPLEMENTATION.
 
     " Assume AFF namespace convention
     IF go_aff_registry IS INITIAL.
-      go_aff_registry = NEW zcl_abapgit_aff_registry( ).
+      CREATE OBJECT go_aff_registry TYPE zcl_abapgit_aff_registry.
     ENDIF.
 
     IF go_aff_registry->is_supported_object_type( |{ lv_type }| ) = abap_true.
@@ -233,7 +233,7 @@ CLASS zcl_abapgit_filename_logic IMPLEMENTATION.
         ev_is_xml  = lv_xml
         ev_is_json = lv_json ).
 
-    rv_yes = xsdbool( lv_json = abap_true OR lv_xml = abap_true ).
+    rv_yes = boolc( lv_json = abap_true OR lv_xml = abap_true ).
 
   ENDMETHOD.
 
@@ -318,15 +318,17 @@ CLASS zcl_abapgit_filename_logic IMPLEMENTATION.
   METHOD object_to_file.
 
     DATA lv_obj_name TYPE string.
+    DATA lv_obj_type TYPE string.
     DATA lv_nb_of_slash TYPE string.
 
     " Get escaped object name
     lv_obj_name = to_lower( name_escape( is_item-obj_name ) ).
+    lv_obj_type = to_lower( is_item-obj_type ).
 
     IF iv_extra IS INITIAL.
-      CONCATENATE lv_obj_name '.' is_item-obj_type INTO rv_filename.
+      CONCATENATE lv_obj_name '.' lv_obj_type INTO rv_filename.
     ELSE.
-      CONCATENATE lv_obj_name '.' is_item-obj_type '.' iv_extra INTO rv_filename.
+      CONCATENATE lv_obj_name '.' lv_obj_type '.' iv_extra INTO rv_filename.
     ENDIF.
 
     IF iv_ext IS NOT INITIAL.
@@ -346,7 +348,7 @@ CLASS zcl_abapgit_filename_logic IMPLEMENTATION.
     ENDTRY.
 
     " Handle namespaces
-    go_aff_registry = NEW zcl_abapgit_aff_registry( ).
+    CREATE OBJECT go_aff_registry TYPE zcl_abapgit_aff_registry.
 
     IF go_aff_registry->is_supported_object_type( is_item-obj_type ) = abap_true.
       FIND ALL OCCURRENCES OF `/` IN rv_filename MATCH COUNT lv_nb_of_slash.
@@ -358,16 +360,25 @@ CLASS zcl_abapgit_filename_logic IMPLEMENTATION.
       REPLACE ALL OCCURRENCES OF '/' IN rv_filename WITH '#'.
     ENDIF.
 
+    IF iv_ext = 'properties'.
+      RETURN.
+    ENDIF.
+
     TRANSLATE rv_filename TO LOWER CASE.
 
   ENDMETHOD.
 
 
   METHOD object_to_i18n_file.
+    DATA: lv_langu_sap1 TYPE sy-langu,
+          lv_langu_bcp47 TYPE string.
+
+    lv_langu_sap1 = zcl_abapgit_convert=>language_sap2_to_sap1( to_upper( iv_lang ) ).
+    lv_langu_bcp47 = zcl_abapgit_convert=>language_sap1_to_bcp47( lv_langu_sap1 ).
 
     rv_filename = object_to_file(
       is_item  = is_item
-      iv_extra = |i18n.{ iv_lang }|
+      iv_extra = |i18n.{ lv_langu_bcp47 }|
       iv_ext   = iv_ext ).
 
   ENDMETHOD.
