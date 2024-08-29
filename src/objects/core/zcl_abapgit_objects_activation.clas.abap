@@ -56,7 +56,9 @@ CLASS zcl_abapgit_objects_activation DEFINITION
       c_ddls       TYPE c LENGTH 24 VALUE 'DDLS DRUL DTDC DTEB',
       c_switches   TYPE c LENGTH 24 VALUE 'SF01 SF02 SFSW SFBS SFBF',
       c_para       TYPE c LENGTH 4  VALUE 'PARA', " can be referenced by DTEL
-      c_enhd       TYPE c LENGTH 4  VALUE 'ENHD'.
+      c_enhd       TYPE c LENGTH 4  VALUE 'ENHD',
+      c_scalarfunc TYPE c LENGTH 9  VALUE 'DSFD DSFI',
+      c_aspect     TYPE c LENGTH 4  VALUE 'DRAS'.
 
     CLASS-DATA:
       gt_classes TYPE STANDARD TABLE OF ty_classes WITH DEFAULT KEY .
@@ -283,7 +285,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         lv_popup = abap_false.
       ENDIF.
 
-      lv_no_ui = xsdbool( lv_popup = abap_false ).
+      lv_no_ui = boolc( lv_popup = abap_false ).
 
       IF iv_ddic = abap_true.
         lv_msg = |(with DDIC)|.
@@ -538,7 +540,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         illegal_input = 1
         OTHERS        = 2.
 
-    rv_active = xsdbool( sy-subrc = 0 AND ( lv_state = '' OR lv_state = 'A' ) ).
+    rv_active = boolc( sy-subrc = 0 AND ( lv_state = '' OR lv_state = 'A' ) ).
 
   ENDMETHOD.
 
@@ -554,7 +556,8 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
        c_enqueue  NS iv_obj_type AND c_sqsc       NS iv_obj_type AND
        c_stob     NS iv_obj_type AND c_ntab       NS iv_obj_type AND
        c_ddls     NS iv_obj_type AND c_para       NS iv_obj_type AND
-       c_switches NS iv_obj_type AND iv_obj_type <> c_enhd.
+       c_switches NS iv_obj_type AND iv_obj_type <> c_enhd       AND
+       c_aspect   NS iv_obj_type AND c_scalarfunc NS iv_obj_type.
       rv_result = abap_false.
     ENDIF.
 
@@ -581,7 +584,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         p_e071                    = lt_e071
         p_xmsg                    = lt_messages.
 
-    rv_active = xsdbool( lt_messages IS INITIAL ).
+    rv_active = boolc( lt_messages IS INITIAL ).
 
   ENDMETHOD.
 
@@ -603,8 +606,10 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
           lv_include = cl_oo_classname_service=>get_interfacepool_name( ls_class-clsname ).
       ENDCASE.
 
-      lo_cross = NEW #( p_name = lv_include
-                        p_include = lv_include ).
+      CREATE OBJECT lo_cross
+        EXPORTING
+          p_name    = lv_include
+          p_include = lv_include.
 
       lo_cross->index_actualize( IMPORTING p_error = lv_error ).
 
