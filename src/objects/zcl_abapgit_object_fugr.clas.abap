@@ -1,7 +1,11 @@
-CLASS zcl_abapgit_object_fugr DEFINITION PUBLIC INHERITING FROM zcl_abapgit_objects_program FINAL.
+CLASS zcl_abapgit_object_fugr DEFINITION
+  PUBLIC
+  INHERITING FROM zcl_abapgit_objects_program
+  CREATE PUBLIC .
 
   PUBLIC SECTION.
-    INTERFACES zif_abapgit_object.
+
+    INTERFACES zif_abapgit_object .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -945,7 +949,6 @@ CLASS zcl_abapgit_object_fugr IMPLEMENTATION.
 
     FIELD-SYMBOLS: <lv_include> LIKE LINE OF lt_includes.
 
-
     lt_includes = includes( ).
 
     LOOP AT lt_includes ASSIGNING <lv_include>.
@@ -1048,8 +1051,10 @@ CLASS zcl_abapgit_object_fugr IMPLEMENTATION.
 
     LOOP AT it_includes INTO lv_include.
 
-      lo_cross = NEW #( p_name = lv_include
-                        p_include = lv_include ).
+      CREATE OBJECT lo_cross
+        EXPORTING
+          p_name    = lv_include
+          p_include = lv_include.
 
       lo_cross->index_actualize( ).
 
@@ -1260,7 +1265,7 @@ CLASS zcl_abapgit_object_fugr IMPLEMENTATION.
         function_pool   = lv_pool
       EXCEPTIONS
         pool_not_exists = 1.
-    rv_bool = xsdbool( sy-subrc <> 1 ).
+    rv_bool = boolc( sy-subrc <> 1 ).
 
   ENDMETHOD.
 
