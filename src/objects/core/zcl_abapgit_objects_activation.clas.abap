@@ -46,7 +46,7 @@ CLASS zcl_abapgit_objects_activation DEFINITION
 
     CONSTANTS:
       c_domain     TYPE c LENGTH 9  VALUE 'DOMA DOMD',
-      c_types      TYPE c LENGTH 50 VALUE 'DTEL DTED TABL TABD SQLT SQLD TTYP TTYD VIEW VIED',
+      c_types      TYPE c LENGTH 55 VALUE 'DTEL DTED TABL TABD SQLT SQLD TTYP TTYD VIEW VIED DRTY',
       c_technset   TYPE c LENGTH 24 VALUE 'TABT VIET SQTT INDX XINX',
       c_f4_objects TYPE c LENGTH 35 VALUE 'SHLP SHLD MCOB MCOD MACO MACD MCID',
       c_enqueue    TYPE c LENGTH 9  VALUE 'ENQU ENQD',
@@ -285,7 +285,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         lv_popup = abap_false.
       ENDIF.
 
-      lv_no_ui = xsdbool( lv_popup = abap_false ).
+      lv_no_ui = boolc( lv_popup = abap_false ).
 
       IF iv_ddic = abap_true.
         lv_msg = |(with DDIC)|.
@@ -540,7 +540,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         illegal_input = 1
         OTHERS        = 2.
 
-    rv_active = xsdbool( sy-subrc = 0 AND ( lv_state = '' OR lv_state = 'A' ) ).
+    rv_active = boolc( sy-subrc = 0 AND ( lv_state = '' OR lv_state = 'A' ) ).
 
   ENDMETHOD.
 
@@ -584,7 +584,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         p_e071                    = lt_e071
         p_xmsg                    = lt_messages.
 
-    rv_active = xsdbool( lt_messages IS INITIAL ).
+    rv_active = boolc( lt_messages IS INITIAL ).
 
   ENDMETHOD.
 
@@ -606,8 +606,10 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
           lv_include = cl_oo_classname_service=>get_interfacepool_name( ls_class-clsname ).
       ENDCASE.
 
-      lo_cross = NEW #( p_name = lv_include
-                        p_include = lv_include ).
+      CREATE OBJECT lo_cross
+        EXPORTING
+          p_name    = lv_include
+          p_include = lv_include.
 
       lo_cross->index_actualize( IMPORTING p_error = lv_error ).
 
