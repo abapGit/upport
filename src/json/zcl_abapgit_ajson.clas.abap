@@ -55,25 +55,25 @@ CLASS zcl_abapgit_ajson DEFINITION
         !ii_custom_mapping  TYPE REF TO zif_abapgit_ajson_mapping OPTIONAL
         !iv_keep_item_order TYPE abap_bool DEFAULT abap_false
       RETURNING
-        VALUE(ro_instance) TYPE REF TO zcl_abapgit_ajson
+        VALUE(ro_instance)  TYPE REF TO zcl_abapgit_ajson
       RAISING
         zcx_abapgit_ajson_error .
 
     CLASS-METHODS create_empty " Might be deprecated, prefer using new( ) or create object
       IMPORTING
-        !ii_custom_mapping TYPE REF TO zif_abapgit_ajson_mapping OPTIONAL
-        iv_keep_item_order TYPE abap_bool DEFAULT abap_false
-        iv_format_datetime TYPE abap_bool DEFAULT abap_true
+        !ii_custom_mapping            TYPE REF TO zif_abapgit_ajson_mapping OPTIONAL
+        iv_keep_item_order            TYPE abap_bool DEFAULT abap_false
+        iv_format_datetime            TYPE abap_bool DEFAULT abap_true
         iv_to_abap_corresponding_only TYPE abap_bool DEFAULT abap_false
       RETURNING
-        VALUE(ro_instance) TYPE REF TO zcl_abapgit_ajson.
+        VALUE(ro_instance)            TYPE REF TO zcl_abapgit_ajson.
 
     " Experimental ! May change
     CLASS-METHODS create_from " TODO, rename to 'from' ?
       IMPORTING
-        !ii_source_json TYPE REF TO zif_abapgit_ajson
-        !ii_filter TYPE REF TO zif_abapgit_ajson_filter OPTIONAL " Might be deprecated, use filter() instead
-        !ii_mapper TYPE REF TO zif_abapgit_ajson_mapping OPTIONAL " Might be deprecated, use map() instead
+        !ii_source_json    TYPE REF TO zif_abapgit_ajson
+        !ii_filter         TYPE REF TO zif_abapgit_ajson_filter OPTIONAL " Might be deprecated, use filter() instead
+        !ii_mapper         TYPE REF TO zif_abapgit_ajson_mapping OPTIONAL " Might be deprecated, use map() instead
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abapgit_ajson
       RAISING
@@ -81,16 +81,16 @@ CLASS zcl_abapgit_ajson DEFINITION
 
     METHODS constructor
       IMPORTING
-        iv_keep_item_order TYPE abap_bool DEFAULT abap_false
-        iv_format_datetime TYPE abap_bool DEFAULT abap_true
+        iv_keep_item_order            TYPE abap_bool DEFAULT abap_false
+        iv_format_datetime            TYPE abap_bool DEFAULT abap_true
         iv_to_abap_corresponding_only TYPE abap_bool DEFAULT abap_false.
     CLASS-METHODS new
       IMPORTING
-        iv_keep_item_order TYPE abap_bool DEFAULT abap_false
-        iv_format_datetime TYPE abap_bool DEFAULT abap_true
+        iv_keep_item_order            TYPE abap_bool DEFAULT abap_false
+        iv_format_datetime            TYPE abap_bool DEFAULT abap_true
         iv_to_abap_corresponding_only TYPE abap_bool DEFAULT abap_false
       RETURNING
-        VALUE(ro_instance) TYPE REF TO zcl_abapgit_ajson.
+        VALUE(ro_instance)            TYPE REF TO zcl_abapgit_ajson.
 
   PROTECTED SECTION.
 
@@ -108,16 +108,16 @@ CLASS zcl_abapgit_ajson DEFINITION
         VALUE(rv_item) TYPE REF TO zif_abapgit_ajson_types=>ty_node.
     METHODS prove_path_exists
       IMPORTING
-        iv_path              TYPE string
+        iv_path            TYPE string
       RETURNING
         VALUE(rr_end_node) TYPE REF TO zif_abapgit_ajson_types=>ty_node
       RAISING
         zcx_abapgit_ajson_error.
     METHODS delete_subtree
       IMPORTING
-        iv_path           TYPE string
-        iv_name           TYPE string
-        ir_parent         TYPE REF TO zif_abapgit_ajson_types=>ty_node OPTIONAL
+        iv_path            TYPE string
+        iv_name            TYPE string
+        ir_parent          TYPE REF TO zif_abapgit_ajson_types=>ty_node OPTIONAL
       RETURNING
         VALUE(rs_top_node) TYPE zif_abapgit_ajson_types=>ty_node.
     METHODS read_only_watchdog
@@ -138,9 +138,11 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
 
   METHOD create_empty.
-    ro_instance = NEW #( iv_to_abap_corresponding_only = iv_to_abap_corresponding_only
-                         iv_format_datetime = iv_format_datetime
-                         iv_keep_item_order = iv_keep_item_order ).
+    CREATE OBJECT ro_instance
+      EXPORTING
+        iv_to_abap_corresponding_only = iv_to_abap_corresponding_only
+        iv_format_datetime = iv_format_datetime
+        iv_keep_item_order = iv_keep_item_order.
     ro_instance->mi_custom_mapping = ii_custom_mapping.
   ENDMETHOD.
 
@@ -153,14 +155,16 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
       zcx_abapgit_ajson_error=>raise( 'Source not bound' ).
     ENDIF.
 
-    ro_instance = NEW #( iv_to_abap_corresponding_only = ii_source_json->opts( )-to_abap_corresponding_only
-                         iv_format_datetime = ii_source_json->opts( )-format_datetime
-                         iv_keep_item_order = ii_source_json->opts( )-keep_item_order ).
+    CREATE OBJECT ro_instance
+      EXPORTING
+        iv_to_abap_corresponding_only = ii_source_json->opts( )-to_abap_corresponding_only
+        iv_format_datetime = ii_source_json->opts( )-format_datetime
+        iv_keep_item_order = ii_source_json->opts( )-keep_item_order.
 
     IF ii_filter IS NOT BOUND AND ii_mapper IS NOT BOUND.
       ro_instance->mt_json_tree = ii_source_json->mt_json_tree.
     ELSE.
-      lo_mutator_queue = NEW #( ).
+      CREATE OBJECT lo_mutator_queue.
       IF ii_mapper IS BOUND.
         " Mapping goes first. But maybe it should be a freely definable queue of processors ?
         lo_mutator_queue->add( lcl_mapper_runner=>new( ii_mapper ) ).
@@ -230,9 +234,11 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
 
   METHOD new.
-    ro_instance = NEW #( iv_to_abap_corresponding_only = iv_to_abap_corresponding_only
-                         iv_format_datetime = iv_format_datetime
-                         iv_keep_item_order = iv_keep_item_order ).
+    CREATE OBJECT ro_instance
+      EXPORTING
+        iv_to_abap_corresponding_only = iv_to_abap_corresponding_only
+        iv_format_datetime = iv_format_datetime
+        iv_keep_item_order = iv_keep_item_order.
   ENDMETHOD.
 
 
@@ -240,8 +246,8 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
     DATA lo_parser TYPE REF TO lcl_json_parser.
 
-    ro_instance = NEW #( ).
-    lo_parser = NEW #( ).
+    CREATE OBJECT ro_instance.
+    CREATE OBJECT lo_parser.
     ro_instance->mt_json_tree = lo_parser->parse(
       iv_json            = iv_json
       iv_keep_item_order = iv_keep_item_order ).
@@ -373,7 +379,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
 
   METHOD zif_abapgit_ajson~exists.
-    rv_exists = xsdbool( get_item( iv_path ) IS NOT INITIAL ).
+    rv_exists = boolc( get_item( iv_path ) IS NOT INITIAL ).
   ENDMETHOD.
 
 
@@ -413,7 +419,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     IF lr_item IS INITIAL OR lr_item->type = zif_abapgit_ajson_types=>node_type-null.
       RETURN.
     ELSEIF lr_item->type = zif_abapgit_ajson_types=>node_type-boolean.
-      rv_value = xsdbool( lr_item->value = 'true' ).
+      rv_value = boolc( lr_item->value = 'true' ).
     ELSEIF lr_item->value IS NOT INITIAL.
       rv_value = abap_true.
     ENDIF.
@@ -495,7 +501,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    lo_to_abap = NEW #( ).
+    CREATE OBJECT lo_to_abap.
 
     TRY.
         rv_value = lo_to_abap->to_timestamp( lr_item->value ).
@@ -507,7 +513,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
 
 
   METHOD zif_abapgit_ajson~is_empty.
-    rv_yes = xsdbool( lines( mt_json_tree ) = 0 ).
+    rv_yes = boolc( lines( mt_json_tree ) = 0 ).
   ENDMETHOD.
 
 
@@ -700,7 +706,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     ENDIF.
 
     IF go_float_regex IS NOT BOUND.
-      go_float_regex = NEW #( pattern = '^([1-9][0-9]*|0)\.[0-9]+$' ).
+      CREATE OBJECT go_float_regex EXPORTING pattern = '^([1-9][0-9]*|0)\.[0-9]+$'.
       " expects fractional, because ints are detected separately
     ENDIF.
 
@@ -754,7 +760,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     ri_json = me.
 
     DATA lv_bool TYPE abap_bool.
-    lv_bool = xsdbool( iv_val IS NOT INITIAL ).
+    lv_bool = boolc( iv_val IS NOT INITIAL ).
     zif_abapgit_ajson~set(
       iv_ignore_empty = abap_false
       iv_path = iv_path
@@ -841,7 +847,7 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     DATA lv_path_len        TYPE i.
     DATA lv_path_pattern    TYPE string.
 
-    lo_section = NEW #( ).
+    CREATE OBJECT lo_section.
     lv_normalized_path = lcl_utils=>normalize_path( iv_path ).
     lv_path_len        = strlen( lv_normalized_path ).
     ls_path_parts      = lcl_utils=>split_path( lv_normalized_path ).
@@ -942,8 +948,10 @@ CLASS zcl_abapgit_ajson IMPLEMENTATION.
     DATA lo_to_abap TYPE REF TO lcl_json_to_abap.
 
     CLEAR ev_container.
-    lo_to_abap = NEW #( iv_corresponding = xsdbool( iv_corresponding = abap_true OR ms_opts-to_abap_corresponding_only = abap_true )
-                        ii_custom_mapping = mi_custom_mapping ).
+    CREATE OBJECT lo_to_abap
+      EXPORTING
+        iv_corresponding  = boolc( iv_corresponding = abap_true OR ms_opts-to_abap_corresponding_only = abap_true )
+        ii_custom_mapping = mi_custom_mapping.
 
     lo_to_abap->to_abap(
       EXPORTING
