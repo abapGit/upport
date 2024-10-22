@@ -66,13 +66,13 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_GUI_PAGE_SETT_BCKG IMPLEMENTATION.
 
 
   METHOD constructor.
 
     super->constructor( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_form_data.
     mo_repo = io_repo.
     mo_form = get_form_schema( ).
     mo_form_data = read_settings( ).
@@ -84,7 +84,9 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_bckg.
 
-    lo_component = NEW #( io_repo = io_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        io_repo = io_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Background Mode'
@@ -173,7 +175,7 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
 
     DATA lo_per TYPE REF TO zcl_abapgit_persist_background.
 
-    lo_per = NEW #( ).
+    CREATE OBJECT lo_per.
 
     TRY.
         rs_persist = lo_per->get_by_key( mo_repo->get_key( ) ).
@@ -194,7 +196,7 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
       ls_settings LIKE LINE OF ls_per-settings.
 
     ls_per = read_persist( ).
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     " Mode Selection
     ro_form_data->set(
@@ -208,9 +210,13 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
 
       " skip invalid values, from old background logic
       IF ls_per-method <> 'push' AND ls_per-method <> 'pull' AND ls_per-method <> 'nothing'.
-        CALL METHOD (ls_per-method)=>zif_abapgit_background~get_settings
-          CHANGING
-            ct_settings = lt_settings.
+        TRY.
+            CALL METHOD (ls_per-method)=>zif_abapgit_background~get_settings
+              CHANGING
+                ct_settings = lt_settings.
+          CATCH cx_sy_dyn_call_illegal_class.
+            CLEAR lt_settings.
+        ENDTRY.
       ENDIF.
 
       LOOP AT lt_settings INTO ls_settings.
@@ -286,7 +292,7 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
     ls_per-username = mo_form_data->get( c_id-username ).
     ls_per-password = mo_form_data->get( c_id-password ).
 
-    lo_persistence = NEW #( ).
+    CREATE OBJECT lo_persistence.
 
     IF ls_per-method IS INITIAL.
       lo_persistence->delete( ls_per-key ).
@@ -326,7 +332,7 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
 
     register_handlers( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( `<div class="repo">` ).
 
