@@ -81,18 +81,18 @@ CLASS lcl_startup IMPLEMENTATION.
     "   - open a specific repo by package name provided by ADT
     " These overrule the last shown repo
 
-    GET PARAMETER ID zif_abapgit_definitions=>c_spagpa_param_repo_key FIELD lv_repo_key.
-    GET PARAMETER ID zif_abapgit_definitions=>c_spagpa_param_package  FIELD lv_package.
+    GET PARAMETER ID zif_abapgit_definitions=>c_spagpa_param_repo_key FIELD lv_repo_key ##EXISTS.
+    GET PARAMETER ID zif_abapgit_definitions=>c_spagpa_param_package  FIELD lv_package ##EXISTS.
     lv_package_adt = get_package_from_adt( ).
 
     IF lv_repo_key IS NOT INITIAL.
 
-      SET PARAMETER ID zif_abapgit_definitions=>c_spagpa_param_repo_key FIELD ''.
+      SET PARAMETER ID zif_abapgit_definitions=>c_spagpa_param_repo_key FIELD '' ##EXISTS.
       zcl_abapgit_persistence_user=>get_instance( )->set_repo_show( lv_repo_key ).
 
     ELSEIF lv_package IS NOT INITIAL.
 
-      SET PARAMETER ID zif_abapgit_definitions=>c_spagpa_param_package FIELD ''.
+      SET PARAMETER ID zif_abapgit_definitions=>c_spagpa_param_package FIELD '' ##EXISTS.
       set_start_repo_from_package( lv_package ).
 
     ELSEIF lv_package_adt IS NOT INITIAL.
@@ -198,7 +198,7 @@ CLASS lcl_startup IMPLEMENTATION.
 
         ENDIF.
 
-      CATCH cx_root.
+      CATCH cx_root ##NO_HANDLER.
         " Some problems with dynamic ADT access.
         " Let's ignore it for now and fail silently
     ENDTRY.
@@ -246,7 +246,7 @@ FORM open_gui RAISING zcx_abapgit_exception.
         lv_action = zif_abapgit_definitions=>c_action-go_home.
     ENDCASE.
 
-    zcl_abapgit_html=>set_debug_mode( xsdbool( lv_mode = 'HREF' ) ).
+    zcl_abapgit_html=>set_debug_mode( boolc( lv_mode = 'HREF' ) ).
 
     lcl_startup=>prepare_gui_startup( ).
     zcl_abapgit_ui_factory=>get_gui( )->go_home( lv_action ).
@@ -339,7 +339,7 @@ FORM adjust_toolbar USING pv_dynnr TYPE sy-dynnr.
 
   " Remove toolbar on html screen but re-insert toolbar for variant maintenance.
   " Because otherwise important buttons are missing and variant maintenance is not possible.
-  lv_no_toolbar = xsdbool( zcl_abapgit_factory=>get_environment(
+  lv_no_toolbar = boolc( zcl_abapgit_factory=>get_environment(
                                            )->is_variant_maintenance( ) = abap_false ).
 
   IF ls_header-no_toolbar = lv_no_toolbar.

@@ -173,7 +173,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    rv_locked = xsdbool( lv_lock_flag <> space ).
+    rv_locked = boolc( lv_lock_flag <> space ).
   ENDMETHOD.
 
 
@@ -191,7 +191,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       IMPORTING
         pe_result = lv_type_check_result.
 
-    rv_lockable = xsdbool( lv_type_check_result = 'L' ).
+    rv_lockable = boolc( lv_type_check_result = 'L' ).
   ENDMETHOD.
 
 
@@ -209,7 +209,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       IMPORTING
         pe_result = lv_type_check_result.
 
-    rv_transportable = xsdbool( lv_type_check_result CA 'RTL' OR iv_object_type = 'TABU' ).
+    rv_transportable = boolc( lv_type_check_result CA 'RTL' OR iv_object_type = 'TABU' ).
   ENDMETHOD.
 
 
@@ -623,7 +623,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
                   ev_object   = ls_list-object
                   ev_obj_name = ls_list-obj_name ).
               INSERT ls_list INTO TABLE rt_list.
-            CATCH zcx_abapgit_exception.
+            CATCH zcx_abapgit_exception ##NO_HANDLER.
           ENDTRY.
       ENDCASE.
     ENDLOOP.
