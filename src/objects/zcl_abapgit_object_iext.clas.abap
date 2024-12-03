@@ -53,8 +53,9 @@ CLASS zcl_abapgit_object_iext IMPLEMENTATION.
         pe_attributes = ls_attributes
       EXCEPTIONS
         OTHERS        = 1.
-
-    rv_user = ls_attributes-plast.
+    IF sy-subrc = 0.
+      rv_user = ls_attributes-plast.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -122,7 +123,7 @@ CLASS zcl_abapgit_object_iext IMPLEMENTATION.
       EXCEPTIONS
         OTHERS    = 1.
 
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 

@@ -650,7 +650,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
             cancelled         = 2
             name_not_allowed  = 3
             permission_error  = 4
-            OTHERS            = 5.
+            OTHERS            = 5 ##FM_SUBRC_OK.
       CATCH cx_sy_dyn_call_param_not_found.
         CALL FUNCTION 'RPY_PROGRAM_INSERT'
           EXPORTING
@@ -667,7 +667,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
             cancelled         = 2
             name_not_allowed  = 3
             permission_error  = 4
-            OTHERS            = 5.
+            OTHERS            = 5 ##FM_SUBRC_OK.
     ENDTRY.
     IF sy-subrc = 3.
 
@@ -736,7 +736,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
 
 
   METHOD is_exit_include.
-    rv_is_exit_include = xsdbool(
+    rv_is_exit_include = boolc(
       iv_program CP 'LX*' OR iv_program CP 'SAPLX*' OR
       iv_program+1 CP '/LX*' OR iv_program+1 CP '/SAPLX*' ).
   ENDMETHOD.
@@ -1011,7 +1011,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
     IF io_xml IS BOUND.
       li_xml = io_xml.
     ELSE.
-      li_xml = NEW zcl_abapgit_xml_output( ).
+      CREATE OBJECT li_xml TYPE zcl_abapgit_xml_output.
     ENDIF.
 
     li_xml->add( iv_name = 'PROGDIR'
