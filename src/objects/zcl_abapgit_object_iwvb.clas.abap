@@ -47,9 +47,11 @@ CLASS zcl_abapgit_object_iwvb IMPLEMENTATION.
 
   METHOD get_generic.
 
-    ro_generic = NEW #( io_field_rules = get_field_rules( )
-                        is_item = ms_item
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        io_field_rules = get_field_rules( )
+        is_item        = ms_item
+        iv_language    = mv_language.
 
   ENDMETHOD.
 
@@ -129,7 +131,11 @@ CLASS zcl_abapgit_object_iwvb IMPLEMENTATION.
 
   METHOD zif_abapgit_object~jump.
 
-    SUBMIT /iwbep/r_dst_vocan_register
+    DATA lv_prog TYPE progname.
+
+    lv_prog = '/IWBEP/R_DST_VOCAN_REGISTER'.
+
+    SUBMIT (lv_prog)
       WITH ip_aname = ms_item-obj_name
       WITH ip_avers = ms_item-obj_name+32(4)
       AND RETURN.

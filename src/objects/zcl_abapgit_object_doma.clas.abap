@@ -43,7 +43,7 @@ CLASS zcl_abapgit_object_doma DEFINITION PUBLIC INHERITING FROM zcl_abapgit_obje
 
     METHODS handle_dependencies
       IMPORTING
-        !iv_step TYPE zif_abapgit_definitions=>ty_deserialization_step
+        !iv_step TYPE zif_abapgit_objects=>ty_deserialization_step
       CHANGING
         !cv_exit TYPE dd01v-convexit
         !cv_done TYPE abap_bool.
@@ -406,7 +406,7 @@ CLASS zcl_abapgit_object_doma IMPLEMENTATION.
 
     SELECT SINGLE domname FROM dd01l INTO lv_domname
       WHERE domname = ms_item-obj_name.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 

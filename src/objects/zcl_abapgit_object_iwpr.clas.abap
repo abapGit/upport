@@ -47,9 +47,11 @@ CLASS zcl_abapgit_object_iwpr IMPLEMENTATION.
 
   METHOD get_generic.
 
-    ro_generic = NEW #( io_field_rules = get_field_rules( )
-                        is_item = ms_item
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        io_field_rules = get_field_rules( )
+        is_item        = ms_item
+        iv_language    = mv_language.
 
   ENDMETHOD.
 
@@ -122,7 +124,11 @@ CLASS zcl_abapgit_object_iwpr IMPLEMENTATION.
 
   METHOD zif_abapgit_object~jump.
 
-    SUBMIT /iwbep/r_sbui_service_builder
+    DATA lv_prog TYPE progname.
+
+    lv_prog = '/IWBEP/R_SBUI_SERVICE_BUILDER'.
+
+    SUBMIT (lv_prog)
       WITH i_prname = ms_item-obj_name
       AND RETURN.
 
