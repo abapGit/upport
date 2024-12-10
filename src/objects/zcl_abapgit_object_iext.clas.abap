@@ -97,6 +97,9 @@ CLASS zcl_abapgit_object_iext IMPLEMENTATION.
         EXCEPTIONS
           OTHERS        = 1.
     ELSE.
+      " Avoid popup asking for package
+      tadir_insert( iv_package ).
+
       CALL FUNCTION 'EXTTYPE_CREATE'
         EXPORTING
           pi_cimtyp     = mv_extension
@@ -123,7 +126,7 @@ CLASS zcl_abapgit_object_iext IMPLEMENTATION.
       EXCEPTIONS
         OTHERS    = 1.
 
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
