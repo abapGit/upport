@@ -601,7 +601,8 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    IF lv_state = c_state-inactive. "Textpool in main language needs to be activated
+    "Textpool in main language needs to be activated (not for FUGS/FUGX)
+    IF lv_state = c_state-inactive AND iv_program NP 'SAPLX*'.
       zcl_abapgit_objects_activation=>add(
         iv_type   = 'REPT'
         iv_name   = iv_program
@@ -736,7 +737,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
 
 
   METHOD is_exit_include.
-    rv_is_exit_include = xsdbool(
+    rv_is_exit_include = boolc(
       iv_program CP 'LX*' OR iv_program CP 'SAPLX*' OR
       iv_program+1 CP '/LX*' OR iv_program+1 CP '/SAPLX*' ).
   ENDMETHOD.
@@ -1011,7 +1012,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
     IF io_xml IS BOUND.
       li_xml = io_xml.
     ELSE.
-      li_xml = NEW zcl_abapgit_xml_output( ).
+      CREATE OBJECT li_xml TYPE zcl_abapgit_xml_output.
     ENDIF.
 
     li_xml->add( iv_name = 'PROGDIR'
