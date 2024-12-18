@@ -217,7 +217,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
       ii_log                = ii_log
       it_filter             = it_filter ).
 
-    lo_filter = NEW #( ).
+    CREATE OBJECT lo_filter.
 
     lo_filter->apply( EXPORTING it_filter = it_filter
                       CHANGING  ct_tadir  = lt_tadir ).
@@ -225,7 +225,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
 * if there are less than 10 objects run in single thread
 * this helps a lot when debugging, plus performance gain
 * with low number of objects does not matter much
-    lv_force = xsdbool( lines( lt_tadir ) < 10 ).
+    lv_force = boolc( lines( lt_tadir ) < 10 ).
 
     lt_found = serialize(
       iv_package          = iv_package
@@ -271,13 +271,16 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
       ms_i18n_params-main_language_only = is_local_settings-main_language_only.
     ENDIF.
 
-    mo_abap_language_version = NEW #( io_dot_abapgit = mo_dot_abapgit ).
+    CREATE OBJECT mo_abap_language_version
+      EXPORTING
+        io_dot_abapgit = mo_dot_abapgit.
 
   ENDMETHOD.
 
 
   METHOD determine_max_processes.
     DATA: li_exit TYPE REF TO zif_abapgit_exit.
+    DATA lv_available_sessions TYPE i.
 
     IF iv_force_sequential = abap_true.
       rv_processes = 1.
@@ -316,6 +319,17 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
         cv_max_processes = rv_processes ).
 
     ASSERT rv_processes >= 1. " check exit above
+
+    " Avoid going over the maximum available user sessions
+    IF sy-batch IS INITIAL.
+      lv_available_sessions = zcl_abapgit_factory=>get_environment( )->get_available_user_sessions( ).
+
+      IF rv_processes > lv_available_sessions AND lv_available_sessions <> 0.
+        rv_processes = lv_available_sessions.
+      ENDIF.
+    ENDIF.
+
+    ASSERT rv_processes >= 1.
 
   ENDMETHOD.
 
@@ -479,7 +493,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
 
   METHOD is_parallelization_possible.
 
-    rv_result = xsdbool( zcl_abapgit_factory=>get_environment( )->is_merged( ) = abap_false
+    rv_result = boolc( zcl_abapgit_factory=>get_environment( )->is_merged( ) = abap_false
                    AND zcl_abapgit_persist_factory=>get_settings( )->read( )->get_parallel_proc_disabled( ) = abap_false
                    AND mv_group IS NOT INITIAL
                    " The function module below should always exist here as is_merged evaluated to false above.
