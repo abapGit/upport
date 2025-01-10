@@ -139,9 +139,11 @@ CLASS ltcl_general IMPLEMENTATION.
   METHOD text_from_exception.
     DATA: lx_previous TYPE REF TO cx_sy_dyn_call_illegal_method.
 
-    lx_previous = NEW cx_sy_dyn_call_illegal_method( textid = cx_sy_dyn_call_illegal_method=>private_method
-                                                     classname = 'CLASS'
-                                                     methodname = 'METHOD' ).
+    CREATE OBJECT lx_previous TYPE cx_sy_dyn_call_illegal_method
+      EXPORTING
+        textid     = cx_sy_dyn_call_illegal_method=>private_method
+        classname  = 'CLASS'
+        methodname = 'METHOD'.
 
     given_the_previous_exception( lx_previous ).
 
@@ -404,7 +406,7 @@ CLASS ltcl_split_text IMPLEMENTATION.
   ENDMETHOD.
   METHOD test_set_msg_vars.
 
-    zcx_abapgit_exception=>split_text_to_symsg( iv_text ).
+    cl_message_helper=>set_msg_vars_for_clike( iv_text ).
 
     cl_abap_unit_assert=>assert_equals( act = sy-msgv1
                                         exp = is_msg-v1 ).
@@ -481,7 +483,7 @@ CLASS ltcl_longtext IMPLEMENTATION.
   METHOD text_from_previous_exception.
     DATA: lx_previous TYPE REF TO cx_sy_dyn_call_illegal_method.
 
-    lx_previous = NEW #( ).
+    CREATE OBJECT lx_previous.
 
     given_the_previous_exception( lx_previous ).
     given_the_longtext( gs_longtext_test_data-longtext_500 ).
