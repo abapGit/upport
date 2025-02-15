@@ -52,7 +52,7 @@ CLASS zcl_abapgit_exit IMPLEMENTATION.
       ENDTRY.
     ENDIF.
 
-    gi_global_exit = NEW zcl_abapgit_exit( ). " this class
+    CREATE OBJECT gi_global_exit TYPE zcl_abapgit_exit. " this class
 
     ri_exit = gi_global_exit.
 
@@ -76,7 +76,7 @@ CLASS zcl_abapgit_exit IMPLEMENTATION.
       EXCEPTIONS
         type_not_found = 1
         OTHERS         = 2 ).
-    rv_running_in_test_context = xsdbool( sy-subrc = 0 ).
+    rv_running_in_test_context = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -321,6 +321,18 @@ CLASS zcl_abapgit_exit IMPLEMENTATION.
               iv_transport_type    = iv_transport_type
             CHANGING
               cv_transport_request = cv_transport_request ).
+        CATCH cx_sy_ref_is_initial cx_sy_dyn_call_illegal_method ##NO_HANDLER.
+      ENDTRY.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_abapgit_exit~enhance_any_toolbar.
+
+    IF gi_exit IS NOT INITIAL.
+      TRY.
+          gi_exit->enhance_any_toolbar( io_menu ).
         CATCH cx_sy_ref_is_initial cx_sy_dyn_call_illegal_method ##NO_HANDLER.
       ENDTRY.
     ENDIF.
