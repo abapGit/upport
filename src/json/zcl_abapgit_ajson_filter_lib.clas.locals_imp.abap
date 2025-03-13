@@ -10,7 +10,7 @@ ENDCLASS.
 CLASS lcl_empty_filter IMPLEMENTATION.
   METHOD zif_abapgit_ajson_filter~keep_node.
 
-    rv_keep = xsdbool(
+    rv_keep = boolc(
       ( iv_visit = zif_abapgit_ajson_filter=>visit_type-value AND is_node-value IS NOT INITIAL ) OR
       ( iv_visit <> zif_abapgit_ajson_filter=>visit_type-value AND is_node-children > 0 ) ).
     " children = 0 on open for initially empty nodes and on close for filtered ones
@@ -56,7 +56,7 @@ CLASS lcl_paths_filter IMPLEMENTATION.
       ENDLOOP.
     ELSE.
       READ TABLE mt_skip_paths WITH KEY table_line = lv_full_path TRANSPORTING NO FIELDS.
-      rv_keep = xsdbool( sy-subrc <> 0 ).
+      rv_keep = boolc( sy-subrc <> 0 ).
     ENDIF.
 
   ENDMETHOD.
@@ -67,12 +67,12 @@ CLASS lcl_paths_filter IMPLEMENTATION.
     DATA lt_tab TYPE string_table.
     FIELD-SYMBOLS <s> TYPE string.
 
-    IF xsdbool( iv_skip_paths IS INITIAL ) = xsdbool( it_skip_paths IS INITIAL ). " XOR
+    IF boolc( iv_skip_paths IS INITIAL ) = boolc( it_skip_paths IS INITIAL ). " XOR
       zcx_abapgit_ajson_error=>raise( 'no filter path specified' ).
     ENDIF.
 
     LOOP AT it_skip_paths INTO lv_s.
-      lv_s = to_lower( lv_s ).
+      lv_s = condense( lv_s ).
       APPEND lv_s TO lt_tab.
     ENDLOOP.
 
@@ -83,7 +83,7 @@ CLASS lcl_paths_filter IMPLEMENTATION.
           DELETE lt_tab INDEX sy-tabix.
           CONTINUE.
         ENDIF.
-        <s> = condense( to_lower( <s> ) ).
+        <s> = condense( <s> ).
       ENDLOOP.
     ENDIF.
 
