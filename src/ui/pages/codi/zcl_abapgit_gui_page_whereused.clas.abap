@@ -90,8 +90,10 @@ CLASS zcl_abapgit_gui_page_whereused IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_whereused.
 
-    lo_component = NEW #( ii_repo = ii_repo
-                          iv_package = iv_package ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo    = ii_repo
+        iv_package = iv_package.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create( lo_component ).
 
@@ -196,7 +198,7 @@ CLASS zcl_abapgit_gui_page_whereused IMPLEMENTATION.
         run_where_used( ).
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
       WHEN c_action-show_used_obj.
-        mv_show_used_obj = xsdbool( mv_show_used_obj = abap_false ).
+        mv_show_used_obj = boolc( mv_show_used_obj = abap_false ).
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
     ENDCASE.
 
@@ -227,7 +229,10 @@ CLASS zcl_abapgit_gui_page_whereused IMPLEMENTATION.
       )->add(
         iv_txt    = 'Refresh'
         iv_act    = c_action-refresh
-        iv_hotkey = 'r' ).
+        iv_hotkey = 'r'
+      )->add(
+        iv_txt    = 'Back'
+        iv_act    = zif_abapgit_definitions=>c_action-go_back ).
 
   ENDMETHOD.
 
