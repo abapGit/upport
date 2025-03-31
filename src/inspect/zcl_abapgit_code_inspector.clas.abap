@@ -13,6 +13,19 @@ CLASS zcl_abapgit_code_inspector DEFINITION
       RAISING
         zcx_abapgit_exception .
 
+    CLASS-METHODS get_code_inspector
+      IMPORTING
+        !iv_package              TYPE devclass
+      RETURNING
+        VALUE(ri_code_inspector) TYPE REF TO zif_abapgit_code_inspector
+      RAISING
+        zcx_abapgit_exception.
+
+    CLASS-METHODS set_code_inspector
+      IMPORTING
+        !iv_package        TYPE devclass
+        !ii_code_inspector TYPE REF TO zif_abapgit_code_inspector.
+
   PROTECTED SECTION.
     DATA mv_package TYPE devclass .
 
@@ -34,6 +47,15 @@ CLASS zcl_abapgit_code_inspector DEFINITION
       RETURNING
         VALUE(rv_skip) TYPE abap_bool.
   PRIVATE SECTION.
+
+    TYPES:
+      BEGIN OF ty_code_inspector_pack,
+        package  TYPE devclass,
+        instance TYPE REF TO zif_abapgit_code_inspector,
+      END OF ty_code_inspector_pack,
+      ty_code_inspector_packs TYPE HASHED TABLE OF ty_code_inspector_pack WITH UNIQUE KEY package.
+
+    CLASS-DATA gt_code_inspector TYPE ty_code_inspector_packs.
 
     DATA mv_success TYPE abap_bool .
     DATA mv_summary TYPE string.
@@ -266,6 +288,28 @@ CLASS zcl_abapgit_code_inspector IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_code_inspector.
+
+    DATA ls_code_inspector LIKE LINE OF gt_code_inspector.
+
+    FIELD-SYMBOLS <ls_code_inspector> TYPE ty_code_inspector_pack.
+
+    READ TABLE gt_code_inspector ASSIGNING <ls_code_inspector> WITH TABLE KEY package = iv_package.
+    IF sy-subrc <> 0.
+      ls_code_inspector-package = iv_package.
+
+      CREATE OBJECT ls_code_inspector-instance TYPE zcl_abapgit_code_inspector
+        EXPORTING
+          iv_package = iv_package.
+
+      INSERT ls_code_inspector INTO TABLE gt_code_inspector ASSIGNING <ls_code_inspector>.
+    ENDIF.
+
+    ri_code_inspector = <ls_code_inspector>-instance.
+
+  ENDMETHOD.
+
+
   METHOD run_inspection.
 
     io_inspection->run(
@@ -290,6 +334,24 @@ CLASS zcl_abapgit_code_inspector IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD set_code_inspector.
+
+    DATA ls_code_inspector LIKE LINE OF gt_code_inspector.
+
+    FIELD-SYMBOLS <ls_code_inspector> LIKE LINE OF gt_code_inspector.
+
+    READ TABLE gt_code_inspector ASSIGNING <ls_code_inspector> WITH TABLE KEY package = iv_package.
+    IF sy-subrc <> 0.
+      ls_code_inspector-package = iv_package.
+
+      INSERT ls_code_inspector INTO TABLE gt_code_inspector ASSIGNING <ls_code_inspector>.
+    ENDIF.
+
+    <ls_code_inspector>-instance = ii_code_inspector.
+
+  ENDMETHOD.
+
+
   METHOD skip_object.
 
     DATA ls_program_type TYPE subc.
@@ -302,7 +364,7 @@ CLASS zcl_abapgit_code_inspector IMPLEMENTATION.
           FROM trdir
           WHERE name = is_obj-objname.
 
-        rv_skip = xsdbool( ls_program_type = 'I' ). " Include program.
+        rv_skip = boolc( ls_program_type = 'I' ). " Include program.
 
       WHEN OTHERS.
         rv_skip = abap_false.
@@ -379,7 +441,7 @@ CLASS zcl_abapgit_code_inspector IMPLEMENTATION.
 
         IF iv_save = abap_true.
           READ TABLE rt_list TRANSPORTING NO FIELDS WITH KEY kind = 'E'.
-          mv_success = xsdbool( sy-subrc <> 0 ).
+          mv_success = boolc( sy-subrc <> 0 ).
         ENDIF.
 
       CATCH zcx_abapgit_exception INTO lx_error.

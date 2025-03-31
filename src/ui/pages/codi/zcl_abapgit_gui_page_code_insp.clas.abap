@@ -70,7 +70,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_ABAPGIT_GUI_PAGE_CODE_INSP IMPLEMENTATION.
+CLASS zcl_abapgit_gui_page_code_insp IMPLEMENTATION.
 
 
   METHOD ask_user_for_check_variant.
@@ -104,10 +104,12 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_CODE_INSP IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_code_insp.
 
-    lo_component = NEW #( io_repo = io_repo
-                          io_stage = io_stage
-                          iv_check_variant = iv_check_variant
-                          iv_raise_when_no_results = iv_raise_when_no_results ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        io_repo                  = io_repo
+        io_stage                 = io_stage
+        iv_check_variant         = iv_check_variant
+        iv_raise_when_no_results = iv_raise_when_no_results.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create( lo_component ).
 
@@ -132,14 +134,14 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_CODE_INSP IMPLEMENTATION.
   METHOD has_inspection_errors.
 
     READ TABLE mt_result TRANSPORTING NO FIELDS WITH KEY kind = 'E'.
-    rv_has_inspection_errors = xsdbool( sy-subrc = 0 ).
+    rv_has_inspection_errors = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
 
   METHOD is_stage_allowed.
 
-    rv_is_stage_allowed = xsdbool( NOT (
+    rv_is_stage_allowed = boolc( NOT (
       mo_repo->get_local_settings( )-block_commit = abap_true AND has_inspection_errors( ) = abap_true ) ).
 
   ENDMETHOD.
@@ -149,7 +151,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_CODE_INSP IMPLEMENTATION.
 
     DATA li_code_inspector TYPE REF TO zif_abapgit_code_inspector.
 
-    li_code_inspector = zcl_abapgit_factory=>get_code_inspector( mo_repo->get_package( ) ).
+    li_code_inspector = zcl_abapgit_code_inspector=>get_code_inspector( mo_repo->get_package( ) ).
 
     mt_result = li_code_inspector->run(
       iv_variant = |{ mv_check_variant }|
@@ -300,7 +302,7 @@ CLASS ZCL_ABAPGIT_GUI_PAGE_CODE_INSP IMPLEMENTATION.
 
     register_handlers( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->div(
       iv_class = 'repo'
