@@ -1,7 +1,6 @@
 CLASS zcl_abapgit_code_inspector DEFINITION
   PUBLIC
-  CREATE PROTECTED
-  GLOBAL FRIENDS zcl_abapgit_factory .
+  CREATE PROTECTED.
 
   PUBLIC SECTION.
 
@@ -298,7 +297,9 @@ CLASS zcl_abapgit_code_inspector IMPLEMENTATION.
     IF sy-subrc <> 0.
       ls_code_inspector-package = iv_package.
 
-      ls_code_inspector-instance = NEW zcl_abapgit_code_inspector( iv_package = iv_package ).
+      CREATE OBJECT ls_code_inspector-instance TYPE zcl_abapgit_code_inspector
+        EXPORTING
+          iv_package = iv_package.
 
       INSERT ls_code_inspector INTO TABLE gt_code_inspector ASSIGNING <ls_code_inspector>.
     ENDIF.
@@ -362,7 +363,7 @@ CLASS zcl_abapgit_code_inspector IMPLEMENTATION.
           FROM trdir
           WHERE name = is_obj-objname.
 
-        rv_skip = xsdbool( ls_program_type = 'I' ). " Include program.
+        rv_skip = boolc( ls_program_type = 'I' ). " Include program.
 
       WHEN OTHERS.
         rv_skip = abap_false.
@@ -439,7 +440,7 @@ CLASS zcl_abapgit_code_inspector IMPLEMENTATION.
 
         IF iv_save = abap_true.
           READ TABLE rt_list TRANSPORTING NO FIELDS WITH KEY kind = 'E'.
-          mv_success = xsdbool( sy-subrc <> 0 ).
+          mv_success = boolc( sy-subrc <> 0 ).
         ENDIF.
 
       CATCH zcx_abapgit_exception INTO lx_error.
