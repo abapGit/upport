@@ -20,7 +20,7 @@ CLASS zcl_abapgit_repo_news DEFINITION
 
     CLASS-METHODS create     " TODO REFACTOR
       IMPORTING
-        !io_repo           TYPE REF TO zcl_abapgit_repo
+        !ii_repo           TYPE REF TO zif_abapgit_repo
       RETURNING
         VALUE(ro_instance) TYPE REF TO zcl_abapgit_repo_news
       RAISING
@@ -113,27 +113,27 @@ CLASS zcl_abapgit_repo_news IMPLEMENTATION.
           lv_version          TYPE string,
           lv_last_seen        TYPE string,
           lv_url              TYPE string,
-          lo_repo_online      TYPE REF TO zcl_abapgit_repo_online,
+          li_repo_online      TYPE REF TO zif_abapgit_repo_online,
           lv_version_constant TYPE zif_abapgit_dot_abapgit=>ty_dot_abapgit-version_constant.
 
     FIELD-SYMBOLS <ls_file> LIKE LINE OF lt_remote.
 
 
-    IF io_repo->is_offline( ) = abap_true.
+    IF ii_repo->is_offline( ) = abap_true.
       RETURN.
     ENDIF.
 
-    lo_repo_online ?= io_repo.
-    lv_url          = lo_repo_online->get_url( ).
+    li_repo_online ?= ii_repo.
+    lv_url          = li_repo_online->get_url( ).
 
-    lo_apack = io_repo->get_dot_apack( ).
+    lo_apack = ii_repo->get_dot_apack( ).
     IF lo_apack IS BOUND.
       lv_version = lo_apack->get_manifest_descriptor( )-version.
     ENDIF.
 
     IF lv_version IS INITIAL.
       TRY.
-          lv_version_constant = io_repo->get_dot_abapgit( )->get_version_constant( ).
+          lv_version_constant = ii_repo->get_dot_abapgit( )->get_version_constant( ).
           IF lv_version_constant IS NOT INITIAL.
             lv_version = zcl_abapgit_version=>get_version_constant_value( lv_version_constant ).
           ENDIF.
@@ -149,7 +149,7 @@ CLASS zcl_abapgit_repo_news IMPLEMENTATION.
     lv_last_seen = zcl_abapgit_persistence_user=>get_instance( )->get_repo_last_change_seen( lv_url ).
 
     TRY. " Find changelog
-        lt_remote = io_repo->get_files_remote( ).
+        lt_remote = ii_repo->get_files_remote( ).
       CATCH zcx_abapgit_exception.
         RETURN.
     ENDTRY.
@@ -159,9 +159,11 @@ CLASS zcl_abapgit_repo_news IMPLEMENTATION.
                       WHERE path = lc_log_path
                       AND ( filename CP lc_log_filename OR filename CP lc_log_filename_up ) ##PRIMKEY[FILE_PATH].
 
-      ro_instance = NEW #( iv_rawdata = <ls_file>-data
-                           iv_current_version = lv_version
-                           iv_lastseen_version = zcl_abapgit_version=>normalize( lv_last_seen ) ).
+      CREATE OBJECT ro_instance
+        EXPORTING
+          iv_rawdata          = <ls_file>-data
+          iv_current_version  = lv_version
+          iv_lastseen_version = zcl_abapgit_version=>normalize( lv_last_seen ).
 
       EXIT.
 
@@ -183,24 +185,24 @@ CLASS zcl_abapgit_repo_news IMPLEMENTATION.
 
   METHOD has_important.
     READ TABLE mt_log WITH KEY is_important = abap_true TRANSPORTING NO FIELDS.
-    rv_boolean = xsdbool( sy-subrc IS INITIAL ).
+    rv_boolean = boolc( sy-subrc IS INITIAL ).
   ENDMETHOD.
 
 
   METHOD has_news.
-    rv_boolean = xsdbool( lines( mt_log ) > 0 ).
+    rv_boolean = boolc( lines( mt_log ) > 0 ).
   ENDMETHOD.
 
 
   METHOD has_unseen.
-    rv_boolean = xsdbool( zcl_abapgit_version=>compare(
+    rv_boolean = boolc( zcl_abapgit_version=>compare(
       iv_a = mv_latest_version
       iv_b = mv_lastseen_version ) > 0 ).
   ENDMETHOD.
 
 
   METHOD has_updates.
-    rv_boolean = xsdbool( zcl_abapgit_version=>compare(
+    rv_boolean = boolc( zcl_abapgit_version=>compare(
       iv_a = mv_latest_version
       iv_b = mv_current_version ) > 0 ).
   ENDMETHOD.
@@ -279,7 +281,7 @@ CLASS zcl_abapgit_repo_news IMPLEMENTATION.
                                                         iv_b = iv_current_version ).
     ELSE.
       FIND FIRST OCCURRENCE OF REGEX '^\s*!' IN iv_line.
-      rs_log-is_important = xsdbool( sy-subrc IS INITIAL ). " Change is important
+      rs_log-is_important = boolc( sy-subrc IS INITIAL ). " Change is important
     ENDIF.
 
     rs_log-text = iv_line.

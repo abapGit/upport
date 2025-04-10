@@ -11,14 +11,14 @@ CLASS zcl_abapgit_gui_page_sett_repo DEFINITION
 
     CLASS-METHODS create
       IMPORTING
-        !io_repo       TYPE REF TO zcl_abapgit_repo
+        !ii_repo       TYPE REF TO zif_abapgit_repo
       RETURNING
         VALUE(ri_page) TYPE REF TO zif_abapgit_gui_renderable
       RAISING
         zcx_abapgit_exception .
     METHODS constructor
       IMPORTING
-        !io_repo TYPE REF TO zcl_abapgit_repo
+        !ii_repo TYPE REF TO zif_abapgit_repo
       RAISING
         zcx_abapgit_exception .
 
@@ -54,7 +54,7 @@ CLASS zcl_abapgit_gui_page_sett_repo DEFINITION
     DATA mo_form_data TYPE REF TO zcl_abapgit_string_map .
     DATA mo_validation_log TYPE REF TO zcl_abapgit_string_map .
 
-    DATA mo_repo TYPE REF TO zcl_abapgit_repo .
+    DATA mi_repo TYPE REF TO zif_abapgit_repo .
     DATA mv_requirements_count TYPE i .
 
     METHODS validate_form
@@ -93,10 +93,10 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     super->constructor( ).
 
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
 
-    mo_repo = io_repo.
+    mi_repo = ii_repo.
     mo_form = get_form_schema( ).
     mo_form_data = read_settings( ).
 
@@ -107,12 +107,14 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_repo.
 
-    lo_component = NEW #( io_repo = io_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo = ii_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Repository Settings'
       io_page_menu       = zcl_abapgit_gui_menus=>repo_settings(
-                             iv_key = io_repo->get_key( )
+                             iv_key = ii_repo->get_key( )
                              iv_act = zif_abapgit_definitions=>c_action-repo_settings )
       ii_child_component = lo_component ).
 
@@ -255,10 +257,10 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       lv_val          TYPE string.
 
     " Get settings from DB
-    lo_dot = mo_repo->get_dot_abapgit( ).
+    lo_dot = mi_repo->get_dot_abapgit( ).
     ls_dot = lo_dot->get_data( ).
     lv_main_lang = lo_dot->get_main_language( ).
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     " Repository Settings
     SELECT SINGLE sptxt INTO lv_language FROM t002t
@@ -278,7 +280,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       iv_val = zcl_abapgit_lxe_texts=>convert_table_to_lang_string( lo_dot->get_i18n_languages( ) ) ).
     ro_form_data->set(
       iv_key = c_id-use_lxe
-      iv_val = xsdbool( lo_dot->use_lxe( ) = abap_true ) ) ##TYPE.
+      iv_val = boolc( lo_dot->use_lxe( ) = abap_true ) ) ##TYPE.
     ro_form_data->set(
       iv_key = c_id-folder_logic
       iv_val = ls_dot-folder_logic ).
@@ -360,7 +362,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       ls_requirements TYPE zif_abapgit_dot_abapgit=>ty_requirement,
       lt_requirements TYPE zif_abapgit_dot_abapgit=>ty_requirement_tt.
 
-    lo_dot = mo_repo->get_dot_abapgit( ).
+    lo_dot = mi_repo->get_dot_abapgit( ).
 
     lo_dot->set_name( mo_form_data->get( c_id-name ) ).
     lo_dot->set_folder_logic( mo_form_data->get( c_id-folder_logic ) ).
@@ -376,7 +378,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       zcl_abapgit_lxe_texts=>convert_lang_string_to_table(
         iv_langs              = mo_form_data->get( c_id-i18n_langs )
         iv_skip_main_language = lo_dot->get_main_language( ) ) ).
-    lo_dot->use_lxe( xsdbool( mo_form_data->get( c_id-use_lxe ) = abap_true ) ).
+    lo_dot->use_lxe( boolc( mo_form_data->get( c_id-use_lxe ) = abap_true ) ).
 
     " Remove all ignores
     lt_ignore = lo_dot->get_data( )-ignore.
@@ -409,8 +411,8 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     lo_dot->set_requirements( lt_requirements ).
 
-    mo_repo->set_dot_abapgit( lo_dot ).
-    mo_repo->refresh( ).
+    mi_repo->set_dot_abapgit( lo_dot ).
+    mi_repo->refresh( ).
 
     COMMIT WORK AND WAIT.
 
@@ -484,7 +486,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     lt_lang_list = zcl_abapgit_lxe_texts=>convert_lang_string_to_table(
       iv_langs              = io_form_data->get( c_id-i18n_langs )
-      iv_skip_main_language = mo_repo->get_dot_abapgit( )->get_main_language( ) ).
+      iv_skip_main_language = mi_repo->get_dot_abapgit( )->get_main_language( ) ).
     IF io_form_data->get( c_id-use_lxe ) = abap_true AND lt_lang_list IS INITIAL.
       ro_validation_log->set(
         iv_key = c_id-i18n_langs
@@ -509,7 +511,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     SPLIT iv_version_constant AT '=>' INTO lv_version_class lv_version_component.
 
-    lt_local = mo_repo->get_files_local( ).
+    lt_local = mi_repo->get_files_local( ).
 
     READ TABLE lt_local TRANSPORTING NO FIELDS WITH KEY
       item-obj_type = 'CLAS' item-obj_name = lv_version_class.
@@ -553,12 +555,12 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     register_handlers( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( `<div class="repo">` ).
 
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
-                    io_repo               = mo_repo
+                    ii_repo               = mi_repo
                     iv_show_commit        = abap_false
                     iv_interactive_branch = abap_true ) ).
 

@@ -11,14 +11,14 @@ CLASS zcl_abapgit_gui_page_sett_locl DEFINITION
 
     CLASS-METHODS create
       IMPORTING
-        !io_repo       TYPE REF TO zcl_abapgit_repo
+        !ii_repo       TYPE REF TO zif_abapgit_repo
       RETURNING
         VALUE(ri_page) TYPE REF TO zif_abapgit_gui_renderable
       RAISING
         zcx_abapgit_exception .
     METHODS constructor
       IMPORTING
-        !io_repo TYPE REF TO zcl_abapgit_repo
+        !ii_repo TYPE REF TO zif_abapgit_repo
       RAISING
         zcx_abapgit_exception .
 
@@ -55,7 +55,7 @@ CLASS zcl_abapgit_gui_page_sett_locl DEFINITION
     DATA mo_form TYPE REF TO zcl_abapgit_html_form .
     DATA mo_form_data TYPE REF TO zcl_abapgit_string_map .
     DATA mo_validation_log TYPE REF TO zcl_abapgit_string_map .
-    DATA mo_repo TYPE REF TO zcl_abapgit_repo .
+    DATA mi_repo TYPE REF TO zif_abapgit_repo .
     DATA ms_settings TYPE zif_abapgit_persistence=>ty_repo-local_settings .
 
     METHODS validate_form
@@ -191,9 +191,9 @@ CLASS zcl_abapgit_gui_page_sett_locl IMPLEMENTATION.
   METHOD constructor.
 
     super->constructor( ).
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
-    mo_repo = io_repo.
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
+    mi_repo = ii_repo.
     mo_form = get_form_schema( ).
     mo_form_data = read_settings( ).
 
@@ -204,12 +204,14 @@ CLASS zcl_abapgit_gui_page_sett_locl IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_locl.
 
-    lo_component = NEW #( io_repo = io_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo = ii_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Local Settings & Checks'
       io_page_menu       = zcl_abapgit_gui_menus=>repo_settings(
-                             iv_key = io_repo->get_key( )
+                             iv_key = ii_repo->get_key( )
                              iv_act = zif_abapgit_definitions=>c_action-repo_local_settings )
       ii_child_component = lo_component ).
 
@@ -220,7 +222,7 @@ CLASS zcl_abapgit_gui_page_sett_locl IMPLEMENTATION.
 
     DATA: li_package TYPE REF TO zif_abapgit_sap_package.
 
-    li_package = zcl_abapgit_factory=>get_sap_package( mo_repo->get_package( ) ).
+    li_package = zcl_abapgit_factory=>get_sap_package( mi_repo->get_package( ) ).
 
     ro_form = zcl_abapgit_html_form=>create(
       iv_form_id   = 'repo-local-settings-form'
@@ -275,7 +277,7 @@ CLASS zcl_abapgit_gui_page_sett_locl IMPLEMENTATION.
 
     ro_form->checkbox(
       iv_name     = c_id-flow
-      iv_readonly = xsdbool( li_package->are_changes_recorded_in_tr_req( ) = abap_false )
+      iv_readonly = boolc( li_package->are_changes_recorded_in_tr_req( ) = abap_false )
       iv_label    = 'BETA: Enable abapGit flow for this repository (requires transported packages)' ).
 
     ro_form->textarea(
@@ -331,7 +333,7 @@ CLASS zcl_abapgit_gui_page_sett_locl IMPLEMENTATION.
 
     DATA lt_files TYPE zif_abapgit_definitions=>ty_files_item_tt.
 
-    lt_files = mo_repo->get_files_local( ).
+    lt_files = mi_repo->get_files_local( ).
 
     READ TABLE lt_files TRANSPORTING NO FIELDS
       WITH KEY item-obj_type = zif_abapgit_data_config=>c_data_type-tabu. "todo
@@ -347,11 +349,11 @@ CLASS zcl_abapgit_gui_page_sett_locl IMPLEMENTATION.
     DATA li_package TYPE REF TO zif_abapgit_sap_package.
     DATA lv_excl_rem TYPE string.
 
-    li_package = zcl_abapgit_factory=>get_sap_package( mo_repo->get_package( ) ).
+    li_package = zcl_abapgit_factory=>get_sap_package( mi_repo->get_package( ) ).
 
     " Get settings from DB
-    ms_settings = mo_repo->get_local_settings( ).
-    ro_form_data = NEW #( ).
+    ms_settings = mi_repo->get_local_settings( ).
+    CREATE OBJECT ro_form_data.
 
     " Local Settings
     ro_form_data->set(
@@ -375,25 +377,25 @@ CLASS zcl_abapgit_gui_page_sett_locl IMPLEMENTATION.
       iv_val = ms_settings-labels ).
     ro_form_data->set(
       iv_key = c_id-ignore_subpackages
-      iv_val = xsdbool( ms_settings-ignore_subpackages = abap_true ) ) ##TYPE.
+      iv_val = boolc( ms_settings-ignore_subpackages = abap_true ) ) ##TYPE.
     ro_form_data->set(
       iv_key = c_id-main_language_only
-      iv_val = xsdbool( ms_settings-main_language_only = abap_true ) ) ##TYPE.
+      iv_val = boolc( ms_settings-main_language_only = abap_true ) ) ##TYPE.
     ro_form_data->set(
       iv_key = c_id-flow
-      iv_val = xsdbool( ms_settings-flow = abap_true ) ) ##TYPE.
+      iv_val = boolc( ms_settings-flow = abap_true ) ) ##TYPE.
     ro_form_data->set(
       iv_key = c_id-write_protected
-      iv_val = xsdbool( ms_settings-write_protected = abap_true ) ) ##TYPE.
+      iv_val = boolc( ms_settings-write_protected = abap_true ) ) ##TYPE.
     ro_form_data->set(
       iv_key = c_id-only_local_objects
-      iv_val = xsdbool( ms_settings-only_local_objects = abap_true ) ) ##TYPE.
+      iv_val = boolc( ms_settings-only_local_objects = abap_true ) ) ##TYPE.
     ro_form_data->set(
       iv_key = c_id-code_inspector_check_variant
       iv_val = |{ ms_settings-code_inspector_check_variant }| ).
     ro_form_data->set(
       iv_key = c_id-block_commit
-      iv_val = xsdbool( ms_settings-block_commit = abap_true ) ) ##TYPE.
+      iv_val = boolc( ms_settings-block_commit = abap_true ) ) ##TYPE.
 
     lv_excl_rem = concat_lines_of(
       table = ms_settings-exclude_remote_paths
@@ -423,7 +425,7 @@ CLASS zcl_abapgit_gui_page_sett_locl IMPLEMENTATION.
 
     DELETE ms_settings-exclude_remote_paths WHERE table_line IS INITIAL.
 
-    mo_repo->set_local_settings( ms_settings ).
+    mi_repo->set_local_settings( ms_settings ).
 
     COMMIT WORK AND WAIT.
 
@@ -469,7 +471,7 @@ CLASS zcl_abapgit_gui_page_sett_locl IMPLEMENTATION.
     lv_check_variant = to_upper( io_form_data->get( c_id-code_inspector_check_variant ) ).
     IF lv_check_variant IS NOT INITIAL.
       TRY.
-          zcl_abapgit_code_inspector=>get_code_inspector( mo_repo->get_package( )
+          zcl_abapgit_code_inspector=>get_code_inspector( mi_repo->get_package( )
             )->validate_check_variant( lv_check_variant ).
         CATCH zcx_abapgit_exception INTO lx_error.
           ro_validation_log->set(
@@ -557,12 +559,12 @@ CLASS zcl_abapgit_gui_page_sett_locl IMPLEMENTATION.
 
     handle_picklist_state( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( `<div class="repo">` ).
 
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
-      io_repo               = mo_repo
+      ii_repo               = mi_repo
       iv_show_commit        = abap_false
       iv_interactive_branch = abap_true ) ).
 

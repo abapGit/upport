@@ -67,7 +67,7 @@ CLASS zcl_abapgit_gui_page_patch DEFINITION
     DATA mo_stage TYPE REF TO zcl_abapgit_stage .
     DATA mv_section_count TYPE i .
     DATA mv_pushed TYPE abap_bool .
-    DATA mo_repo_online TYPE REF TO zcl_abapgit_repo_online .
+    DATA mi_repo_online TYPE REF TO zif_abapgit_repo_online .
 
     METHODS render_patch
       IMPORTING
@@ -206,7 +206,9 @@ CLASS zcl_abapgit_gui_page_patch IMPLEMENTATION.
 
       lv_something_patched = abap_true.
 
-      lo_git_add_patch = NEW #( it_diff = <ls_diff_file>-o_diff->get( ) ).
+      CREATE OBJECT lo_git_add_patch
+        EXPORTING
+          it_diff = <ls_diff_file>-o_diff->get( ).
 
       lv_patch = lo_git_add_patch->get_patch_binary( ).
 
@@ -332,7 +334,7 @@ CLASS zcl_abapgit_gui_page_patch IMPLEMENTATION.
       lv_patch_count = lv_patch_count + 1.
     ENDLOOP.
 
-    rv_are_all_lines_patched = xsdbool( lv_patch_count = lines( it_diff ) ).
+    rv_are_all_lines_patched = boolc( lv_patch_count = lines( it_diff ) ).
 
   ENDMETHOD.
 
@@ -345,15 +347,15 @@ CLASS zcl_abapgit_gui_page_patch IMPLEMENTATION.
       is_object = is_object
       it_files  = it_files ).
 
-    IF mo_repo->is_offline( ) = abap_true.
+    IF mi_repo->is_offline( ) = abap_true.
       zcx_abapgit_exception=>raise( |Patching is only possible for online repositories.| ).
     ENDIF.
 
-    mo_repo_online ?= mo_repo.
+    mi_repo_online ?= mi_repo.
 
     " While patching we always want to be in split mode
     CLEAR: mv_unified.
-    mo_stage = NEW #( ).
+    CREATE OBJECT mo_stage.
 
   ENDMETHOD.
 
@@ -362,10 +364,12 @@ CLASS zcl_abapgit_gui_page_patch IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_patch.
 
-    lo_component = NEW #( iv_key = iv_key
-                          is_file = is_file
-                          is_object = is_object
-                          it_files = it_files ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        iv_key    = iv_key
+        is_file   = is_file
+        is_object = is_object
+        it_files  = it_files.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title         = 'Patch'
@@ -562,7 +566,7 @@ CLASS zcl_abapgit_gui_page_patch IMPLEMENTATION.
 
   METHOD render_scripts.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->set_title( cl_abap_typedescr=>describe_by_object_ref( me )->get_relative_name( ) ).
     ri_html->add( 'preparePatch();' ).
@@ -639,8 +643,8 @@ CLASS zcl_abapgit_gui_page_patch IMPLEMENTATION.
         start_staging( ii_event ).
 
         rs_handled-page = zcl_abapgit_gui_page_commit=>create(
-          io_repo  = mo_repo_online
-          io_stage = mo_stage ).
+          ii_repo_online = mi_repo_online
+          io_stage       = mo_stage ).
 
         rs_handled-state = zcl_abapgit_gui=>c_event_state-new_page.
 
