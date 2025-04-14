@@ -98,6 +98,12 @@ CLASS zcl_abapgit_convert DEFINITION
       EXCEPTIONS
         no_assignment.
 
+    CLASS-METHODS language_sap1_to_text
+      IMPORTING
+        im_lang_sap1   TYPE sy-langu
+      RETURNING
+        VALUE(re_text) TYPE string.
+
     CLASS-METHODS language_sap2_to_sap1
       IMPORTING
         im_lang_sap2        TYPE laiso
@@ -238,7 +244,7 @@ CLASS zcl_abapgit_convert IMPLEMENTATION.
             re_lang_sap1 = lcl_bcp47_language_table=>bcp47_to_sap1( im_lang_bcp47 ).
           CATCH zcx_abapgit_exception.
 
-            lv_regex = NEW #( pattern = `[A-Z0-9]{2}` ).
+            CREATE OBJECT lv_regex EXPORTING pattern = `[A-Z0-9]{2}`.
             lv_abap_matcher = lv_regex->create_matcher( text = im_lang_bcp47 ).
 
             IF abap_true = lv_abap_matcher->match( ).
@@ -301,6 +307,11 @@ CLASS zcl_abapgit_convert IMPLEMENTATION.
         RAISE no_assignment.
     ENDTRY.
 
+  ENDMETHOD.
+
+
+  METHOD language_sap1_to_text.
+    re_text = lcl_bcp47_language_table=>sap1_to_text( im_lang_sap1 ).
   ENDMETHOD.
 
 
@@ -453,7 +464,7 @@ CLASS zcl_abapgit_convert IMPLEMENTATION.
     ENDIF.
 
     APPEND INITIAL LINE TO et_bintab ASSIGNING <lg_line>.
-    lv_struct = xsdbool(
+    lv_struct = boolc(
       cl_abap_typedescr=>describe_by_data( <lg_line> )->type_kind = cl_abap_typedescr=>typekind_struct1 ).
     IF lv_struct = abap_true.
       ASSIGN COMPONENT 1 OF STRUCTURE <lg_line> TO <lg_line>.

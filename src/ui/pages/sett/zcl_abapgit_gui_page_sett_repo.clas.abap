@@ -93,8 +93,8 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     super->constructor( ).
 
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
 
     mi_repo = ii_repo.
     mo_form = get_form_schema( ).
@@ -107,7 +107,9 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_repo.
 
-    lo_component = NEW #( ii_repo = ii_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo = ii_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Repository Settings'
@@ -248,7 +250,6 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       lo_dot          TYPE REF TO zcl_abapgit_dot_abapgit,
       ls_dot          TYPE zif_abapgit_dot_abapgit=>ty_dot_abapgit,
       lv_main_lang    TYPE spras,
-      lv_language     TYPE t002t-sptxt,
       lv_ignore       TYPE string,
       ls_requirements LIKE LINE OF ls_dot-requirements,
       lv_row          TYPE i,
@@ -258,27 +259,21 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
     lo_dot = mi_repo->get_dot_abapgit( ).
     ls_dot = lo_dot->get_data( ).
     lv_main_lang = lo_dot->get_main_language( ).
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     " Repository Settings
-    SELECT SINGLE sptxt INTO lv_language FROM t002t
-      WHERE spras = sy-langu AND sprsl = lv_main_lang.
-    IF sy-subrc <> 0.
-      lv_language = 'Unknown language; Check your .abapgit.xml file'.
-    ENDIF.
-
     ro_form_data->set(
       iv_key = c_id-name
       iv_val = ls_dot-name ).
     ro_form_data->set(
       iv_key = c_id-main_language
-      iv_val = |{ lv_main_lang } ({ lv_language })| ).
+      iv_val = |{ lv_main_lang } ({ zcl_abapgit_convert=>language_sap1_to_text( lv_main_lang ) })| ).
     ro_form_data->set(
       iv_key = c_id-i18n_langs
       iv_val = zcl_abapgit_lxe_texts=>convert_table_to_lang_string( lo_dot->get_i18n_languages( ) ) ).
     ro_form_data->set(
       iv_key = c_id-use_lxe
-      iv_val = xsdbool( lo_dot->use_lxe( ) = abap_true ) ) ##TYPE.
+      iv_val = boolc( lo_dot->use_lxe( ) = abap_true ) ) ##TYPE.
     ro_form_data->set(
       iv_key = c_id-folder_logic
       iv_val = ls_dot-folder_logic ).
@@ -376,7 +371,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       zcl_abapgit_lxe_texts=>convert_lang_string_to_table(
         iv_langs              = mo_form_data->get( c_id-i18n_langs )
         iv_skip_main_language = lo_dot->get_main_language( ) ) ).
-    lo_dot->use_lxe( xsdbool( mo_form_data->get( c_id-use_lxe ) = abap_true ) ).
+    lo_dot->use_lxe( boolc( mo_form_data->get( c_id-use_lxe ) = abap_true ) ).
 
     " Remove all ignores
     lt_ignore = lo_dot->get_data( )-ignore.
@@ -553,7 +548,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     register_handlers( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( `<div class="repo">` ).
 
