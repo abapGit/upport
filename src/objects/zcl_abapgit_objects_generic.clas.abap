@@ -225,7 +225,7 @@ CLASS zcl_abapgit_objects_generic IMPLEMENTATION.
       WHERE objectname = is_item-obj_type
       AND objecttype = lc_logical_transport_object.
     IF sy-subrc <> 0.
-      zcx_abapgit_exception=>raise( 'Not found in OBJH, or not supported' ).
+      RAISE EXCEPTION TYPE zcx_abapgit_type_not_supported EXPORTING obj_type = is_item-obj_type.
     ENDIF.
 
     " object tables
@@ -422,7 +422,7 @@ CLASS zcl_abapgit_objects_generic IMPLEMENTATION.
     ASSIGN lr_table_line->* TO <lg_table_line>.
 
     SELECT SINGLE * FROM (lv_primary) INTO <lg_table_line> WHERE (lv_where_clause).
-    rv_bool = xsdbool( sy-dbcnt > 0 ).
+    rv_bool = boolc( sy-dbcnt > 0 ).
 
   ENDMETHOD.
 
