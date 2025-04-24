@@ -117,7 +117,7 @@ CLASS zcl_abapgit_object_scvi IMPLEMENTATION.
       EXCEPTIONS
         no_variant = 1
         OTHERS     = 2.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -192,6 +192,9 @@ CLASS zcl_abapgit_object_scvi IMPLEMENTATION.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
+
+    SORT ls_screen_variant-shdsvfvci ASCENDING.
+    SORT ls_screen_variant-shdguixt ASCENDING.
 
 *   Clear all user details
     CLEAR: ls_screen_variant-shdsvci-crdate,
