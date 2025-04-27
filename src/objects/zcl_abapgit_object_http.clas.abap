@@ -205,7 +205,7 @@ CLASS zcl_abapgit_object_http IMPLEMENTATION.
     DATA lv_id TYPE c LENGTH 30.
 
     SELECT SINGLE id FROM ('UCONHTTPSERVHEAD') INTO lv_id WHERE id = ms_item-obj_name AND version = 'A'.
-    rv_bool = boolc( sy-subrc = 0 ).
+    rv_bool = xsdbool( sy-subrc = 0 ).
 
   ENDMETHOD.
 
