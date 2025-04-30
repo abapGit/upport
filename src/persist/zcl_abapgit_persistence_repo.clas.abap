@@ -240,10 +240,7 @@ CLASS zcl_abapgit_persistence_repo IMPLEMENTATION.
 
   METHOD zif_abapgit_persist_repo~delete.
 
-    DATA: lo_background TYPE REF TO zcl_abapgit_persist_background.
-
-    lo_background = NEW #( ).
-    lo_background->delete( iv_key ).
+    zcl_abapgit_persist_factory=>get_background( )->delete( iv_key ).
 
     mo_db->delete( iv_type  = zcl_abapgit_persistence_db=>c_type_repo
                    iv_value = iv_key ).
@@ -262,7 +259,7 @@ CLASS zcl_abapgit_persistence_repo IMPLEMENTATION.
       it_keys = lt_keys
       iv_type = zcl_abapgit_persistence_db=>c_type_repo ).
 
-    rv_yes = xsdbool( lines( lt_content ) > 0 ).
+    rv_yes = boolc( lines( lt_content ) > 0 ).
 
   ENDMETHOD.
 
