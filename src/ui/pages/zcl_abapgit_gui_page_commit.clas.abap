@@ -135,8 +135,8 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
     " Get settings from DB
     mo_settings = zcl_abapgit_persist_factory=>get_settings( )->read( ).
 
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
     mo_form = get_form_schema( ).
     mo_form_util = zcl_abapgit_html_form_utils=>create( mo_form ).
 
@@ -147,9 +147,11 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_commit.
 
-    lo_component = NEW #( ii_repo_online = ii_repo_online
-                          io_stage = io_stage
-                          iv_sci_result = iv_sci_result ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo_online = ii_repo_online
+        io_stage       = io_stage
+        iv_sci_result  = iv_sci_result.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Commit'
@@ -231,7 +233,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     DATA li_user TYPE REF TO zif_abapgit_persist_user.
 
-    li_user = zcl_abapgit_persistence_user=>get_instance( ).
+    li_user = zcl_abapgit_persist_factory=>get_user( ).
 
     rv_email = li_user->get_repo_git_user_email( mi_repo_online->get_url( ) ).
     IF rv_email IS INITIAL.
@@ -249,7 +251,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     DATA li_user TYPE REF TO zif_abapgit_persist_user.
 
-    li_user = zcl_abapgit_persistence_user=>get_instance( ).
+    li_user = zcl_abapgit_persist_factory=>get_user( ).
 
     rv_user  = li_user->get_repo_git_user_name( mi_repo_online->get_url( ) ).
     IF rv_user IS INITIAL.
@@ -351,7 +353,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_stage> LIKE LINE OF mt_stage.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<table class="stage_tab">' ).
     ri_html->add( '<thead>' ).
@@ -394,7 +396,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_stage> LIKE LINE OF mt_stage.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     LOOP AT mt_stage ASSIGNING <ls_stage>.
       ls_sum-method = <ls_stage>-method.
@@ -522,7 +524,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
       get_defaults( ).
     ENDIF.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div class="repo">' ).
     ri_html->add( '<div id="top" class="paddings">' ).
