@@ -214,7 +214,7 @@ CLASS zcl_abapgit_object_tobj IMPLEMENTATION.
     SELECT SINGLE objectname FROM objh INTO lv_objectname
       WHERE objectname = ms_item-obj_name(lv_type_pos)
       AND objecttype = ms_item-obj_name+lv_type_pos.    "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -231,6 +231,7 @@ CLASS zcl_abapgit_object_tobj IMPLEMENTATION.
 
   METHOD zif_abapgit_object~get_deserialize_steps.
     APPEND zif_abapgit_object=>gc_step_id-late TO rt_steps.
+    APPEND zif_abapgit_object=>gc_step_id-lxe TO rt_steps.
   ENDMETHOD.
 
 
@@ -264,7 +265,7 @@ CLASS zcl_abapgit_object_tobj IMPLEMENTATION.
         jump_not_possible = 1
         OTHERS            = 2.
 
-    rv_exit = xsdbool( sy-subrc = 0 ).
+    rv_exit = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 

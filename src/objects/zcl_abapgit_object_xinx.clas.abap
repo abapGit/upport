@@ -321,7 +321,7 @@ CLASS zcl_abapgit_object_xinx IMPLEMENTATION.
       zcx_abapgit_exception=>raise( 'Error reading index' ).
     ENDIF.
 
-    rv_bool = xsdbool( ls_dd12v IS NOT INITIAL ).
+    rv_bool = boolc( ls_dd12v IS NOT INITIAL ).
 
   ENDMETHOD.
 
@@ -338,6 +338,7 @@ CLASS zcl_abapgit_object_xinx IMPLEMENTATION.
 
   METHOD zif_abapgit_object~get_deserialize_steps.
     APPEND zif_abapgit_object=>gc_step_id-abap TO rt_steps.
+    APPEND zif_abapgit_object=>gc_step_id-lxe TO rt_steps.
   ENDMETHOD.
 
 

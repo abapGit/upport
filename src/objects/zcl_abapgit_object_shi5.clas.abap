@@ -174,7 +174,7 @@ CLASS zcl_abapgit_object_shi5 IMPLEMENTATION.
       IMPORTING
         extension_header = ls_extension_header.
 
-    rv_bool = xsdbool( ls_extension_header IS NOT INITIAL ).
+    rv_bool = boolc( ls_extension_header IS NOT INITIAL ).
 
   ENDMETHOD.
 
@@ -191,6 +191,7 @@ CLASS zcl_abapgit_object_shi5 IMPLEMENTATION.
 
   METHOD zif_abapgit_object~get_deserialize_steps.
     APPEND zif_abapgit_object=>gc_step_id-abap TO rt_steps.
+    APPEND zif_abapgit_object=>gc_step_id-lxe TO rt_steps.
   ENDMETHOD.
 
 

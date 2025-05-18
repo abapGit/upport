@@ -139,7 +139,7 @@ CLASS zcl_abapgit_object_devc IMPLEMENTATION.
            WHERE pgmid = 'R3TR'
            AND NOT ( ( object = 'DEVC' OR object = 'SOTR' ) AND obj_name = iv_package_name )
            AND devclass = iv_package_name.
-    rv_is_empty = xsdbool( sy-subrc <> 0 ).
+    rv_is_empty = boolc( sy-subrc <> 0 ).
 
   ENDMETHOD.
 
@@ -766,6 +766,7 @@ CLASS zcl_abapgit_object_devc IMPLEMENTATION.
 
   METHOD zif_abapgit_object~get_deserialize_steps.
     APPEND zif_abapgit_object=>gc_step_id-abap TO rt_steps.
+    APPEND zif_abapgit_object=>gc_step_id-lxe TO rt_steps.
   ENDMETHOD.
 
 

@@ -261,7 +261,7 @@ CLASS zcl_abapgit_object_dtel IMPLEMENTATION.
       SELECT SINGLE rollname FROM dd04l INTO lv_rollname
         WHERE rollname = lv_rollname.
     ENDIF.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -278,6 +278,7 @@ CLASS zcl_abapgit_object_dtel IMPLEMENTATION.
 
   METHOD zif_abapgit_object~get_deserialize_steps.
     APPEND zif_abapgit_object=>gc_step_id-ddic TO rt_steps.
+    APPEND zif_abapgit_object=>gc_step_id-lxe TO rt_steps.
   ENDMETHOD.
 
 

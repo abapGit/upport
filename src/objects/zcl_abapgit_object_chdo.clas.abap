@@ -304,7 +304,7 @@ CLASS zcl_abapgit_object_chdo IMPLEMENTATION.
       FROM tcdrp
       WHERE object = mv_object.
 
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -321,6 +321,7 @@ CLASS zcl_abapgit_object_chdo IMPLEMENTATION.
 
   METHOD zif_abapgit_object~get_deserialize_steps.
     APPEND zif_abapgit_object=>gc_step_id-abap TO rt_steps.
+    APPEND zif_abapgit_object=>gc_step_id-lxe TO rt_steps.
   ENDMETHOD.
 
 

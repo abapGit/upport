@@ -122,11 +122,12 @@ CLASS zcl_abapgit_objects DEFINITION
         zcx_abapgit_exception .
     CLASS-METHODS deserialize_steps
       IMPORTING
-        !it_steps     TYPE zif_abapgit_objects=>ty_step_data_tt
-        !ii_log       TYPE REF TO zif_abapgit_log
-        !iv_transport TYPE trkorr
+        !it_steps       TYPE zif_abapgit_objects=>ty_step_data_tt
+        !ii_log         TYPE REF TO zif_abapgit_log
+        !iv_transport   TYPE trkorr
+        !io_i18n_params TYPE REF TO zcl_abapgit_i18n_params
       CHANGING
-        !ct_files     TYPE zif_abapgit_git_definitions=>ty_file_signatures_tt
+        !ct_files       TYPE zif_abapgit_git_definitions=>ty_file_signatures_tt
       RAISING
         zcx_abapgit_exception .
     CLASS-METHODS deserialize_step
@@ -136,6 +137,15 @@ CLASS zcl_abapgit_objects DEFINITION
         !iv_transport TYPE trkorr
       CHANGING
         !ct_files     TYPE zif_abapgit_git_definitions=>ty_file_signatures_tt
+      RAISING
+        zcx_abapgit_exception .
+    CLASS-METHODS deserialize_lxe
+      IMPORTING
+        !is_step        TYPE zif_abapgit_objects=>ty_step_data
+        !ii_log         TYPE REF TO zif_abapgit_log
+        !io_i18n_params TYPE REF TO zcl_abapgit_i18n_params
+      CHANGING
+        !ct_files       TYPE zif_abapgit_git_definitions=>ty_file_signatures_tt
       RAISING
         zcx_abapgit_exception .
     CLASS-METHODS check_original_system
@@ -434,11 +444,15 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
 
         TRY. " 2nd step, try looking for plugins
             IF io_files IS BOUND AND io_i18n_params IS BOUND.
-              ri_obj = NEW zcl_abapgit_objects_bridge( is_item = is_item
-                                                       io_files = io_files
-                                                       io_i18n_params = io_i18n_params ).
+              CREATE OBJECT ri_obj TYPE zcl_abapgit_objects_bridge
+                EXPORTING
+                  is_item        = is_item
+                  io_files       = io_files
+                  io_i18n_params = io_i18n_params.
             ELSE.
-              ri_obj = NEW zcl_abapgit_objects_bridge( is_item = is_item ).
+              CREATE OBJECT ri_obj TYPE zcl_abapgit_objects_bridge
+                EXPORTING
+                  is_item = is_item.
             ENDIF.
           CATCH cx_sy_create_object_error.
             RAISE EXCEPTION TYPE zcx_abapgit_type_not_supported EXPORTING obj_type = is_item-obj_type.
@@ -647,7 +661,9 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
       ii_log->add_info( |>>> Deserializing { lines( lt_items ) } objects| ).
     ENDIF.
 
-    lo_abap_language_vers = NEW #( io_dot_abapgit = lo_dot ).
+    CREATE OBJECT lo_abap_language_vers
+      EXPORTING
+        io_dot_abapgit = lo_dot.
 
     lo_folder_logic = zcl_abapgit_folder_logic=>get_instance( ).
     LOOP AT lt_results ASSIGNING <ls_result>.
@@ -728,20 +744,11 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
             ENDIF.
             APPEND INITIAL LINE TO <ls_step>-objects ASSIGNING <ls_deser>.
             <ls_deser>-item    = ls_item.
+            <ls_deser>-files   = lo_files.
             <ls_deser>-obj     = li_obj.
             <ls_deser>-xml     = lo_xml.
             <ls_deser>-package = lv_package.
           ENDLOOP.
-
-          " LXE, TODO refactor and move below activation
-          IF lo_i18n_params->is_lxe_applicable( ) = abap_true.
-            zcl_abapgit_factory=>get_lxe_texts( )->deserialize(
-              iv_object_type = ls_item-obj_type
-              iv_object_name = ls_item-obj_name
-              io_i18n_params = lo_i18n_params
-              ii_xml         = lo_xml
-              io_files       = lo_files ).
-          ENDIF.
 
         CATCH zcx_abapgit_exception INTO lx_exc.
           ii_log->add_exception( ix_exc = lx_exc
@@ -759,13 +766,12 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
     "run deserialize for all steps and its objects
     deserialize_steps(
       EXPORTING
-        it_steps     = lt_steps
-        ii_log       = ii_log
-        iv_transport = is_checks-transport-transport
+        it_steps       = lt_steps
+        ii_log         = ii_log
+        io_i18n_params = lo_i18n_params
+        iv_transport   = is_checks-transport-transport
       CHANGING
-        ct_files     = rt_accessed_files ).
-
-    " TODO: LXE translations (objects has been activated by now)
+        ct_files       = rt_accessed_files ).
 
     update_package_tree( ii_repo->get_package( ) ).
 
@@ -786,6 +792,45 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
   METHOD deserialize_checks.
 
     rs_checks = zcl_abapgit_objects_check=>deserialize_checks( ii_repo ).
+
+  ENDMETHOD.
+
+
+  METHOD deserialize_lxe.
+
+    DATA:
+      lo_base TYPE REF TO zcl_abapgit_objects_super,
+      lx_exc  TYPE REF TO zcx_abapgit_exception.
+
+    FIELD-SYMBOLS <ls_obj> LIKE LINE OF is_step-objects.
+
+    ii_log->add_success( |>> Step { is_step-order } - { is_step-descr }| ).
+
+    LOOP AT is_step-objects ASSIGNING <ls_obj>.
+
+      TRY.
+          zcl_abapgit_factory=>get_lxe_texts( )->deserialize(
+            iv_object_type = <ls_obj>-item-obj_type
+            iv_object_name = <ls_obj>-item-obj_name
+            iv_package     = <ls_obj>-item-devclass
+            ii_xml         = <ls_obj>-xml
+            io_files       = <ls_obj>-files
+            io_i18n_params = io_i18n_params ).
+
+          lo_base ?= <ls_obj>-obj.
+          APPEND LINES OF lo_base->get_accessed_files( ) TO ct_files.
+
+          ii_log->add_success( iv_msg  = |Translations for { <ls_obj>-item-obj_name } imported|
+                               is_item = <ls_obj>-item ).
+
+        CATCH zcx_abapgit_exception INTO lx_exc.
+          ii_log->add_exception( ix_exc  = lx_exc
+                                 is_item = <ls_obj>-item ).
+          ii_log->add_error( iv_msg  = |Import of translations for { <ls_obj>-item-obj_name } failed|
+                             is_item = <ls_obj>-item ).
+      ENDTRY.
+
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -872,13 +917,23 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
     FIELD-SYMBOLS <ls_step> LIKE LINE OF it_steps.
 
     LOOP AT it_steps ASSIGNING <ls_step>.
-      deserialize_step(
-        EXPORTING
-          is_step      = <ls_step>
-          ii_log       = ii_log
-          iv_transport = iv_transport
-        CHANGING
-          ct_files     = ct_files ).
+      IF <ls_step>-step_id <> zif_abapgit_object=>gc_step_id-lxe.
+        deserialize_step(
+          EXPORTING
+            is_step      = <ls_step>
+            ii_log       = ii_log
+            iv_transport = iv_transport
+          CHANGING
+            ct_files     = ct_files ).
+      ELSEIF io_i18n_params->is_lxe_applicable( ) = abap_true.
+        deserialize_lxe(
+          EXPORTING
+            is_step        = <ls_step>
+            ii_log         = ii_log
+            io_i18n_params = io_i18n_params
+          CHANGING
+            ct_files       = ct_files ).
+      ENDIF.
     ENDLOOP.
 
     SORT ct_files BY path ASCENDING filename ASCENDING.
@@ -942,6 +997,12 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
     <ls_step>-descr        = 'Post-process Objects'.
     <ls_step>-syntax_check = abap_true.
     <ls_step>-order        = 4.
+
+    APPEND INITIAL LINE TO rt_steps ASSIGNING <ls_step>.
+    <ls_step>-step_id      = zif_abapgit_object=>gc_step_id-lxe.
+    <ls_step>-descr        = 'Translations (LXE)'.
+    <ls_step>-syntax_check = abap_false.
+    <ls_step>-order        = 5.
 
     SORT rt_steps BY order. " ensure correct processing order
   ENDMETHOD.
@@ -1046,7 +1107,7 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
     li_exit->change_supported_object_types( CHANGING ct_types = lt_types ).
 
     READ TABLE lt_types TRANSPORTING NO FIELDS WITH TABLE KEY table_line = iv_obj_type.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -1147,14 +1208,14 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
       io_files       = lo_files
       io_i18n_params = io_i18n_params ).
 
-    li_xml = NEW zcl_abapgit_xml_output( ).
+    CREATE OBJECT li_xml TYPE zcl_abapgit_xml_output.
 
     rs_files_and_item-item = is_item.
 
     TRY.
         li_obj->serialize( li_xml ).
       CATCH zcx_abapgit_exception INTO lx_error.
-        rs_files_and_item-item-inactive = xsdbool( li_obj->is_active( ) = abap_false ).
+        rs_files_and_item-item-inactive = boolc( li_obj->is_active( ) = abap_false ).
         RAISE EXCEPTION lx_error.
     ENDTRY.
 
@@ -1177,7 +1238,7 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
 
     check_duplicates( rs_files_and_item-files ).
 
-    rs_files_and_item-item-inactive = xsdbool( li_obj->is_active( ) = abap_false ).
+    rs_files_and_item-item-inactive = boolc( li_obj->is_active( ) = abap_false ).
 
     LOOP AT rs_files_and_item-files ASSIGNING <ls_file>.
       <ls_file>-sha1 = zcl_abapgit_hash=>sha1_blob( <ls_file>-data ).

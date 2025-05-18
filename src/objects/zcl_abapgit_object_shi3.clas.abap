@@ -364,7 +364,7 @@ CLASS zcl_abapgit_object_shi3 IMPLEMENTATION.
         structure_header     = ls_header
         structure_tadir      = ls_tadir.
 
-    rv_bool = xsdbool( ls_header-id IS NOT INITIAL ).
+    rv_bool = boolc( ls_header-id IS NOT INITIAL ).
 
   ENDMETHOD.
 
@@ -381,6 +381,7 @@ CLASS zcl_abapgit_object_shi3 IMPLEMENTATION.
 
   METHOD zif_abapgit_object~get_deserialize_steps.
     APPEND zif_abapgit_object=>gc_step_id-abap TO rt_steps.
+    APPEND zif_abapgit_object=>gc_step_id-lxe TO rt_steps.
   ENDMETHOD.
 
 

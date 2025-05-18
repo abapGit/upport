@@ -243,7 +243,7 @@ CLASS zcl_abapgit_object_nrob IMPLEMENTATION.
 
     SELECT SINGLE object FROM tnro INTO lv_object
       WHERE object = ms_item-obj_name.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -260,6 +260,7 @@ CLASS zcl_abapgit_object_nrob IMPLEMENTATION.
 
   METHOD zif_abapgit_object~get_deserialize_steps.
     APPEND zif_abapgit_object=>gc_step_id-late TO rt_steps.
+    APPEND zif_abapgit_object=>gc_step_id-lxe TO rt_steps.
   ENDMETHOD.
 
 
