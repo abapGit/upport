@@ -1,21 +1,11 @@
 CLASS zcl_abapgit_diff DEFINITION
   PUBLIC
-  CREATE PUBLIC.
+  CREATE PRIVATE
+  GLOBAL FRIENDS zcl_abapgit_diff_factory .
 
   PUBLIC SECTION.
 
     INTERFACES zif_abapgit_diff.
-
-* assumes data is UTF8 based with newlines
-    METHODS constructor
-      IMPORTING
-        !iv_new                TYPE xstring
-        !iv_old                TYPE xstring
-        !iv_ignore_indentation TYPE abap_bool DEFAULT abap_false
-        !iv_ignore_comments    TYPE abap_bool DEFAULT abap_false
-        !iv_ignore_case        TYPE abap_bool DEFAULT abap_false
-      RAISING
-        zcx_abapgit_exception.
 
   PROTECTED SECTION.
 
@@ -267,7 +257,7 @@ CLASS zcl_abapgit_diff IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD constructor.
+  METHOD zif_abapgit_diff~create.
 
     DATA: lt_new TYPE rswsourcet,
           lt_old TYPE rswsourcet.
@@ -295,6 +285,8 @@ CLASS zcl_abapgit_diff IMPLEMENTATION.
     map_beacons( ).
     shortlist( ).
 
+    ri_diff = me.
+
   ENDMETHOD.
 
 
@@ -314,8 +306,10 @@ CLASS zcl_abapgit_diff IMPLEMENTATION.
     APPEND '^\s*(DEFINE|ENHANCEMENT)\s' TO lt_regex.
 
     LOOP AT lt_regex INTO lv_regex.
-      lo_regex = NEW #( pattern = lv_regex
-                        ignore_case = abap_true ).
+      CREATE OBJECT lo_regex
+        EXPORTING
+          pattern     = lv_regex
+          ignore_case = abap_true.
       APPEND lo_regex TO rt_regex_set.
     ENDLOOP.
 
@@ -540,7 +534,7 @@ CLASS zcl_abapgit_diff IMPLEMENTATION.
 
     " SAP function ignores lines that contain only whitespace so we compare directly
     " Also check if length differs and implicitly if one line has trailing space(s)
-    rv_has_diff = xsdbool( iv_old <> iv_new
+    rv_has_diff = boolc( iv_old <> iv_new
                    AND ( strlen( condense( iv_old ) ) = 0
                       OR strlen( condense( iv_new ) ) = 0
                       OR strlen( iv_old ) <> strlen( iv_new ) ) ).

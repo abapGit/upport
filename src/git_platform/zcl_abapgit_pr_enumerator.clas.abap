@@ -72,13 +72,28 @@ CLASS zcl_abapgit_pr_enumerator IMPLEMENTATION.
         val = lv_repo
         regex = '\.git$'
         with = '' ).
-      ri_provider = NEW zcl_abapgit_pr_enum_github( iv_user_and_repo = |{ lv_user }/{ lv_repo }|
-                                                    ii_http_agent = li_agent ).
-    ELSE.
-      zcx_abapgit_exception=>raise( |PR enumeration is not supported for { iv_repo_url }| ).
+      CREATE OBJECT ri_provider TYPE zcl_abapgit_pr_enum_github
+        EXPORTING
+          iv_user_and_repo = |{ lv_user }/{ lv_repo }|
+          ii_http_agent    = li_agent.
+    ENDIF.
+
+* used in integration testing, see /test/ folder
+    FIND ALL OCCURRENCES OF REGEX 'localhost:3050\/([^\/]+)\/([^\/]+)'
+      IN iv_repo_url
+      SUBMATCHES lv_user lv_repo.
+    IF sy-subrc = 0.
+      CREATE OBJECT ri_provider TYPE zcl_abapgit_pr_enum_gitea
+        EXPORTING
+          iv_user_and_repo = |{ lv_user }/{ lv_repo }|
+          ii_http_agent    = li_agent.
     ENDIF.
 
     " TODO somewhen more providers
+
+    IF ri_provider IS NOT BOUND.
+      zcx_abapgit_exception=>raise( |PR enumeration is not supported for { iv_repo_url }| ).
+    ENDIF.
 
   ENDMETHOD.
 
@@ -95,6 +110,6 @@ CLASS zcl_abapgit_pr_enumerator IMPLEMENTATION.
 
 
   METHOD new.
-    ro_instance = NEW #( iv_url = iv_url ).
+    CREATE OBJECT ro_instance EXPORTING iv_url = iv_url.
   ENDMETHOD.
 ENDCLASS.
