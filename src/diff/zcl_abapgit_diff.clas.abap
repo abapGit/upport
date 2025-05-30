@@ -306,8 +306,10 @@ CLASS zcl_abapgit_diff IMPLEMENTATION.
     APPEND '^\s*(DEFINE|ENHANCEMENT)\s' TO lt_regex.
 
     LOOP AT lt_regex INTO lv_regex.
-      lo_regex = NEW #( pattern = lv_regex
-                        ignore_case = abap_true ).
+      CREATE OBJECT lo_regex
+        EXPORTING
+          pattern     = lv_regex
+          ignore_case = abap_true.
       APPEND lo_regex TO rt_regex_set.
     ENDLOOP.
 
@@ -532,7 +534,7 @@ CLASS zcl_abapgit_diff IMPLEMENTATION.
 
     " SAP function ignores lines that contain only whitespace so we compare directly
     " Also check if length differs and implicitly if one line has trailing space(s)
-    rv_has_diff = xsdbool( iv_old <> iv_new
+    rv_has_diff = boolc( iv_old <> iv_new
                    AND ( strlen( condense( iv_old ) ) = 0
                       OR strlen( condense( iv_new ) ) = 0
                       OR strlen( iv_old ) <> strlen( iv_new ) ) ).
