@@ -90,7 +90,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_object_sicf IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_OBJECT_SICF IMPLEMENTATION.
 
 
   METHOD change_sicf.
@@ -549,7 +549,7 @@ CLASS zcl_abapgit_object_sicf IMPLEMENTATION.
     SELECT SINGLE icfaltnme FROM icfservice INTO ls_key-icf_name
       WHERE icf_name = ms_item-obj_name(15)
       AND icfparguid = ms_item-obj_name+15.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -651,12 +651,7 @@ CLASS zcl_abapgit_object_sicf IMPLEMENTATION.
 
   METHOD zif_abapgit_object~map_object_to_filename.
 
-    DATA:
-      lv_rest     TYPE string,
-      lv_old_name TYPE string.
-
-    SPLIT cv_filename AT '.' INTO lv_old_name lv_rest.
-    cv_filename = |{ cv_filename(15) }{ get_hash_from_object( is_item-obj_name ) }.{ lv_rest }|.
+    cv_filename = |{ cv_filename(15) }{ get_hash_from_object( is_item-obj_name ) }|.
 
   ENDMETHOD.
 

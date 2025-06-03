@@ -367,7 +367,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
     ms_settings_snapshot = get_remote_settings_from_repo( mi_repo ).
     mo_form              = get_form_schema( ).
     mo_form_data         = initialize_form_data( ).
-    mo_validation_log = NEW #( ).
+    CREATE OBJECT mo_validation_log.
 
   ENDMETHOD.
 
@@ -376,7 +376,9 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_remo.
 
-    lo_component = NEW #( ii_repo = ii_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo = ii_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Remote Settings'
@@ -615,7 +617,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
       lv_type TYPE string,
       lv_head TYPE string.
 
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     IF ms_settings_snapshot-offline = abap_true.
       lv_type = c_repo_type-offline.
@@ -640,12 +642,12 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
         iv_val = ms_settings_snapshot-head_type ).
 
       " When pull request is selected the previously selected branch/tag is also loaded to be able to switch back to it
-      lv_head = zcl_abapgit_git_branch_list=>get_display_name( ms_settings_snapshot-branch ).
+      lv_head = zcl_abapgit_git_branch_utils=>get_display_name( ms_settings_snapshot-branch ).
       ro_form_data->set(
         iv_key = c_id-branch
         iv_val = lv_head ).
 
-      lv_head = zcl_abapgit_git_branch_list=>get_display_name( ms_settings_snapshot-tag ).
+      lv_head = zcl_abapgit_git_branch_utils=>get_display_name( ms_settings_snapshot-tag ).
       ro_form_data->set(
         iv_key = c_id-tag
         iv_val = lv_head ).
@@ -702,7 +704,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
   METHOD render_content.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
       ii_repo               = mi_repo
@@ -776,7 +778,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
           lv_url         TYPE ty_remote_settings-url,
           lv_branch      TYPE ty_remote_settings-branch.
 
-    lv_offline_new = xsdbool( mo_form_data->get( c_id-offline ) = abap_false ).
+    lv_offline_new = boolc( mo_form_data->get( c_id-offline ) = abap_false ).
     mo_form_data->set(
       iv_key = c_id-offline
       iv_val = lv_offline_new ).
@@ -877,7 +879,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
     DATA:
       lx_error                 TYPE REF TO zcx_abapgit_exception,
-      lo_branch_list           TYPE REF TO zcl_abapgit_git_branch_list,
+      lo_branch_list           TYPE REF TO zif_abapgit_git_branch_list,
       lo_url                   TYPE REF TO zcl_abapgit_git_url,
       lv_offline               TYPE abap_bool,
       lv_head_type             TYPE ty_head_type,
@@ -902,7 +904,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
             iv_validate = abap_true ).
 
           " Provider-specific URL check
-          lo_url = NEW #( ).
+          CREATE OBJECT lo_url.
           lo_url->validate_url( lv_url ).
         CATCH zcx_abapgit_exception INTO lx_error.
           ro_validation_log->set(
@@ -1134,7 +1136,7 @@ CLASS zcl_abapgit_gui_page_sett_remo IMPLEMENTATION.
 
     handle_picklist_state( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->wrap(
       iv_tag     = 'div'

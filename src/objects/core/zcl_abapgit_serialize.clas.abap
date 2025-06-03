@@ -138,7 +138,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_serialize IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_SERIALIZE IMPLEMENTATION.
 
 
   METHOD add_apack.
@@ -228,7 +228,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
       ii_log                = ii_log
       it_filter             = it_filter ).
 
-    lo_filter = NEW #( ).
+    CREATE OBJECT lo_filter.
 
     lo_filter->apply( EXPORTING it_filter = it_filter
                       CHANGING  ct_tadir  = lt_tadir ).
@@ -236,7 +236,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
 * if there are less than 10 objects run in single thread
 * this helps a lot when debugging, plus performance gain
 * with low number of objects does not matter much
-    lv_force = xsdbool( lines( lt_tadir ) < 10 ).
+    lv_force = boolc( lines( lt_tadir ) < 10 ).
 
     lt_found = serialize(
       iv_package          = iv_package
@@ -277,9 +277,12 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
       ms_i18n_params-main_language      = sy-langu.
       ms_i18n_params-main_language_only = is_local_settings-main_language_only.
     ENDIF.
+    ms_i18n_params-suppress_po_comments = is_local_settings-suppress_lxe_po_comments.
 
     IF mo_dot_abapgit IS NOT INITIAL.
-      mo_abap_language_version = NEW #( io_dot_abapgit = mo_dot_abapgit ).
+      CREATE OBJECT mo_abap_language_version
+        EXPORTING
+          io_dot_abapgit = mo_dot_abapgit.
     ENDIF.
 
   ENDMETHOD.
@@ -539,7 +542,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
 
   METHOD is_parallelization_possible.
 
-    rv_result = xsdbool( zcl_abapgit_factory=>get_environment( )->is_merged( ) = abap_false
+    rv_result = boolc( zcl_abapgit_factory=>get_environment( )->is_merged( ) = abap_false
                    AND zcl_abapgit_persist_factory=>get_settings( )->read( )->get_parallel_proc_disabled( ) = abap_false
                    " The function module below should always exist here as is_merged evaluated to false above.
                    " It does however not exist in the transpiled version which then causes unit tests to fail.
@@ -616,6 +619,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
           iv_abap_language_vers = lv_abap_language_version
           iv_language           = ms_i18n_params-main_language
           iv_main_language_only = ms_i18n_params-main_language_only
+          iv_suppress_po_comments = ms_i18n_params-suppress_po_comments
           it_translation_langs  = ms_i18n_params-translation_languages
           iv_use_lxe            = ms_i18n_params-use_lxe
         EXCEPTIONS
