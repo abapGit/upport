@@ -35,6 +35,7 @@ CLASS zcl_abapgit_gui_page_sett_repo DEFINITION
         main_language    TYPE string VALUE 'main_language',
         i18n_langs       TYPE string VALUE 'i18n_langs',
         use_lxe          TYPE string VALUE 'use_lxe',
+        wo_transaltion   TYPE string VALUE 'wo_translation',
         starting_folder  TYPE string VALUE 'starting_folder',
         folder_logic     TYPE string VALUE 'folder_logic',
         ignore           TYPE string VALUE 'ignore',
@@ -86,15 +87,15 @@ ENDCLASS.
 
 
 
-CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
+CLASS ZCL_ABAPGIT_GUI_PAGE_SETT_REPO IMPLEMENTATION.
 
 
   METHOD constructor.
 
     super->constructor( ).
 
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
 
     mi_repo = ii_repo.
     mo_form = get_form_schema( ).
@@ -107,7 +108,9 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_repo.
 
-    lo_component = NEW #( ii_repo = ii_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo = ii_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Repository Settings'
@@ -158,6 +161,14 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       iv_name        = c_id-use_lxe
       iv_label       = 'Use LXE Approach for Translations'
       iv_hint        = 'It''s mandatory to specify the list of languages above in addition to this setting'
+    )->textarea(
+      iv_name        = c_id-wo_transaltion
+      iv_label       = 'Objects (wildcard) to keep in main language only (without translation)'
+      iv_hint        = |List of patterns to exclude from translation. The check builds a simplified path to object:|
+                    && | like `/src/pkg/subpkg/obj.type` which is then checked versus patterns with CP.|
+                    && | So to exclude specific object use `*/zcl_xy.clas`, object of the specific type - `*.clas`,|
+                    && | all objects in the package `*/pkg/*`. For additional compatibility, if line does NOT start|
+                    && | wildcard `*` or `/` - then `*/` is prepended. So `zcl_xy.clas` = `*/zcl_xy.clas`|
     )->start_group(
       iv_name        = c_id-file_system
       iv_label       = 'Files'
@@ -257,7 +268,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
     lo_dot = mi_repo->get_dot_abapgit( ).
     ls_dot = lo_dot->get_data( ).
     lv_main_lang = lo_dot->get_main_language( ).
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     " Repository Settings
     ro_form_data->set(
@@ -271,7 +282,12 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       iv_val = zcl_abapgit_lxe_texts=>convert_table_to_lang_string( lo_dot->get_i18n_languages( ) ) ).
     ro_form_data->set(
       iv_key = c_id-use_lxe
-      iv_val = xsdbool( lo_dot->use_lxe( ) = abap_true ) ) ##TYPE.
+      iv_val = boolc( lo_dot->use_lxe( ) = abap_true ) ) ##TYPE.
+    ro_form_data->set(
+      iv_key = c_id-wo_transaltion
+      iv_val = concat_lines_of(
+        table = lo_dot->get_objs_without_translation( )
+        sep   = cl_abap_char_utilities=>newline ) ).
     ro_form_data->set(
       iv_key = c_id-folder_logic
       iv_val = ls_dot-folder_logic ).
@@ -350,6 +366,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       lo_dot          TYPE REF TO zcl_abapgit_dot_abapgit,
       lv_ignore       TYPE string,
       lt_ignore       TYPE STANDARD TABLE OF string WITH DEFAULT KEY,
+      lt_wo_transl    TYPE STANDARD TABLE OF string WITH DEFAULT KEY,
       ls_requirements TYPE zif_abapgit_dot_abapgit=>ty_requirement,
       lt_requirements TYPE zif_abapgit_dot_abapgit=>ty_requirement_tt.
 
@@ -369,7 +386,11 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       zcl_abapgit_lxe_texts=>convert_lang_string_to_table(
         iv_langs              = mo_form_data->get( c_id-i18n_langs )
         iv_skip_main_language = lo_dot->get_main_language( ) ) ).
-    lo_dot->use_lxe( xsdbool( mo_form_data->get( c_id-use_lxe ) = abap_true ) ).
+    lo_dot->use_lxe( boolc( mo_form_data->get( c_id-use_lxe ) = abap_true ) ).
+
+    lt_wo_transl = zcl_abapgit_i18n_params=>normalize_obj_patterns(
+      zcl_abapgit_convert=>split_string( mo_form_data->get( c_id-wo_transaltion ) ) ).
+    lo_dot->set_objs_without_translation( lt_wo_transl ).
 
     " Remove all ignores
     lt_ignore = lo_dot->get_data( )-ignore.
@@ -484,6 +505,15 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
         iv_val = 'LXE approach requires a non-empty list of languages' ).
     ENDIF.
 
+    TRY.
+        zcl_abapgit_i18n_params=>normalize_obj_patterns(
+          zcl_abapgit_convert=>split_string( mo_form_data->get( c_id-wo_transaltion ) ) ).
+      CATCH zcx_abapgit_exception INTO lx_exception.
+        ro_validation_log->set(
+          iv_key = c_id-wo_transaltion
+          iv_val = lx_exception->get_text( ) ).
+    ENDTRY.
+
     lv_original_system = io_form_data->get( c_id-original_system ).
     IF lv_original_system CN lc_allowed.
       ro_validation_log->set(
@@ -546,7 +576,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     register_handlers( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( `<div class="repo">` ).
 
