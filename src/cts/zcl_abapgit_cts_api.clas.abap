@@ -186,7 +186,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    rv_locked = xsdbool( lv_lock_flag <> space ).
+    rv_locked = boolc( lv_lock_flag <> space ).
   ENDMETHOD.
 
 
@@ -204,7 +204,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       IMPORTING
         pe_result = lv_type_check_result.
 
-    rv_lockable = xsdbool( lv_type_check_result = 'L' ).
+    rv_lockable = boolc( lv_type_check_result = 'L' ).
   ENDMETHOD.
 
 
@@ -222,7 +222,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       IMPORTING
         pe_result = lv_type_check_result.
 
-    rv_transportable = xsdbool( lv_type_check_result CA 'RTL' OR iv_object_type = 'TABU' ).
+    rv_transportable = boolc( lv_type_check_result CA 'RTL' OR iv_object_type = 'TABU' ).
   ENDMETHOD.
 
 
@@ -555,6 +555,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
         object_class        = iv_object
         devclass            = iv_package
         master_language     = iv_language
+        korrnum             = iv_transport
         mode                = iv_mode
         global_lock         = abap_true
         suppress_dialog     = abap_true
@@ -575,6 +576,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       rv_possible = zcl_abapgit_factory=>get_sap_package( iv_package )->are_changes_recorded_in_tr_req( ).
     ENDIF.
   ENDMETHOD.
+
 
   METHOD zif_abapgit_cts_api~list_open_requests.
 
