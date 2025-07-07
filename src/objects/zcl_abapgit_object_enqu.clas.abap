@@ -111,7 +111,7 @@ CLASS zcl_abapgit_object_enqu IMPLEMENTATION.
 
     SELECT SINGLE viewname FROM dd25l INTO lv_viewname
       WHERE viewname = ms_item-obj_name.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -173,6 +173,8 @@ CLASS zcl_abapgit_object_enqu IMPLEMENTATION.
           lt_dd26e TYPE TABLE OF dd26e,
           lt_dd27p TYPE ty_dd27p.
 
+    FIELD-SYMBOLS <lg_field> TYPE any.
+
     lv_name = ms_item-obj_name.
 
     CALL FUNCTION 'DDIF_ENQU_GET'
@@ -202,6 +204,11 @@ CLASS zcl_abapgit_object_enqu IMPLEMENTATION.
            ls_dd25v-as4time,
            ls_dd25v-as4local,
            ls_dd25v-as4vers.
+
+    ASSIGN COMPONENT 'ACTFLAG' OF STRUCTURE ls_dd25v TO <lg_field>.
+    IF sy-subrc = 0.
+      CLEAR <lg_field>.
+    ENDIF.
 
     _clear_dd27p_fields( CHANGING ct_dd27p = lt_dd27p ).
 
