@@ -5,7 +5,6 @@ CLASS zcl_abapgit_object_ssfo DEFINITION
   CREATE PUBLIC.
 
   PUBLIC SECTION.
-
     INTERFACES zif_abapgit_object.
 
   PROTECTED SECTION.
@@ -20,7 +19,7 @@ CLASS zcl_abapgit_object_ssfo DEFINITION
     METHODS fix_ids
       IMPORTING
         !ii_xml_doc TYPE REF TO if_ixml_document .
-    METHODS sort_texts
+    CLASS-METHODS sort_texts
       IMPORTING
         !ii_xml_doc TYPE REF TO if_ixml_document
       RAISING
@@ -304,6 +303,15 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
             li_field->set_value( |{ <lv_field> }| ).
             li_field = li_field->get_next( ).
           ENDWHILE.
+
+* guess this can only happen for CAPTION field, as other are key fields
+          IF lv_field <> 'CAPTION' AND ls_item-caption IS NOT INITIAL.
+            ii_xml_doc->create_simple_element(
+              name   = 'CAPTION'
+              value  = |{ ls_item-caption }|
+              parent = li_item ).
+          ENDIF.
+
           lv_index = lv_index + 1.
         ENDDO.
 
@@ -359,7 +367,7 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
       lx_error    TYPE REF TO cx_ssf_fb,
       lv_text     TYPE string.
 
-    lo_sf = NEW #( ).
+    CREATE OBJECT lo_sf.
 
 * set "created by" and "changed by" to current user
     li_iterator = io_xml->get_raw( )->get_root_element( )->create_iterator( ).
@@ -418,7 +426,7 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
 
     SELECT SINGLE formname FROM stxfadm INTO lv_formname
       WHERE formname = ms_item-obj_name.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -456,7 +464,7 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
       IMPORTING
         o_inactive = lv_inactive.
 
-    rv_active = xsdbool( lv_inactive = abap_false ).
+    rv_active = boolc( lv_inactive = abap_false ).
 
   ENDMETHOD.
 
@@ -549,7 +557,7 @@ CLASS zcl_abapgit_object_ssfo IMPLEMENTATION.
     li_ixml = cl_ixml=>create( ).
     li_xml_doc = li_ixml->create_document( ).
 
-    lo_sf = NEW #( ).
+    CREATE OBJECT lo_sf.
     lv_formname = ms_item-obj_name. " convert type
     TRY.
         lo_sf->load( im_formname = lv_formname
