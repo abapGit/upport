@@ -17,7 +17,7 @@ CLASS lcl_stream IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD has_data.
-    rv_data = boolc( mv_position < mv_length ).
+    rv_data = xsdbool( mv_position < mv_length ).
   ENDMETHOD.
 
 ENDCLASS.
