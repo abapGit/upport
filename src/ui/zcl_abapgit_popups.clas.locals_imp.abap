@@ -102,6 +102,7 @@ CLASS lcl_object_decision_list DEFINITION FINAL.
         it_scope      TYPE lvc_t_fidx
       RETURNING
         VALUE(rv_yes) TYPE abap_bool.
+    METHODS refresh.
 
 ENDCLASS.
 
@@ -114,6 +115,17 @@ CLASS lcl_object_decision_list IMPLEMENTATION.
     IF mv_cancel = abap_true.
       RAISE EXCEPTION TYPE zcx_abapgit_cancel.
     ENDIF.
+
+  ENDMETHOD.
+
+  METHOD refresh.
+
+    DATA ls_stable TYPE lvc_s_stbl.
+
+    ls_stable-row = 'X'.
+    ls_stable-col = 'X'.
+
+    mo_alv->refresh( ls_stable ).
 
   ENDMETHOD.
 
@@ -235,7 +247,7 @@ CLASS lcl_object_decision_list IMPLEMENTATION.
         ENDIF.
 
         IF iv_header_text CN ' _0'.
-          lo_table_header = NEW #( text = iv_header_text ).
+          CREATE OBJECT lo_table_header EXPORTING text = iv_header_text.
           mo_alv->set_top_of_list( lo_table_header ).
         ENDIF.
 
@@ -393,19 +405,19 @@ CLASS lcl_object_decision_list IMPLEMENTATION.
 
       WHEN 'SALL' OR 'SEL_ALL'.
         mark_visible( abap_true ).
-        mo_alv->refresh( ).
+        refresh( ).
 
       WHEN 'DSEL' OR 'SEL_DEL'.
         mark_visible( abap_false ).
-        mo_alv->refresh( ).
+        refresh( ).
 
       WHEN 'SEL_KEY'.
         mark_selected( ).
-        mo_alv->refresh( ).
+        refresh( ).
 
       WHEN 'SEL_CAT'.
         mark_category( ask_user_for_obj_category( ) ).
-        mo_alv->refresh( ).
+        refresh( ).
 
       WHEN OTHERS.
         mv_cancel = abap_true.
@@ -476,7 +488,7 @@ CLASS lcl_object_decision_list IMPLEMENTATION.
     IF lines( lt_scope ) > 0.
       mark_indexed(
         it_scope    = lt_scope
-        iv_selected = xsdbool( are_all_marked( lt_scope ) = abap_false ) ).
+        iv_selected = boolc( are_all_marked( lt_scope ) = abap_false ) ).
       mo_alv->get_selections( )->set_selected_rows( lt_clear ).
     ELSE.
       MESSAGE 'Select rows first to mark them' TYPE 'S'.
@@ -536,7 +548,7 @@ CLASS lcl_object_decision_list IMPLEMENTATION.
       ASSERT sy-subrc = 0.
 
       IF iv_invert = abap_true.
-        <lv_selected> = xsdbool( <lv_selected> = abap_false ).
+        <lv_selected> = boolc( <lv_selected> = abap_false ).
       ELSE.
         <lv_selected> = iv_selected.
       ENDIF.
@@ -654,11 +666,11 @@ CLASS lcl_object_decision_list IMPLEMENTATION.
 
       ASSIGN COMPONENT c_fieldname_selected OF STRUCTURE <ls_line> TO <lv_selected>.
       ASSERT sy-subrc = 0.
-      <lv_selected> = xsdbool( <lv_selected> = abap_false ).
+      <lv_selected> = boolc( <lv_selected> = abap_false ).
 
     ENDIF.
 
-    mo_alv->refresh( ).
+    refresh( ).
 
   ENDMETHOD.
 
