@@ -143,11 +143,13 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
   METHOD get_current_transport_from_db.
 
     " This method is used for objects that are included in transports but not locked
-    " for example, namespaces (NSPC)
+    " for example, namespaces (NSPC) or table entries (TABU)
+    " Ignore unreleased SAP piece lists
     SELECT SINGLE a~trkorr FROM e070 AS a JOIN e071 AS b ON a~trkorr = b~trkorr
       INTO rv_transport
       WHERE ( a~trstatus = 'D' OR a~trstatus = 'L' )
         AND a~trfunction <> 'G'
+        AND NOT ( a~trfunction = 'F' AND ( a~tarsystem = '' OR a~tarsystem = 'SAP' ) )
         AND b~pgmid = iv_program_id AND b~object = iv_object_type AND b~obj_name = iv_object_name.
 
   ENDMETHOD.
@@ -186,7 +188,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    rv_locked = xsdbool( lv_lock_flag <> space ).
+    rv_locked = boolc( lv_lock_flag <> space ).
   ENDMETHOD.
 
 
@@ -204,7 +206,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       IMPORTING
         pe_result = lv_type_check_result.
 
-    rv_lockable = xsdbool( lv_type_check_result = 'L' ).
+    rv_lockable = boolc( lv_type_check_result = 'L' ).
   ENDMETHOD.
 
 
@@ -222,7 +224,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       IMPORTING
         pe_result = lv_type_check_result.
 
-    rv_transportable = xsdbool( lv_type_check_result CA 'RTL' OR iv_object_type = 'TABU' ).
+    rv_transportable = boolc( lv_type_check_result CA 'RTL' OR iv_object_type = 'TABU' ).
   ENDMETHOD.
 
 
