@@ -100,6 +100,11 @@ CLASS lcl_utils DEFINITION FINAL.
         VALUE(rv_str) TYPE string
       RAISING
         zcx_abapgit_ajson_error.
+    CLASS-METHODS sanity_check
+      IMPORTING
+        iv_data TYPE csequence
+      RAISING
+        zcx_abapgit_ajson_error.
 
 ENDCLASS.
 
@@ -246,8 +251,10 @@ CLASS lcl_utils IMPLEMENTATION.
 
     CASE lo_type->type_kind.
       WHEN lif_kind=>binary-xstring.
+        " in case of binary data, skip the sanity check to have best performance
         rv_xstr = iv_data.
       WHEN lif_kind=>texts-string OR lif_kind=>texts-char.
+        sanity_check( iv_data ).
         rv_xstr = string_to_xstring_utf8( iv_data ).
       WHEN lif_kind=>table.
         lo_table_type ?= lo_type.
@@ -258,6 +265,7 @@ CLASS lcl_utils IMPLEMENTATION.
             ASSIGN iv_data TO <data>.
             lv_str = concat_lines_of( table = <data>
                                       sep = cl_abap_char_utilities=>newline ).
+            sanity_check( lv_str ).
             rv_xstr = string_to_xstring_utf8( lv_str ).
           CATCH cx_root.
             zcx_abapgit_ajson_error=>raise( 'Error converting input table (should be string_table)' ).
@@ -298,6 +306,20 @@ CLASS lcl_utils IMPLEMENTATION.
       WHEN OTHERS.
         zcx_abapgit_ajson_error=>raise( 'Unsupported type of input (must be char, string, string_table, or xstring)' ).
     ENDCASE.
+
+  ENDMETHOD.
+
+  METHOD sanity_check.
+
+    " A lightweight check covering the top-level JSON value would look like this
+    " ^\s*(\{.*\}|\[.*\]|"(?:\\.|[^"\\])*"|true|false|null|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\s*$
+    " Unfortunately, this is quite slow so we use a trivial check of the beginning of the JSON data
+    FIND REGEX '^\s*(true|false|null|-?\d|"|\{|\[)' IN iv_data.
+    IF sy-subrc <> 0.
+      zcx_abapgit_ajson_error=>raise(
+        iv_msg      = |Json parsing error: Not JSON|
+        iv_location = 'Line 1, Offset 1' ).
+    ENDIF.
 
   ENDMETHOD.
 
@@ -362,12 +384,10 @@ CLASS lcl_json_parser IMPLEMENTATION.
 
     mv_keep_item_order = iv_keep_item_order.
 
+    " Includes lightweight sanity check (unless input is binary)
     lv_json = lcl_utils=>any_to_xstring( iv_json ).
 
     TRY.
-      " TODO sane JSON check:
-      " JSON can be true,false,null,(-)digits
-      " or start from " or from {
         rt_json_tree = _parse( lv_json ).
       CATCH cx_sxml_parse_error INTO lx_sxml_parse.
         lv_location = _get_location(
@@ -466,11 +486,10 @@ CLASS lcl_json_parser IMPLEMENTATION.
               <item>-index = lr_stack_top->children.
             ELSE.
               lt_attributes = lo_open->get_attributes( ).
-              LOOP AT lt_attributes INTO lo_attr.
-                IF lo_attr->qname-name = 'name' AND lo_attr->value_type = if_sxml_value=>co_vt_text.
-                  <item>-name = lo_attr->get_value( ).
-                ENDIF.
-              ENDLOOP.
+              " JSON nodes always have one "name" attribute
+              READ TABLE lt_attributes INTO lo_attr INDEX 1.
+              ASSERT sy-subrc = 0 AND lo_attr->qname-name = 'name'.
+              <item>-name = lo_attr->get_value( ).
               IF mv_keep_item_order = abap_true.
                 <item>-order = lr_stack_top->children.
               ENDIF.
@@ -595,7 +614,7 @@ CLASS lcl_json_serializer IMPLEMENTATION.
   METHOD stringify.
 
     DATA lo TYPE REF TO lcl_json_serializer.
-    lo = NEW #( ).
+    CREATE OBJECT lo.
     lo->mt_json_tree = it_json_tree.
     lo->mv_indent_step = iv_indent.
     lo->mv_keep_item_order = iv_keep_item_order.
@@ -1165,7 +1184,7 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
         " Do nothing
       WHEN zif_abapgit_ajson_types=>node_type-boolean.
         " TODO: check type ?
-        <container> = xsdbool( is_node-value = 'true' ).
+        <container> = boolc( is_node-value = 'true' ).
       WHEN zif_abapgit_ajson_types=>node_type-number.
         " TODO: check type ?
         <container> = is_node-value.
@@ -1503,7 +1522,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lo_type = cl_abap_typedescr=>describe_by_data( iv_data ).
 
-    lo_converter = NEW #( ).
+    CREATE OBJECT lo_converter.
     lo_converter->mi_custom_mapping  = ii_custom_mapping.
     lo_converter->mv_keep_item_order = is_opts-keep_item_order.
     lo_converter->mv_format_datetime = is_opts-format_datetime.
@@ -1939,7 +1958,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lo_type = cl_abap_typedescr=>describe_by_data( iv_data ).
 
-    lo_converter = NEW #( ).
+    CREATE OBJECT lo_converter.
     lo_converter->mi_custom_mapping  = ii_custom_mapping.
     lo_converter->mv_keep_item_order = is_opts-keep_item_order.
     lo_converter->mv_format_datetime = is_opts-format_datetime.
@@ -2055,7 +2074,7 @@ ENDCLASS.
 CLASS lcl_filter_runner IMPLEMENTATION.
 
   METHOD new.
-    ro_instance = NEW #( ii_filter = ii_filter ).
+    CREATE OBJECT ro_instance EXPORTING ii_filter = ii_filter.
   ENDMETHOD.
 
   METHOD constructor.
@@ -2167,7 +2186,7 @@ ENDCLASS.
 CLASS lcl_mapper_runner IMPLEMENTATION.
 
   METHOD new.
-    ro_instance = NEW #( ii_mapper = ii_mapper ).
+    CREATE OBJECT ro_instance EXPORTING ii_mapper = ii_mapper.
   ENDMETHOD.
 
   METHOD constructor.
@@ -2275,7 +2294,7 @@ CLASS lcl_mutator_queue IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD new.
-    ro_instance = NEW #( ).
+    CREATE OBJECT ro_instance.
   ENDMETHOD.
 
   METHOD lif_mutator_runner~run.
