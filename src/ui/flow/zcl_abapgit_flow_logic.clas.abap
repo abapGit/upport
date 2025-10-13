@@ -270,7 +270,7 @@ CLASS ZCL_ABAPGIT_FLOW_LOGIC IMPLEMENTATION.
 
     LOOP AT it_local ASSIGNING <ls_local> WHERE file-filename <> zif_abapgit_definitions=>c_dot_abapgit.
       READ TABLE ct_main_expanded WITH KEY name = <ls_local>-file-filename ASSIGNING <ls_expanded>.
-      lv_found_main = xsdbool( sy-subrc = 0 ).
+      lv_found_main = boolc( sy-subrc = 0 ).
 
       lv_found_branch = abap_false.
       LOOP AT it_features INTO ls_feature.
@@ -366,6 +366,9 @@ CLASS ZCL_ABAPGIT_FLOW_LOGIC IMPLEMENTATION.
     DATA ls_branch   LIKE LINE OF lt_branches.
     DATA ls_only_remote TYPE zif_abapgit_flow_logic=>ty_path_name.
     DATA ls_result   LIKE LINE OF lt_features.
+    DATA lt_all_transports TYPE ty_transports_tt.
+    DATA lv_filename TYPE string.
+
 
     FIELD-SYMBOLS <ls_tadir> LIKE LINE OF lt_tadir.
 
@@ -398,11 +401,22 @@ CLASS ZCL_ABAPGIT_FLOW_LOGIC IMPLEMENTATION.
       io_dot          = li_repo->get_dot_abapgit( )
       iv_check_exists = abap_true ).
 
+    lt_all_transports = find_open_transports( ).
+
     LOOP AT lt_tadir ASSIGNING <ls_tadir>.
+" skip the object is in any open transport
+      READ TABLE lt_all_transports WITH KEY object = <ls_tadir>-object obj_name = <ls_tadir>-obj_name TRANSPORTING NO FIELDS.
+      IF sy-subrc = 0 AND <ls_tadir>-object <> 'DEVC'.
+* todo: this is not correct for AFF enabled objects
+        lv_filename = |{ to_lower( <ls_tadir>-obj_name ) }.{ to_lower( <ls_tadir>-object ) }*|.
+        DELETE lt_main_expanded WHERE name CP lv_filename.
+        CONTINUE.
+      ENDIF.
+
       INSERT <ls_tadir> INTO TABLE lt_filter.
 
       IF lines( lt_filter ) >= 500.
-        lo_filter = NEW #( it_filter = lt_filter ).
+        CREATE OBJECT lo_filter EXPORTING it_filter = lt_filter.
         lt_local = li_repo->get_files_local_filtered( lo_filter ).
         CLEAR lt_filter.
         check_files(
@@ -419,7 +433,7 @@ CLASS ZCL_ABAPGIT_FLOW_LOGIC IMPLEMENTATION.
     ENDLOOP.
 
     IF lines( lt_filter ) > 0.
-      lo_filter = NEW #( it_filter = lt_filter ).
+      CREATE OBJECT lo_filter EXPORTING it_filter = lt_filter.
       lt_local = li_repo->get_files_local_filtered( lo_filter ).
       CLEAR lt_filter.
       check_files(
@@ -472,9 +486,9 @@ CLASS ZCL_ABAPGIT_FLOW_LOGIC IMPLEMENTATION.
           AND ls_next-obj_name = ls_transport-obj_name.
 
         READ TABLE cs_information-features WITH KEY transport-trkorr = ls_transport-trkorr TRANSPORTING NO FIELDS.
-        lv_found1 = xsdbool( sy-subrc = 0 ).
+        lv_found1 = boolc( sy-subrc = 0 ).
         READ TABLE cs_information-features WITH KEY transport-trkorr = ls_next-trkorr TRANSPORTING NO FIELDS.
-        lv_found2 = xsdbool( sy-subrc = 0 ).
+        lv_found2 = boolc( sy-subrc = 0 ).
         IF lv_found1 = abap_false AND lv_found2 = abap_false.
           " not in any favorite flow enabled repo
           CONTINUE.
@@ -600,7 +614,7 @@ CLASS ZCL_ABAPGIT_FLOW_LOGIC IMPLEMENTATION.
       iv_url  = iv_url
       it_sha1 = lt_sha1 ).
 
-    lo_visit = NEW #( ).
+    CREATE OBJECT lo_visit.
     lo_visit->clear( )->push( ls_main-sha1 ).
     WHILE lo_visit->size( ) > 0.
       lv_current = lo_visit->pop( ).
@@ -851,7 +865,7 @@ CLASS ZCL_ABAPGIT_FLOW_LOGIC IMPLEMENTATION.
     SORT lt_filter BY object obj_name.
     DELETE ADJACENT DUPLICATES FROM lt_filter COMPARING object obj_name.
 
-    lo_filter = NEW #( it_filter = lt_filter ).
+    CREATE OBJECT lo_filter EXPORTING it_filter = lt_filter.
     rt_local = ii_repo->get_files_local_filtered( lo_filter ).
 
   ENDMETHOD.
