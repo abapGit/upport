@@ -137,8 +137,8 @@ CLASS zcl_abapgit_persistence_repo IMPLEMENTATION.
 
   METHOD get_repo_from_content.
     MOVE-CORRESPONDING from_xml( is_content-data_str ) TO rs_result.
-    IF rs_result-local_settings-write_protected = abap_false AND
-       zcl_abapgit_factory=>get_environment( )->is_repo_object_changes_allowed( ) = abap_false.
+    IF rs_result-local_settings-write_protected = abap_false
+        AND zcl_abapgit_factory=>get_environment( )->is_repo_object_changes_allowed( ) = abap_false.
       rs_result-local_settings-write_protected = abap_true.
     ENDIF.
     rs_result-key = is_content-value.
@@ -259,7 +259,7 @@ CLASS zcl_abapgit_persistence_repo IMPLEMENTATION.
       it_keys = lt_keys
       iv_type = zcl_abapgit_persistence_db=>c_type_repo ).
 
-    rv_yes = xsdbool( lines( lt_content ) > 0 ).
+    rv_yes = boolc( lines( lt_content ) > 0 ).
 
   ENDMETHOD.
 
