@@ -74,6 +74,9 @@ CLASS zcl_abapgit_object_shlp IMPLEMENTATION.
       WHEN zif_abapgit_object=>gc_step_id-late.
         cv_done = check_exit( cv_exit ).
 
+      WHEN zif_abapgit_object=>gc_step_id-lxe.
+        cv_done = abap_true.
+
       WHEN OTHERS.
         ASSERT 0 = 1.
     ENDCASE.
@@ -169,7 +172,7 @@ CLASS zcl_abapgit_object_shlp IMPLEMENTATION.
 
     SELECT SINGLE shlpname FROM dd30l INTO lv_shlpname
       WHERE shlpname = ms_item-obj_name.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 

@@ -198,6 +198,9 @@ CLASS zcl_abapgit_object_doma IMPLEMENTATION.
       WHEN zif_abapgit_object=>gc_step_id-late.
         cv_done = check_exit( cv_exit ).
 
+      WHEN zif_abapgit_object=>gc_step_id-lxe.
+        cv_done = abap_true.
+
       WHEN OTHERS.
         ASSERT 0 = 1.
     ENDCASE.
@@ -424,7 +427,7 @@ CLASS zcl_abapgit_object_doma IMPLEMENTATION.
 
     SELECT SINGLE domname FROM dd01l INTO lv_domname
       WHERE domname = ms_item-obj_name.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
