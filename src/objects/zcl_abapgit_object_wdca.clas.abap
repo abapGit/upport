@@ -68,8 +68,10 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
     ls_key = ms_item-obj_name.
 
     TRY.
-        lo_cfg = NEW #( config_key = ls_key
-                        object_name = lv_name ).
+        CREATE OBJECT lo_cfg
+          EXPORTING
+            config_key  = ls_key
+            object_name = lv_name.
 
         MOVE-CORRESPONDING ls_key TO ls_outline.
 
@@ -128,8 +130,10 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
     ls_key = ms_item-obj_name.
 
     TRY.
-        lo_cfg = NEW #( config_key = ls_key
-                        object_name = lv_name ).
+        CREATE OBJECT lo_cfg
+          EXPORTING
+            config_key  = ls_key
+            object_name = lv_name.
 
         MOVE-CORRESPONDING ls_key TO es_outline.
 
@@ -184,8 +188,10 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
     MOVE-CORRESPONDING is_outline TO ls_key.
 
     TRY.
-        lo_cfg = NEW #( config_key = ls_key
-                        object_name = lv_name ).
+        CREATE OBJECT lo_cfg
+          EXPORTING
+            config_key  = ls_key
+            object_name = lv_name.
 
         READ TABLE it_data INDEX 1 INTO ls_data.
         ASSERT sy-subrc = 0.
@@ -288,7 +294,7 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
         REPLACE FIRST OCCURRENCE
           OF REGEX '<\?xml version="1\.0" encoding="[\w-]+"\?>'
           IN lv_xml_string
-          WITH '<?xml version="1.0"?>'.
+          WITH '<?xml version="1.0"?>' ##REGEX_POSIX.
         ASSERT sy-subrc = 0.
 
         lv_xml_xstring = zcl_abapgit_convert=>string_to_xstring( lv_xml_string ).
@@ -329,7 +335,7 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
       WHERE config_id = ls_wdy_config_key-config_id
         AND config_type = ls_wdy_config_key-config_type
         AND config_var = ls_wdy_config_key-config_var.  "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
   ENDMETHOD.
 
 
@@ -418,7 +424,7 @@ CLASS zcl_abapgit_object_wdca IMPLEMENTATION.
       REPLACE FIRST OCCURRENCE
         OF REGEX '<\?xml version="1\.0" encoding="[\w-]+"\?>'
         IN lv_xml_string
-        WITH '<?xml version="1.0" encoding="utf-8"?>'.
+        WITH '<?xml version="1.0" encoding="utf-8"?>' ##REGEX_POSIX.
       ASSERT sy-subrc = 0.
     ENDIF.
 

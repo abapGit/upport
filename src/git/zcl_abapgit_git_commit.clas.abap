@@ -86,7 +86,7 @@ CLASS zcl_abapgit_git_commit IMPLEMENTATION.
       SUBMATCHES
       ev_author
       ev_email
-      ev_time.
+      ev_time ##REGEX_POSIX.
 
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise( |Error author regex value='{ iv_author }'| ).
@@ -221,7 +221,7 @@ CLASS zcl_abapgit_git_commit IMPLEMENTATION.
       READ TABLE it_commits
         TRANSPORTING NO FIELDS
         WITH KEY sha1 = iv_sha1.
-      rv_result = xsdbool( sy-subrc <> 0 ).
+      rv_result = boolc( sy-subrc <> 0 ).
 
     ENDIF.
 

@@ -92,7 +92,7 @@ CLASS ZCL_ABAPGIT_PATH IMPLEMENTATION.
 
 
   METHOD is_root.
-    rv_yes = xsdbool( iv_path = '/' ).
+    rv_yes = boolc( iv_path = '/' ).
   ENDMETHOD.
 
 
@@ -103,7 +103,7 @@ CLASS ZCL_ABAPGIT_PATH IMPLEMENTATION.
 
     lv_len  = strlen( iv_parent ).
     lv_last = lv_len - 1.
-    rv_yes  = xsdbool( strlen( iv_path ) > lv_len
+    rv_yes  = boolc( strlen( iv_path ) > lv_len
                  AND iv_path+0(lv_len) = iv_parent
                  AND ( iv_parent+lv_last(1) = '/' OR iv_path+lv_len(1) = '/' ) ).
 
@@ -117,7 +117,7 @@ CLASS ZCL_ABAPGIT_PATH IMPLEMENTATION.
 
     FIND FIRST OCCURRENCE OF REGEX '^/(.*/)?' IN iv_fullpath
       MATCH COUNT lv_cnt
-      MATCH LENGTH lv_len.
+      MATCH LENGTH lv_len ##REGEX_POSIX.
 
     IF lv_cnt > 0.
       ev_path     = iv_fullpath+0(lv_len).

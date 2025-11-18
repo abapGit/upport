@@ -159,9 +159,11 @@ CLASS zcl_abapgit_repo_news IMPLEMENTATION.
                       WHERE path = lc_log_path
                       AND ( filename CP lc_log_filename OR filename CP lc_log_filename_up ) ##PRIMKEY[FILE_PATH].
 
-      ro_instance = NEW #( iv_rawdata = <ls_file>-data
-                           iv_current_version = lv_version
-                           iv_lastseen_version = zcl_abapgit_version=>normalize( lv_last_seen ) ).
+      CREATE OBJECT ro_instance
+        EXPORTING
+          iv_rawdata          = <ls_file>-data
+          iv_current_version  = lv_version
+          iv_lastseen_version = zcl_abapgit_version=>normalize( lv_last_seen ).
 
       EXIT.
 
@@ -183,24 +185,24 @@ CLASS zcl_abapgit_repo_news IMPLEMENTATION.
 
   METHOD has_important.
     READ TABLE mt_log WITH KEY is_important = abap_true TRANSPORTING NO FIELDS.
-    rv_boolean = xsdbool( sy-subrc IS INITIAL ).
+    rv_boolean = boolc( sy-subrc IS INITIAL ).
   ENDMETHOD.
 
 
   METHOD has_news.
-    rv_boolean = xsdbool( lines( mt_log ) > 0 ).
+    rv_boolean = boolc( lines( mt_log ) > 0 ).
   ENDMETHOD.
 
 
   METHOD has_unseen.
-    rv_boolean = xsdbool( zcl_abapgit_version=>compare(
+    rv_boolean = boolc( zcl_abapgit_version=>compare(
       iv_a = mv_latest_version
       iv_b = mv_lastseen_version ) > 0 ).
   ENDMETHOD.
 
 
   METHOD has_updates.
-    rv_boolean = xsdbool( zcl_abapgit_version=>compare(
+    rv_boolean = boolc( zcl_abapgit_version=>compare(
       iv_a = mv_latest_version
       iv_b = mv_current_version ) > 0 ).
   ENDMETHOD.
@@ -270,7 +272,7 @@ CLASS zcl_abapgit_repo_news IMPLEMENTATION.
     ENDIF.
 
     " Check if line is a header line
-    FIND FIRST OCCURRENCE OF REGEX lc_header_pattern IN iv_line SUBMATCHES lv_version.
+    FIND FIRST OCCURRENCE OF REGEX lc_header_pattern IN iv_line SUBMATCHES lv_version ##REGEX_POSIX.
     IF sy-subrc IS INITIAL.
       lv_version        = zcl_abapgit_version=>normalize( lv_version ).
       rs_log-version    = lv_version.
@@ -278,8 +280,8 @@ CLASS zcl_abapgit_repo_news IMPLEMENTATION.
       rs_log-pos_to_cur = zcl_abapgit_version=>compare( iv_a = lv_version
                                                         iv_b = iv_current_version ).
     ELSE.
-      FIND FIRST OCCURRENCE OF REGEX '^\s*!' IN iv_line.
-      rs_log-is_important = xsdbool( sy-subrc IS INITIAL ). " Change is important
+      FIND FIRST OCCURRENCE OF REGEX '^\s*!' IN iv_line ##REGEX_POSIX.
+      rs_log-is_important = boolc( sy-subrc IS INITIAL ). " Change is important
     ENDIF.
 
     rs_log-text = iv_line.

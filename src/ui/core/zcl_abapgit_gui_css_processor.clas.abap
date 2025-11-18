@@ -68,9 +68,11 @@ CLASS ZCL_ABAPGIT_GUI_CSS_PROCESSOR IMPLEMENTATION.
 
     " Only the :root element may define variables for now
 
-    FIND FIRST OCCURRENCE OF REGEX lc_root_pattern IN iv_string SUBMATCHES lv_root.
+    FIND FIRST OCCURRENCE OF REGEX lc_root_pattern IN iv_string SUBMATCHES lv_root ##REGEX_POSIX.
     IF sy-subrc = 0 AND lv_root IS NOT INITIAL.
-      lo_regex = NEW #( pattern = lc_variable_pattern ).
+      CREATE OBJECT lo_regex
+        EXPORTING
+          pattern = lc_variable_pattern.
       lo_matcher = lo_regex->create_matcher( text = lv_root ).
       WHILE lo_matcher->find_next( ) = abap_true.
         ls_variable-name = lo_matcher->get_submatch( 1 ).
@@ -143,7 +145,7 @@ CLASS ZCL_ABAPGIT_GUI_CSS_PROCESSOR IMPLEMENTATION.
       DO.
         FIND FIRST OCCURRENCE OF REGEX lc_variable_usage_pattern
              IN <ls_variable>-value
-             SUBMATCHES lv_variable_name.
+             SUBMATCHES lv_variable_name ##REGEX_POSIX.
         IF sy-subrc = 0.
           resolve_var_recursively( EXPORTING iv_variable_name = lv_variable_name
                                    CHANGING  ct_variables     = ct_variables ).

@@ -69,11 +69,11 @@ CLASS lcl_rename IMPLEMENTATION.
     CASE mv_rename_by.
       WHEN zcl_abapgit_ajson_mapping=>rename_by-attr_name.
         READ TABLE mt_rename_map ASSIGNING <r> WITH TABLE KEY by_name COMPONENTS from = cv_name.
-        lv_pair_found = xsdbool( sy-subrc = 0 ).
+        lv_pair_found = boolc( sy-subrc = 0 ).
       WHEN zcl_abapgit_ajson_mapping=>rename_by-full_path.
         lv_full_path = is_node-path && cv_name.
         READ TABLE mt_rename_map ASSIGNING <r> WITH TABLE KEY by_name COMPONENTS from = lv_full_path.
-        lv_pair_found = xsdbool( sy-subrc = 0 ).
+        lv_pair_found = boolc( sy-subrc = 0 ).
       WHEN zcl_abapgit_ajson_mapping=>rename_by-pattern.
         lv_full_path = is_node-path && cv_name.
         LOOP AT mt_rename_map ASSIGNING <r>.
@@ -196,7 +196,7 @@ CLASS lcl_mapping_camel IMPLEMENTATION. "DEPRECATED
 
     rv_result = iv_name.
 
-    REPLACE ALL OCCURRENCES OF REGEX `([a-z])([A-Z])` IN rv_result WITH `$1_$2`.
+    REPLACE ALL OCCURRENCES OF REGEX `([a-z])([A-Z])` IN rv_result WITH `$1_$2` ##REGEX_POSIX.
 
   ENDMETHOD.
 
@@ -282,7 +282,7 @@ CLASS lcl_to_snake IMPLEMENTATION.
 
   METHOD zif_abapgit_ajson_mapping~rename_node.
 
-    REPLACE ALL OCCURRENCES OF REGEX `([a-z])([A-Z])` IN cv_name WITH `$1_$2`.
+    REPLACE ALL OCCURRENCES OF REGEX `([a-z])([A-Z])` IN cv_name WITH `$1_$2` ##REGEX_POSIX.
     cv_name = to_lower( cv_name ).
 
   ENDMETHOD.
