@@ -188,9 +188,7 @@ CLASS ltcl_resolve_packages IMPLEMENTATION.
 
     DATA: lo_mock_sap_package TYPE REF TO ltcl_sap_package.
 
-    CREATE OBJECT lo_mock_sap_package
-      EXPORTING
-        iv_package = 'Z_MAIN'.
+    lo_mock_sap_package = NEW #( iv_package = 'Z_MAIN' ).
 
     lo_mock_sap_package->set_sub_packages( mt_sub_packages ).
 
@@ -285,7 +283,7 @@ CLASS ltcl_resolve IMPLEMENTATION.
                                  obj_name = iv_obj_name_b.
 
     cl_abap_unit_assert=>assert_true(
-      act = boolc( ls_tadir_a-korrnum < ls_tadir_b-korrnum )
+      act = xsdbool( ls_tadir_a-korrnum < ls_tadir_b-korrnum )
       msg = |{ iv_object_a } { iv_obj_name_a } should be deleted before { iv_object_b } { iv_obj_name_b }| ).
 
   ENDMETHOD.
