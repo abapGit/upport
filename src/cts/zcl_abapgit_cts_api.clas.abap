@@ -188,7 +188,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    rv_locked = xsdbool( lv_lock_flag <> space ).
+    rv_locked = boolc( lv_lock_flag <> space ).
   ENDMETHOD.
 
 
@@ -206,7 +206,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       IMPORTING
         pe_result = lv_type_check_result.
 
-    rv_lockable = xsdbool( lv_type_check_result = 'L' ).
+    rv_lockable = boolc( lv_type_check_result = 'L' ).
   ENDMETHOD.
 
 
@@ -224,7 +224,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       IMPORTING
         pe_result = lv_type_check_result.
 
-    rv_transportable = xsdbool( lv_type_check_result CA 'RTL' OR iv_object_type = 'TABU' ).
+    rv_transportable = boolc( lv_type_check_result CA 'RTL' OR iv_object_type = 'TABU' ).
   ENDMETHOD.
 
 
@@ -608,29 +608,12 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
 
   METHOD zif_abapgit_cts_api~list_open_requests.
 
-    TYPES: BEGIN OF ty_e070,
-             trkorr     TYPE e070-trkorr,
-             trfunction TYPE e070-trfunction,
-             strkorr    TYPE e070-strkorr,
-           END OF ty_e070.
-    DATA lt_e070 TYPE STANDARD TABLE OF ty_e070 WITH DEFAULT KEY.
-
-* find all tasks first
-    SELECT trkorr trfunction strkorr
-      FROM e070 INTO TABLE lt_e070
+    SELECT trkorr FROM e070
+      INTO TABLE rt_trkorr
       WHERE trstatus = zif_abapgit_cts_api=>c_transport_status-modifiable
-      AND as4user IN it_user
+      AND trfunction = zif_abapgit_cts_api=>c_transport_type-wb_request
       AND as4date IN it_date
-      AND strkorr <> ''
       ORDER BY PRIMARY KEY.
-
-    IF lines( lt_e070 ) > 0.
-      SELECT trkorr FROM e070
-        INTO TABLE rt_trkorr
-        FOR ALL ENTRIES IN lt_e070
-        WHERE trkorr = lt_e070-strkorr
-        AND trfunction = zif_abapgit_cts_api=>c_transport_type-wb_request.
-    ENDIF.
 
   ENDMETHOD.
 
