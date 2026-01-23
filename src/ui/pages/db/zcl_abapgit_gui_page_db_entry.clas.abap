@@ -48,6 +48,7 @@ CLASS zcl_abapgit_gui_page_db_entry DEFINITION
     METHODS render_view
       IMPORTING
         iv_raw_db_value TYPE zif_abapgit_persistence=>ty_content-data_str
+        iv_db_type      TYPE zif_abapgit_persistence=>ty_content-type
         ii_html         TYPE REF TO zif_abapgit_html
       RAISING
         zcx_abapgit_exception.
@@ -131,8 +132,10 @@ CLASS zcl_abapgit_gui_page_db_entry IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_db_entry.
 
-    lo_component = NEW #( iv_edit_mode = iv_edit_mode
-                          is_key = is_key ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        iv_edit_mode = iv_edit_mode
+        is_key       = is_key.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_extra_css_url       = c_css_url
@@ -173,7 +176,7 @@ CLASS zcl_abapgit_gui_page_db_entry IMPLEMENTATION.
 
     DATA lo_buf TYPE REF TO zcl_abapgit_string_buffer.
 
-    lo_buf = NEW #( ).
+    CREATE OBJECT lo_buf.
 
     " @@abapmerge include zabapgit_css_page_db_entry.w3mi.data.css > lo_buf->add( '$$' ).
     gui_services( )->register_page_asset(
@@ -227,11 +230,31 @@ CLASS zcl_abapgit_gui_page_db_entry IMPLEMENTATION.
   METHOD render_view.
 
     DATA lo_highlighter TYPE REF TO zcl_abapgit_syntax_highlighter.
-    DATA lv_formatted   TYPE string.
+    DATA lt_data TYPE string_table.
+    DATA lv_data TYPE string.
+    DATA lv_formatted TYPE string.
+
+    lv_data = iv_raw_db_value.
 
     " Create syntax highlighter
-    lo_highlighter = zcl_abapgit_syntax_factory=>create( '*.xml' ).
-    lv_formatted   = lo_highlighter->process_line( zcl_abapgit_xml_pretty=>print( iv_raw_db_value ) ).
+    CASE iv_db_type.
+      WHEN zcl_abapgit_persistence_db=>c_type_repo_csum.
+        lo_highlighter = zcl_abapgit_syntax_factory=>create( '*.txt' ).
+      WHEN zcl_abapgit_persistence_db=>c_type_repo_data.
+        lo_highlighter = zcl_abapgit_syntax_factory=>create( '*.json' ).
+      WHEN OTHERS.
+        lo_highlighter = zcl_abapgit_syntax_factory=>create( '*.xml' ).
+        lv_data        = zcl_abapgit_xml_pretty=>print( lv_data ).
+    ENDCASE.
+
+    SPLIT lv_data AT |\n| INTO TABLE lt_data.
+
+    LOOP AT lt_data INTO lv_data.
+      IF sy-tabix > 1.
+        lv_formatted = lv_formatted && |\n|.
+      ENDIF.
+      lv_formatted = lv_formatted && lo_highlighter->process_line( lv_data ).
+    ENDLOOP.
 
     ii_html->add( |<pre class="syntax-hl">{ lv_formatted }</pre>| ).
 
@@ -242,7 +265,7 @@ CLASS zcl_abapgit_gui_page_db_entry IMPLEMENTATION.
 
     CASE ii_event->mv_action.
       WHEN c_action-switch_mode.
-        mv_edit_mode = xsdbool( mv_edit_mode = abap_false ).
+        mv_edit_mode = boolc( mv_edit_mode = abap_false ).
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
       WHEN c_action-update.
         do_update( dbcontent_decode( ii_event->form_data( ) ) ).
@@ -276,7 +299,7 @@ CLASS zcl_abapgit_gui_page_db_entry IMPLEMENTATION.
       CATCH zcx_abapgit_not_found ##NO_HANDLER.
     ENDTRY.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div class="db-entry">' ).
 
@@ -292,8 +315,13 @@ CLASS zcl_abapgit_gui_page_db_entry IMPLEMENTATION.
         iv_raw_db_value = lv_raw_db_value
         ii_html         = ri_html ).
     ELSE.
+      IF lv_raw_db_value IS INITIAL.
+        zcx_abapgit_exception=>raise( |Empty record for { ms_key-type }{ ms_key-value }| ).
+      ENDIF.
+
       render_view(
         iv_raw_db_value = lv_raw_db_value
+        iv_db_type      = ms_key-type
         ii_html         = ri_html ).
     ENDIF.
 
