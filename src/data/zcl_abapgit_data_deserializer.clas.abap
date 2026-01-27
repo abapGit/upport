@@ -143,7 +143,7 @@ CLASS zcl_abapgit_data_deserializer IMPLEMENTATION.
       iv_obj_name = |{ iv_tabname }| ).
 
     READ TABLE lt_packages TRANSPORTING NO FIELDS WITH TABLE KEY table_line = lv_package.
-    rv_is_included = boolc( sy-subrc = 0 ).
+    rv_is_included = xsdbool( sy-subrc = 0 ).
 
   ENDMETHOD.
 
