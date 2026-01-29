@@ -468,7 +468,7 @@ CLASS zcl_abapgit_object_srvd IMPLEMENTATION.
             version        = 'A'
           IMPORTING
             eo_object_data = lo_object_data.
-        rv_bool = boolc( lo_object_data IS NOT INITIAL AND lo_object_data->get_object_key( ) IS NOT INITIAL ).
+        rv_bool = xsdbool( lo_object_data IS NOT INITIAL AND lo_object_data->get_object_key( ) IS NOT INITIAL ).
 
         IF rv_bool = abap_false.
           CALL METHOD lo_wb_object_operator->('IF_WB_OBJECT_OPERATOR~READ')
@@ -477,7 +477,7 @@ CLASS zcl_abapgit_object_srvd IMPLEMENTATION.
               version        = 'I'
             IMPORTING
               eo_object_data = lo_object_data.
-          rv_bool = boolc( lo_object_data IS NOT INITIAL AND lo_object_data->get_object_key( ) IS NOT INITIAL ).
+          rv_bool = xsdbool( lo_object_data IS NOT INITIAL AND lo_object_data->get_object_key( ) IS NOT INITIAL ).
         ENDIF.
       CATCH cx_root.
         rv_bool = abap_false.
