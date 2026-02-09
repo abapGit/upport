@@ -116,7 +116,8 @@ CLASS zcl_abapgit_object_xslt IMPLEMENTATION.
 
     IF zif_abapgit_object~exists( ) = abap_true.
       zif_abapgit_object~delete( iv_package   = iv_package
-                                 iv_transport = iv_transport ).
+                                 iv_transport = iv_transport
+                                 ii_log       = ii_log ).
     ENDIF.
 
     io_xml->read( EXPORTING iv_name = 'ATTRIBUTES'
@@ -191,7 +192,7 @@ CLASS zcl_abapgit_object_xslt IMPLEMENTATION.
     lv_name = ms_item-obj_name.
 
     rv_bool = cl_o2_api_xsltdesc=>exists( lv_name ).
-    rv_bool = xsdbool( rv_bool = '1' ).
+    rv_bool = boolc( rv_bool = '1' ).
 
   ENDMETHOD.
 

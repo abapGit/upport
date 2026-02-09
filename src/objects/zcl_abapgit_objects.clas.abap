@@ -118,6 +118,7 @@ CLASS zcl_abapgit_objects DEFINITION
         !iv_package   TYPE devclass
         !is_item      TYPE zif_abapgit_definitions=>ty_item
         !iv_transport TYPE trkorr
+        !ii_log       TYPE REF TO zif_abapgit_log
       RAISING
         zcx_abapgit_exception .
     CLASS-METHODS deserialize_steps
@@ -414,11 +415,15 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
 
         TRY. " 2nd step, try looking for plugins
             IF io_files IS BOUND AND io_i18n_params IS BOUND.
-              ri_obj = NEW zcl_abapgit_objects_bridge( is_item = is_item
-                                                       io_files = io_files
-                                                       io_i18n_params = io_i18n_params ).
+              CREATE OBJECT ri_obj TYPE zcl_abapgit_objects_bridge
+                EXPORTING
+                  is_item        = is_item
+                  io_files       = io_files
+                  io_i18n_params = io_i18n_params.
             ELSE.
-              ri_obj = NEW zcl_abapgit_objects_bridge( is_item = is_item ).
+              CREATE OBJECT ri_obj TYPE zcl_abapgit_objects_bridge
+                EXPORTING
+                  is_item = is_item.
             ENDIF.
           CATCH cx_sy_create_object_error zcx_abapgit_exception.
             RAISE EXCEPTION TYPE zcx_abapgit_type_not_supported EXPORTING obj_type = is_item-obj_type.
@@ -487,7 +492,8 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
             delete_object(
               iv_package   = <ls_tadir>-devclass
               is_item      = ls_item
-              iv_transport = is_checks-transport-transport ).
+              iv_transport = is_checks-transport-transport
+              ii_log       = ii_log ).
 
             INSERT <ls_tadir> INTO TABLE lt_deleted.
             DELETE lt_tadir.
@@ -540,7 +546,8 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
 
     li_obj = create_object( is_item ).
     li_obj->delete( iv_package   = iv_package
-                    iv_transport = iv_transport ).
+                    iv_transport = iv_transport
+                    ii_log       = ii_log ).
 
   ENDMETHOD.
 
@@ -627,7 +634,9 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
       ii_log->add_info( |>>> Deserializing { lines( lt_items ) } objects| ).
     ENDIF.
 
-    lo_abap_language_vers = NEW #( io_dot_abapgit = lo_dot ).
+    CREATE OBJECT lo_abap_language_vers
+      EXPORTING
+        io_dot_abapgit = lo_dot.
 
     lo_folder_logic = zcl_abapgit_folder_logic=>get_instance( ).
     LOOP AT lt_results ASSIGNING <ls_result>.
@@ -1007,6 +1016,37 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD is_prog_enho_include.
+
+    DATA lv_enho_name TYPE enhname.
+
+    " ENHO includes ending in 'E' or 'EIMP' at position 31 shouldn't be in TADIR
+    " but appear due to bug (SAP note 1025291). Skip them, sources are in ENHO.
+
+    " Format: <enho_name><padding_with_=><E/EIMP>
+    " Example: ZMM_SOME_ENHANCEMENT==========E
+
+    IF NOT ( iv_obj_name+30(4) = 'EIMP' OR
+             iv_obj_name+30(4) = 'E   ' ).
+      RETURN.
+    ENDIF.
+
+    " Extract enhancement name: first 30 chars, strip trailing '='
+    lv_enho_name = iv_obj_name(30).
+    SHIFT lv_enho_name RIGHT DELETING TRAILING '='.
+    SHIFT lv_enho_name LEFT DELETING LEADING space.
+
+    " Check if corresponding ENHO exists
+    SELECT SINGLE obj_name FROM tadir INTO lv_enho_name
+      WHERE pgmid = 'R3TR'
+      AND object = 'ENHO'
+      AND obj_name = lv_enho_name.
+
+    rv_bool = boolc( sy-subrc = 0 ).
+
+  ENDMETHOD.
+
+
   METHOD is_supported.
 
     TRY.
@@ -1071,7 +1111,7 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
     li_exit->change_supported_object_types( CHANGING ct_types = lt_types ).
 
     READ TABLE lt_types TRANSPORTING NO FIELDS WITH TABLE KEY table_line = iv_obj_type.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -1178,14 +1218,14 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
       io_files       = lo_files
       io_i18n_params = io_i18n_params ).
 
-    li_xml = NEW zcl_abapgit_xml_output( ).
+    CREATE OBJECT li_xml TYPE zcl_abapgit_xml_output.
 
     rs_files_and_item-item = is_item.
 
     TRY.
         li_obj->serialize( li_xml ).
       CATCH zcx_abapgit_exception INTO lx_error.
-        rs_files_and_item-item-inactive = xsdbool( li_obj->is_active( ) = abap_false ).
+        rs_files_and_item-item-inactive = boolc( li_obj->is_active( ) = abap_false ).
         RAISE EXCEPTION lx_error.
     ENDTRY.
 
@@ -1208,7 +1248,7 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
 
     check_duplicates( rs_files_and_item-files ).
 
-    rs_files_and_item-item-inactive = xsdbool( li_obj->is_active( ) = abap_false ).
+    rs_files_and_item-item-inactive = boolc( li_obj->is_active( ) = abap_false ).
 
     LOOP AT rs_files_and_item-files ASSIGNING <ls_file>.
       <ls_file>-sha1 = zcl_abapgit_hash=>sha1_blob( <ls_file>-data ).
@@ -1350,36 +1390,4 @@ CLASS zcl_abapgit_objects IMPLEMENTATION.
     ENDLOOP.
 
   ENDMETHOD.
-
-
-  METHOD is_prog_enho_include.
-
-    DATA lv_enho_name TYPE enhname.
-
-    " ENHO includes ending in 'E' or 'EIMP' at position 31 shouldn't be in TADIR
-    " but appear due to bug (SAP note 1025291). Skip them, sources are in ENHO.
-
-    " Format: <enho_name><padding_with_=><E/EIMP>
-    " Example: ZMM_SOME_ENHANCEMENT==========E
-
-    IF NOT ( iv_obj_name+30(4) = 'EIMP' OR
-             iv_obj_name+30(4) = 'E   ' ).
-      RETURN.
-    ENDIF.
-
-    " Extract enhancement name: first 30 chars, strip trailing '='
-    lv_enho_name = iv_obj_name(30).
-    SHIFT lv_enho_name RIGHT DELETING TRAILING '='.
-    SHIFT lv_enho_name LEFT DELETING LEADING space.
-
-    " Check if corresponding ENHO exists
-    SELECT SINGLE obj_name FROM tadir INTO lv_enho_name
-      WHERE pgmid = 'R3TR'
-      AND object = 'ENHO'
-      AND obj_name = lv_enho_name.
-
-    rv_bool = xsdbool( sy-subrc = 0 ).
-
-  ENDMETHOD.
-
 ENDCLASS.
