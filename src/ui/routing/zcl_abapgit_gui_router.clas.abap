@@ -409,10 +409,11 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
 
     IF ri_page IS INITIAL.
       ri_page = zcl_abapgit_gui_page_stage=>create(
-        ii_repo_online = li_repo_online
-        iv_seed        = lv_seed
-        iv_sci_result  = lv_sci_result
-        ii_obj_filter  = ii_obj_filter ).
+        ii_repo_online   = li_repo_online
+        iv_seed          = lv_seed
+        iv_sci_result    = lv_sci_result
+        ii_obj_filter    = ii_obj_filter
+        ii_force_refresh = abap_true ).
     ENDIF.
 
   ENDMETHOD.
@@ -493,7 +494,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
 
     li_repo = zcl_abapgit_repo_srv=>get_instance( )->get( iv_key ).
 
-    ro_filter = NEW #( ).
+    CREATE OBJECT ro_filter.
     ro_filter->set_filter_values( iv_package  = li_repo->get_package( )
                                   it_r_trkorr = lt_r_trkorr ).
 
@@ -573,7 +574,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
     IF iv_line CO '0123456789'.
       lv_line_number = iv_line.
     ENDIF.
-    lv_new_window = xsdbool( iv_new_window IS NOT INITIAL ).
+    lv_new_window = boolc( iv_new_window IS NOT INITIAL ).
 
     TRY.
         li_html_viewer = zcl_abapgit_ui_core_factory=>get_html_viewer( ).
@@ -818,7 +819,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
     lt_r_trkorr = zcl_abapgit_ui_factory=>get_popups( )->popup_select_wb_tc_tr_and_tsk( ).
     li_repo = zcl_abapgit_repo_srv=>get_instance( )->get( iv_key ).
     li_repo->refresh( ).
-    lo_obj_filter_trans = NEW #( ).
+    CREATE OBJECT lo_obj_filter_trans.
     lo_obj_filter_trans->set_filter_values( iv_package  = li_repo->get_package( )
                                             it_r_trkorr = lt_r_trkorr ).
 

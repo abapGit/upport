@@ -237,7 +237,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
       ii_log                = ii_log
       it_filter             = it_filter ).
 
-    lo_filter = NEW #( ).
+    CREATE OBJECT lo_filter.
 
     lo_filter->apply( EXPORTING it_filter = it_filter
                       CHANGING  ct_tadir  = lt_tadir ).
@@ -245,7 +245,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
 * if there are less than 10 objects run in single thread
 * this helps a lot when debugging, plus performance gain
 * with low number of objects does not matter much
-    lv_force = xsdbool( lines( lt_tadir ) < 10 ).
+    lv_force = boolc( lines( lt_tadir ) < 10 ).
 
     lt_found = serialize(
       iv_package          = iv_package
@@ -291,7 +291,9 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
     ms_i18n_params-suppress_po_comments = is_local_settings-suppress_lxe_po_comments.
 
     IF mo_dot_abapgit IS NOT INITIAL.
-      mo_abap_language_version = NEW #( io_dot_abapgit = mo_dot_abapgit ).
+      CREATE OBJECT mo_abap_language_version
+        EXPORTING
+          io_dot_abapgit = mo_dot_abapgit.
     ENDIF.
 
   ENDMETHOD.
@@ -383,6 +385,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
   METHOD files_local.
 
 * serializes objects, including .abapgit.xml, apack, and takes into account local settings
+    DATA li_exit TYPE REF TO zif_abapgit_exit.
 
     add_dot_abapgit( CHANGING ct_files = rt_files ).
 
@@ -404,6 +407,16 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
         iv_package = iv_package
         ii_log     = ii_log
         it_filter  = it_filter
+      CHANGING
+        ct_files   = rt_files ).
+
+*   Call postprocessing
+    li_exit = zcl_abapgit_exit=>get_instance( ).
+
+    li_exit->serialize_postprocess(
+      EXPORTING
+        iv_package = iv_package
+        ii_log     = ii_log
       CHANGING
         ct_files   = rt_files ).
 
@@ -552,7 +565,7 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
 
   METHOD is_parallelization_possible.
 
-    rv_result = xsdbool( zcl_abapgit_factory=>get_environment( )->is_merged( ) = abap_false
+    rv_result = boolc( zcl_abapgit_factory=>get_environment( )->is_merged( ) = abap_false
                    AND zcl_abapgit_persist_factory=>get_settings( )->read( )->get_parallel_proc_disabled( ) = abap_false
                    " The function module below should always exist here as is_merged evaluated to false above.
                    " It does however not exist in the transpiled version which then causes unit tests to fail.
@@ -708,7 +721,6 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
     DATA: lv_max      TYPE i,
           lv_count    TYPE i,
           li_progress TYPE REF TO zif_abapgit_progress,
-          li_exit     TYPE REF TO zif_abapgit_exit,
           lo_timer    TYPE REF TO zcl_abapgit_timer,
           lt_tadir    TYPE zif_abapgit_definitions=>ty_tadir_tt.
 
@@ -761,16 +773,6 @@ CLASS zcl_abapgit_serialize IMPLEMENTATION.
     WAIT UNTIL mv_free = lv_max UP TO 120 SECONDS.
     rt_files = mt_files.
     FREE mt_files.
-
-*   Call postprocessing
-    li_exit = zcl_abapgit_exit=>get_instance( ).
-
-    li_exit->serialize_postprocess(
-      EXPORTING
-        iv_package = iv_package
-        ii_log     = ii_log
-      CHANGING
-        ct_files   = rt_files ).
 
     lo_timer->end( abap_true ).
 
