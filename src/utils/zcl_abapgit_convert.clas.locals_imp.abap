@@ -28,7 +28,7 @@ CLASS lcl_in IMPLEMENTATION.
               instance = go_conv_new.
         CATCH cx_sy_dyn_call_illegal_class.
 * ignore conversion errors on non-unicode systems
-          lv_ignore_cerr = boolc( cl_abap_char_utilities=>charsize = 1 ).
+          lv_ignore_cerr = xsdbool( cl_abap_char_utilities=>charsize = 1 ).
 
           lv_class = 'CL_ABAP_CONV_IN_CE'.
           CALL METHOD (lv_class)=>create
