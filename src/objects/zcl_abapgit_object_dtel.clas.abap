@@ -194,6 +194,10 @@ CLASS zcl_abapgit_object_dtel IMPLEMENTATION.
     io_xml->read( EXPORTING iv_name = 'DD04V'
                   CHANGING cg_data = ls_dd04v ).
 
+    IF ls_dd04v-ddtext IS INITIAL.
+      zcx_abapgit_exception=>raise( |DTEL { ms_item-obj_name }: description is empty| ).
+    ENDIF.
+
     corr_insert( iv_package = iv_package
                  ig_object_class = 'DICT' ).
 
@@ -261,7 +265,7 @@ CLASS zcl_abapgit_object_dtel IMPLEMENTATION.
       SELECT SINGLE rollname FROM dd04l INTO lv_rollname
         WHERE rollname = lv_rollname.
     ENDIF.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
