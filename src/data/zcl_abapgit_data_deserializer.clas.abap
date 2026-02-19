@@ -88,6 +88,10 @@ CLASS zcl_abapgit_data_deserializer IMPLEMENTATION.
 
     ASSIGN ir_data->* TO <lg_tab>.
 
+    IF is_file-data IS INITIAL.
+      RETURN.
+    ENDIF.
+
     TRY.
         lo_ajson = zcl_abapgit_ajson=>parse( zcl_abapgit_convert=>xstring_to_string_utf8( is_file-data ) ).
         lo_ajson->to_abap_corresponding_only( ).
@@ -143,7 +147,7 @@ CLASS zcl_abapgit_data_deserializer IMPLEMENTATION.
       iv_obj_name = |{ iv_tabname }| ).
 
     READ TABLE lt_packages TRANSPORTING NO FIELDS WITH TABLE KEY table_line = lv_package.
-    rv_is_included = xsdbool( sy-subrc = 0 ).
+    rv_is_included = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
