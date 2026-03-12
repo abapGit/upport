@@ -49,9 +49,11 @@ CLASS zcl_abapgit_gui_in_page_modal IMPLEMENTATION.
 
 
   METHOD create.
-    ro_wrap = NEW #( ii_child = ii_child
-                     iv_width = iv_width
-                     iv_height = iv_height ).
+    CREATE OBJECT ro_wrap
+      EXPORTING
+        ii_child  = ii_child
+        iv_width  = iv_width
+        iv_height = iv_height.
   ENDMETHOD.
 
 
@@ -59,8 +61,12 @@ CLASS zcl_abapgit_gui_in_page_modal IMPLEMENTATION.
 
     DATA lo_style TYPE REF TO zcl_abapgit_string_buffer.
 
-    ri_html = NEW zcl_abapgit_html( ).
-    lo_style = NEW #( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
+    CREATE OBJECT lo_style.
+
+    IF mi_child IS INITIAL.
+      RETURN.
+    ENDIF.
 
     IF ms_attrs-width IS NOT INITIAL.
       lo_style->add( |width:{ ms_attrs-width }px;| ).
@@ -69,7 +75,7 @@ CLASS zcl_abapgit_gui_in_page_modal IMPLEMENTATION.
       lo_style->add( |height:{ ms_attrs-height }px;| ).
     ENDIF.
 
-    ri_html->add( |<div class="modal" style="{ lo_style->join_w_space_and_flush( ) }">| ).
+    ri_html->add( |<div id="modal" class="modal" style="{ lo_style->join_w_space_and_flush( ) }">| ).
     ri_html->add( |<div class="modal-guts">| ).
     ri_html->add( mi_child->render( ) ).
     ri_html->add( |</div>| ).
