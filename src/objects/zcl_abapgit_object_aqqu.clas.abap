@@ -36,9 +36,11 @@ CLASS zcl_abapgit_object_aqqu IMPLEMENTATION.
 
   METHOD get_generic.
     " transaction SQ01
-    ro_generic = NEW #( is_item = ms_item
-                        io_field_rules = get_field_rules( )
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        is_item        = ms_item
+        io_field_rules = get_field_rules( )
+        iv_language    = mv_language.
 
   ENDMETHOD.
 
@@ -50,7 +52,8 @@ CLASS zcl_abapgit_object_aqqu IMPLEMENTATION.
 
   METHOD zif_abapgit_object~delete.
 
-    get_generic( )->delete( iv_package ).
+    get_generic( )->delete( iv_package   = iv_package
+                            iv_transport = iv_transport ).
 
   ENDMETHOD.
 
@@ -58,8 +61,9 @@ CLASS zcl_abapgit_object_aqqu IMPLEMENTATION.
   METHOD zif_abapgit_object~deserialize.
 
     get_generic( )->deserialize(
-      iv_package = iv_package
-      io_xml     = io_xml ).
+      iv_package   = iv_package
+      io_xml       = io_xml
+      iv_transport = iv_transport ).
 
   ENDMETHOD.
 

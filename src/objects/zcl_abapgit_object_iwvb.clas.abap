@@ -55,9 +55,11 @@ CLASS zcl_abapgit_object_iwvb IMPLEMENTATION.
 
   METHOD get_generic.
 
-    ro_generic = NEW #( io_field_rules = get_field_rules( )
-                        is_item = ms_item
-                        iv_language = mv_language ).
+    CREATE OBJECT ro_generic
+      EXPORTING
+        io_field_rules = get_field_rules( )
+        is_item        = ms_item
+        iv_language    = mv_language.
 
   ENDMETHOD.
 
@@ -82,7 +84,8 @@ CLASS zcl_abapgit_object_iwvb IMPLEMENTATION.
 
   METHOD zif_abapgit_object~delete.
 
-    get_generic( )->delete( iv_package ).
+    get_generic( )->delete( iv_package   = iv_package
+                            iv_transport = iv_transport ).
 
   ENDMETHOD.
 
@@ -90,8 +93,9 @@ CLASS zcl_abapgit_object_iwvb IMPLEMENTATION.
   METHOD zif_abapgit_object~deserialize.
 
     get_generic( )->deserialize(
-      iv_package = iv_package
-      io_xml     = io_xml ).
+      iv_package   = iv_package
+      io_xml       = io_xml
+      iv_transport = iv_transport ).
 
   ENDMETHOD.
 
