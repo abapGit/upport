@@ -258,7 +258,7 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
 
     DATA lo_tab_scheme TYPE REF TO lcl_table_scheme.
 
-    lo_tab_scheme = NEW #( ).
+    CREATE OBJECT lo_tab_scheme.
 
     lo_tab_scheme->add_column(
       iv_tech_name      = 'FAVORITE'
@@ -362,7 +362,9 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_repo_over.
 
-    lo_component = NEW #( iv_only_favorites = iv_only_favorites ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        iv_only_favorites = iv_only_favorites.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title         = 'Repository List'
@@ -437,81 +439,85 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
   METHOD render_action_toolbar.
 
     CONSTANTS:
-      lc_dummy_key     TYPE string VALUE `?key=#`,
+      " dummy key is replaced in RepoOverViewHelper.prototype.updateActionLinks with actual key
+      lc_dummy_key     TYPE zif_abapgit_persistence=>ty_value VALUE `#`,
       lc_offline_class TYPE string VALUE `action_offline_repo`,
       lc_online_class  TYPE string VALUE `action_online_repo`,
       lc_action_class  TYPE string VALUE `action_link`.
 
     DATA lo_toolbar TYPE REF TO zcl_abapgit_html_toolbar.
     DATA lo_toolbar_more_sub TYPE REF TO zcl_abapgit_html_toolbar.
+    DATA lv_dummy_key_param TYPE string.
+
+    lv_dummy_key_param = |?key={ lc_dummy_key }|.
 
     lo_toolbar = zcl_abapgit_html_toolbar=>create( 'actionbar-repo-list' ).
 
     lo_toolbar->add(
       iv_txt      = |Pull|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-git_pull }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-git_pull }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class } { lc_online_class }|
       iv_li_class = |{ lc_action_class }| ).
 
     lo_toolbar->add(
       iv_txt      = |Stage|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-go_stage }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-go_stage }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class } { lc_online_class }|
       iv_li_class = |{ lc_action_class }| ).
 
     lo_toolbar->add(
       iv_txt      = |Patch|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-go_patch }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-go_patch }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class } { lc_online_class }|
       iv_li_class = |{ lc_action_class }| ).
 
     lo_toolbar->add(
       iv_txt      = |Diff|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-go_repo_diff }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-go_repo_diff }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class } { lc_online_class }|
       iv_li_class = |{ lc_action_class }| ).
 
     lo_toolbar->add(
       iv_txt      = |Check|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_code_inspector }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_code_inspector }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class }|
       iv_li_class = |{ lc_action_class }| ).
 
     lo_toolbar->add(
       iv_txt      = |Import|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-zip_import }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-zip_import }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class } { lc_offline_class }|
       iv_li_class = |{ lc_action_class }| ).
 
     lo_toolbar->add(
       iv_txt      = |Export|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-zip_export }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-zip_export }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class } { lc_offline_class }|
       iv_li_class = |{ lc_action_class }| ).
 
-    lo_toolbar->add(
-      iv_txt      = |Repo Settings|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_settings }{ lc_dummy_key }|
+    zcl_abapgit_html_toolbar_lib=>render_repo_settings_dropdown(
+      io_toolbar  = lo_toolbar
+      iv_key      = lc_dummy_key
       iv_class    = |{ lc_action_class }|
       iv_li_class = |{ lc_action_class }| ).
 
-    lo_toolbar_more_sub = NEW #( iv_id = 'toolbar-ovp-more_sub' ).
+    CREATE OBJECT lo_toolbar_more_sub EXPORTING iv_id = 'toolbar-ovp-more_sub'.
 
     lo_toolbar_more_sub->add(
       iv_txt      = |Stage by Transport|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-go_stage_transport }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-go_stage_transport }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class } { lc_online_class }|
       iv_li_class = |{ lc_action_class }| ).
 
     lo_toolbar_more_sub->add(
       iv_txt      = |Export by Transport|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-zip_export_transport }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-zip_export_transport }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class } { lc_offline_class }|
       iv_li_class = |{ lc_action_class }| ).
 
     lo_toolbar_more_sub->add(
       iv_txt      = |Change Repository Package|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_change_package }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_change_package }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class } { lc_online_class }|
       iv_li_class = |{ lc_action_class }| ).
 
@@ -523,7 +529,7 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
       iv_txt      = |Remove Repository|
       iv_title    = |Remove abapGit's records of the repository (the system's |
                     && |development objects will remain unaffected)|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_remove }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_remove }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class }|
       iv_li_class = |{ lc_action_class }| ).
 
@@ -531,7 +537,7 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
       iv_txt      = |Remove Objects|
       iv_title    = |Delete all development objects belonging to this package |
                     && |(and subpackages) from the system, but keep repository in abapGit|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_delete_objects }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_delete_objects }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class }|
       iv_li_class = |{ lc_action_class }| ).
 
@@ -539,7 +545,7 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
       iv_txt      = |Uninstall|
       iv_title    = |Delete all development objects belonging to this package |
                     && |(and subpackages) from the system, and remove the repository from abapGit|
-      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_purge }{ lc_dummy_key }|
+      iv_act      = |{ zif_abapgit_definitions=>c_action-repo_purge }{ lv_dummy_key_param }|
       iv_class    = |{ lc_action_class }|
       iv_li_class = |{ lc_action_class }| ).
 
@@ -560,7 +566,7 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
 
     DATA lv_icon_class TYPE string.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( |<form class="inline" method="post" action="sapevent:{ c_action-apply_filter }">| ).
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_text_input(
@@ -659,7 +665,7 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
 
   METHOD render_scripts.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->set_title( cl_abap_typedescr=>describe_by_object_ref( me )->get_relative_name( ) ).
     ri_html->add( 'var gHelper = new RepoOverViewHelper({ focusFilterKey: "f" });' ).
@@ -720,7 +726,7 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
       lv_lock           TYPE string,
       lv_flow           TYPE string.
 
-    lv_is_online_repo = xsdbool( is_repo-offline = abap_false ).
+    lv_is_online_repo = boolc( is_repo-offline = abap_false ).
 
     " Start of row
     IF is_repo-favorite = abap_true.
@@ -912,14 +918,14 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
         IF ii_event->query( )->has( 'FORCE_STATE' ) = abap_true.
           ms_list_settings-only_favorites = ii_event->query( )->get( 'FORCE_STATE' ).
         ELSE.
-          ms_list_settings-only_favorites = xsdbool( ms_list_settings-only_favorites = abap_false ).
+          ms_list_settings-only_favorites = boolc( ms_list_settings-only_favorites = abap_false ).
         ENDIF.
         save_settings( ).
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
       WHEN zif_abapgit_definitions=>c_action-direction.
 
-        set_order_direction( xsdbool( ii_event->query( )->get( 'DIRECTION' ) = 'DESCENDING' ) ).
+        set_order_direction( boolc( ii_event->query( )->get( 'DIRECTION' ) = 'DESCENDING' ) ).
         rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
 
       WHEN c_action-apply_filter.
@@ -1072,7 +1078,7 @@ CLASS zcl_abapgit_gui_page_repo_over IMPLEMENTATION.
 
     lt_overview = prepare_overviews( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     zcl_abapgit_exit=>get_instance( )->wall_message_list( ri_html ).
 
