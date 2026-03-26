@@ -94,8 +94,8 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     super->constructor( ).
 
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
 
     mi_repo = ii_repo.
     mo_form = get_form_schema( ).
@@ -108,7 +108,9 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_repo.
 
-    lo_component = NEW #( ii_repo = ii_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo = ii_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Repository Settings'
@@ -264,7 +266,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
     lo_dot = mi_repo->get_dot_abapgit( ).
     ls_dot = lo_dot->get_data( ).
     lv_main_lang = lo_dot->get_main_language( ).
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     " Repository Settings
     ro_form_data->set(
@@ -278,7 +280,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       iv_val = zcl_abapgit_lxe_texts=>convert_table_to_lang_string( lo_dot->get_i18n_languages( ) ) ).
     ro_form_data->set(
       iv_key = c_id-use_lxe
-      iv_val = xsdbool( lo_dot->use_lxe( ) = abap_true ) ) ##TYPE.
+      iv_val = boolc( lo_dot->use_lxe( ) = abap_true ) ) ##TYPE.
     ro_form_data->set(
       iv_key = c_id-wo_transaltion
       iv_val = concat_lines_of(
@@ -382,7 +384,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
       zcl_abapgit_lxe_texts=>convert_lang_string_to_table(
         iv_langs              = mo_form_data->get( c_id-i18n_langs )
         iv_skip_main_language = lo_dot->get_main_language( ) ) ).
-    lo_dot->use_lxe( xsdbool( mo_form_data->get( c_id-use_lxe ) = abap_true ) ).
+    lo_dot->use_lxe( boolc( mo_form_data->get( c_id-use_lxe ) = abap_true ) ).
 
     lt_wo_transl = zcl_abapgit_i18n_params=>normalize_obj_patterns(
       zcl_abapgit_convert=>split_string( mo_form_data->get( c_id-wo_transaltion ) ) ).
@@ -572,7 +574,7 @@ CLASS zcl_abapgit_gui_page_sett_repo IMPLEMENTATION.
 
     register_handlers( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( `<div class="repo">` ).
 
