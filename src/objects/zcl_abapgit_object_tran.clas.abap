@@ -373,7 +373,7 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
 
   METHOD is_variant_transaction.
 
-    rv_variant_transaction = xsdbool( is_tstcp-param(1) = '@' ).
+    rv_variant_transaction = boolc( is_tstcp-param(1) = '@' ).
 
   ENDMETHOD.
 
@@ -633,7 +633,6 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
     READ TABLE lt_tcodes INDEX 1 INTO es_transaction.
     ASSERT sy-subrc = 0.
     READ TABLE lt_gui_attr INDEX 1 INTO es_gui_attr.
-    ASSERT sy-subrc = 0.
 
   ENDMETHOD.
 
@@ -830,8 +829,10 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
           ls_item-obj_name    = ms_item-obj_name.
           ls_item-obj_name+30 = 'TR'.
 
-          lo_sush = NEW zcl_abapgit_object_sush( is_item = ls_item
-                                                 iv_language = mv_language ).
+          CREATE OBJECT lo_sush TYPE zcl_abapgit_object_sush
+            EXPORTING
+              is_item     = ls_item
+              iv_language = mv_language.
 
           lo_sush->zif_abapgit_object~deserialize(
             iv_package   = iv_package
@@ -854,7 +855,7 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
 
     SELECT SINGLE tcode FROM tstc INTO lv_tcode
       WHERE tcode = ms_item-obj_name.                   "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -967,8 +968,10 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
 
     io_xml->add( iv_name = 'TSTC'
                  ig_data = ls_tcode ).
-    io_xml->add( iv_name = 'TSTCC'
-                 ig_data = ls_gui_attr ).
+    IF ls_gui_attr IS NOT INITIAL.
+      io_xml->add( iv_name = 'TSTCC'
+                   ig_data = ls_gui_attr ).
+    ENDIF.
     io_xml->add( iv_name = 'TSTCT'
                  ig_data = ls_tstct ).
     IF ls_tstcp IS NOT INITIAL.
@@ -990,8 +993,10 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
       ls_item-obj_name+30 = 'TR'.
 
       TRY.
-          lo_sush = NEW zcl_abapgit_object_sush( is_item = ls_item
-                                                 iv_language = mv_language ).
+          CREATE OBJECT lo_sush TYPE zcl_abapgit_object_sush
+            EXPORTING
+              is_item     = ls_item
+              iv_language = mv_language.
 
           lo_sush->zif_abapgit_object~serialize( io_xml ).
         CATCH zcx_abapgit_type_not_supported.
