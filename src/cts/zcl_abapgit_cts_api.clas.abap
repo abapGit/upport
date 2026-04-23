@@ -251,7 +251,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    rv_locked = xsdbool( lv_lock_flag <> space ).
+    rv_locked = boolc( lv_lock_flag <> space ).
   ENDMETHOD.
 
 
@@ -269,7 +269,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       IMPORTING
         pe_result = lv_type_check_result.
 
-    rv_lockable = xsdbool( lv_type_check_result = 'L' ).
+    rv_lockable = boolc( lv_type_check_result = 'L' ).
   ENDMETHOD.
 
 
@@ -287,7 +287,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
       IMPORTING
         pe_result = lv_type_check_result.
 
-    rv_transportable = xsdbool( lv_type_check_result CA 'RTL' OR iv_object_type = 'TABU' ).
+    rv_transportable = boolc( lv_type_check_result CA 'RTL' OR iv_object_type = 'TABU' ).
   ENDMETHOD.
 
 
@@ -673,7 +673,7 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
         we_category = lv_category
         ev_logo_obj = lv_is_logical_object.
 
-    rv_is_customizing_object = xsdbool(
+    rv_is_customizing_object = boolc(
       lv_category = zif_abapgit_cts_api~c_transport_category-customizing AND lv_is_logical_object = abap_true ).
 
   ENDMETHOD.
@@ -731,6 +731,9 @@ CLASS zcl_abapgit_cts_api IMPLEMENTATION.
           ls_list-obj_name = ls_contents-obj_name.
           INSERT ls_list INTO TABLE rt_list.
         WHEN 'LIMU'.
+          IF ls_contents-object IN it_skip_limu_types.
+            CONTINUE.
+          ENDIF.
           TRY.
               zif_abapgit_cts_api~get_r3tr_obj_for_limu_obj(
                 EXPORTING

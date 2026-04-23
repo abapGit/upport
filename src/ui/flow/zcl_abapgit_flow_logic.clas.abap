@@ -308,7 +308,7 @@ CLASS zcl_abapgit_flow_logic IMPLEMENTATION.
 
     LOOP AT it_local ASSIGNING <ls_local> WHERE file-filename <> zif_abapgit_definitions=>c_dot_abapgit.
       READ TABLE ct_main_expanded WITH KEY name = <ls_local>-file-filename ASSIGNING <ls_expanded>.
-      lv_found_main = xsdbool( sy-subrc = 0 ).
+      lv_found_main = boolc( sy-subrc = 0 ).
 
       lv_found_branch = abap_false.
       LOOP AT it_features INTO ls_feature.
@@ -458,7 +458,7 @@ CLASS zcl_abapgit_flow_logic IMPLEMENTATION.
       INSERT <ls_tadir> INTO TABLE lt_filter.
 
       IF lines( lt_filter ) >= 500.
-        lo_filter = NEW #( it_filter = lt_filter ).
+        CREATE OBJECT lo_filter EXPORTING it_filter = lt_filter.
         lt_local = li_repo->get_files_local_filtered( lo_filter ).
         CLEAR lt_filter.
         check_files(
@@ -475,7 +475,7 @@ CLASS zcl_abapgit_flow_logic IMPLEMENTATION.
     ENDLOOP.
 
     IF lines( lt_filter ) > 0.
-      lo_filter = NEW #( it_filter = lt_filter ).
+      CREATE OBJECT lo_filter EXPORTING it_filter = lt_filter.
       lt_local = li_repo->get_files_local_filtered( lo_filter ).
       CLEAR lt_filter.
       check_files(
@@ -528,9 +528,9 @@ CLASS zcl_abapgit_flow_logic IMPLEMENTATION.
           AND ls_next-obj_name = ls_transport-obj_name.
 
         READ TABLE cs_information-features WITH KEY transport-trkorr = ls_transport-trkorr TRANSPORTING NO FIELDS.
-        lv_found1 = xsdbool( sy-subrc = 0 ).
+        lv_found1 = boolc( sy-subrc = 0 ).
         READ TABLE cs_information-features WITH KEY transport-trkorr = ls_next-trkorr TRANSPORTING NO FIELDS.
-        lv_found2 = xsdbool( sy-subrc = 0 ).
+        lv_found2 = boolc( sy-subrc = 0 ).
         IF lv_found1 = abap_false AND lv_found2 = abap_false.
           " not in any favorite flow enabled repo
           CONTINUE.
@@ -552,13 +552,15 @@ CLASS zcl_abapgit_flow_logic IMPLEMENTATION.
 
   METHOD find_open_transports.
 
-    DATA lt_trkorr   TYPE zif_abapgit_cts_api=>ty_trkorr_tt.
-    DATA lv_trkorr   LIKE LINE OF lt_trkorr.
-    DATA ls_result   LIKE LINE OF rt_transports.
-    DATA lt_objects  TYPE zif_abapgit_cts_api=>ty_transport_obj_tt.
-    DATA lv_obj_name TYPE tadir-obj_name.
-    DATA lt_date     TYPE zif_abapgit_cts_api=>ty_date_range.
-    DATA ls_date     LIKE LINE OF lt_date.
+    DATA lt_trkorr    TYPE zif_abapgit_cts_api=>ty_trkorr_tt.
+    DATA lv_trkorr    LIKE LINE OF lt_trkorr.
+    DATA ls_result    LIKE LINE OF rt_transports.
+    DATA lt_objects   TYPE zif_abapgit_cts_api=>ty_transport_obj_tt.
+    DATA lv_obj_name  TYPE tadir-obj_name.
+    DATA lt_date      TYPE zif_abapgit_cts_api=>ty_date_range.
+    DATA ls_date      LIKE LINE OF lt_date.
+    DATA lt_limu_skip TYPE zif_abapgit_cts_api=>ty_skip_limu_types_tt.
+    DATA ls_limu_skip LIKE LINE OF lt_limu_skip.
     FIELD-SYMBOLS <ls_object> LIKE LINE OF lt_objects.
 
 * only look for transports that are created/changed in the last two years
@@ -574,11 +576,20 @@ CLASS zcl_abapgit_flow_logic IMPLEMENTATION.
       ls_result-title  = zcl_abapgit_factory=>get_cts_api( )->read_description( lv_trkorr ).
       ls_result-changed_at = get_latest_task_timestamp( lv_trkorr ).
 
-      lt_objects = zcl_abapgit_factory=>get_cts_api( )->list_r3tr_by_request( lv_trkorr ).
-      " SOTT = Concept (Online Text Repository) - Short Texts for packages are not serialized anyhow
+* LIMU skipped here:
+" SOTT = Concept (Online Text Repository) - Short Texts for packages are not serialized anyhow
+      CLEAR ls_limu_skip.
+      ls_limu_skip-sign = 'I'.
+      ls_limu_skip-option = 'EQ'.
+      ls_limu_skip-low = 'SOTT'.
+      INSERT ls_limu_skip INTO TABLE lt_limu_skip.
+      lt_objects = zcl_abapgit_factory=>get_cts_api( )->list_r3tr_by_request(
+        iv_request         = lv_trkorr
+        it_skip_limu_types = lt_limu_skip ).
+
+* R3TR can be skipped here
       LOOP AT lt_objects ASSIGNING <ls_object>
           WHERE object <> 'CINS'
-          AND object <> 'SOTT'
           AND object <> 'NOTE'.
         ls_result-object   = <ls_object>-object.
         ls_result-obj_name = <ls_object>-obj_name.
@@ -876,8 +887,10 @@ CLASS zcl_abapgit_flow_logic IMPLEMENTATION.
           regex = '\.git$'
           with = '' ) ##REGEX_POSIX.
 
-        lo_github = NEW #( iv_user_and_repo = |{ lv_user }/{ lv_repo }|
-                           ii_http_agent = zcl_abapgit_http_agent=>create( ) ).
+        CREATE OBJECT lo_github
+          EXPORTING
+            iv_user_and_repo = |{ lv_user }/{ lv_repo }|
+            ii_http_agent    = zcl_abapgit_http_agent=>create( ).
         lv_previous_key = ls_feature-repo-key.
       ENDIF.
 
@@ -977,7 +990,7 @@ CLASS zcl_abapgit_flow_logic IMPLEMENTATION.
     SORT lt_filter BY object obj_name.
     DELETE ADJACENT DUPLICATES FROM lt_filter COMPARING object obj_name.
 
-    lo_filter = NEW #( it_filter = lt_filter ).
+    CREATE OBJECT lo_filter EXPORTING it_filter = lt_filter.
     rt_local = ii_repo->get_files_local_filtered( lo_filter ).
 
   ENDMETHOD.
