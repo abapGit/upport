@@ -141,7 +141,7 @@ CLASS zcl_abapgit_object_devc IMPLEMENTATION.
            WHERE pgmid = 'R3TR'
            AND NOT ( ( object = 'DEVC' OR object = 'SOTR' ) AND obj_name = iv_package_name )
            AND devclass = iv_package_name.
-    rv_is_empty = xsdbool( sy-subrc <> 0 ).
+    rv_is_empty = boolc( sy-subrc <> 0 ).
 
   ENDMETHOD.
 
@@ -216,9 +216,11 @@ CLASS zcl_abapgit_object_devc IMPLEMENTATION.
       ls_item-obj_name = ls_tadir-obj_name.
 
       IF zcl_abapgit_objects=>exists( ls_item ) = abap_false.
+        " Ignore errors since objects might be locked in unreleased transport (TR022)
         zcl_abapgit_factory=>get_tadir( )->delete_single(
-          iv_object    = ls_tadir-object
-          iv_obj_name  = ls_tadir-obj_name ).
+          iv_object   = ls_tadir-object
+          iv_obj_name = ls_tadir-obj_name
+          iv_no_throw = abap_true ).
       ENDIF.
     ENDLOOP.
 
