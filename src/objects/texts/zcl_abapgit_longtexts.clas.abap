@@ -219,7 +219,7 @@ CLASS zcl_abapgit_longtexts IMPLEMENTATION.
 
     LOOP AT lt_longtexts ASSIGNING <ls_longtext>.
 
-      lv_no_main_lang = xsdbool( <ls_longtext>-dokil-masterlang IS INITIAL ).
+      lv_no_main_lang = boolc( <ls_longtext>-dokil-masterlang IS INITIAL ).
 
       CALL FUNCTION 'DOCU_UPDATE'
         EXPORTING
