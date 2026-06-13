@@ -6,9 +6,10 @@ CLASS zcl_abapgit_objects_activation DEFINITION
 
     CLASS-METHODS add
       IMPORTING
-        !iv_type   TYPE trobjtype
-        !iv_name   TYPE clike
-        !iv_delete TYPE abap_bool DEFAULT abap_false
+        !iv_type       TYPE trobjtype
+        !iv_name       TYPE clike
+        !iv_delete     TYPE abap_bool DEFAULT abap_false
+        !iv_force_clif TYPE abap_bool DEFAULT abap_false
       RAISING
         zcx_abapgit_exception .
     CLASS-METHODS add_item
@@ -285,7 +286,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         lv_popup = abap_false.
       ENDIF.
 
-      lv_no_ui = xsdbool( lv_popup = abap_false ).
+      lv_no_ui = boolc( lv_popup = abap_false ).
 
       IF iv_ddic = abap_true.
         lv_msg = |(with DDIC)|.
@@ -356,7 +357,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
     FIELD-SYMBOLS: <ls_object>  TYPE dwinactiv,
                    <ls_classes> LIKE LINE OF gt_classes.
 
-    IF iv_type = 'CLAS' OR iv_type = 'INTF'.
+    IF ( iv_type = 'CLAS' OR iv_type = 'INTF' ) AND iv_force_clif = abap_false.
       APPEND INITIAL LINE TO gt_classes ASSIGNING <ls_classes>.
       <ls_classes>-object  = iv_type.
       <ls_classes>-clsname = iv_name.
@@ -551,7 +552,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         illegal_input = 1
         OTHERS        = 2.
 
-    rv_active = xsdbool( sy-subrc = 0 AND ( lv_state = '' OR lv_state = 'A' ) ).
+    rv_active = boolc( sy-subrc = 0 AND ( lv_state = '' OR lv_state = 'A' ) ).
 
   ENDMETHOD.
 
@@ -595,7 +596,7 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
         p_e071                    = lt_e071
         p_xmsg                    = lt_messages.
 
-    rv_active = xsdbool( lt_messages IS INITIAL ).
+    rv_active = boolc( lt_messages IS INITIAL ).
 
   ENDMETHOD.
 
@@ -617,8 +618,10 @@ CLASS zcl_abapgit_objects_activation IMPLEMENTATION.
           lv_include = cl_oo_classname_service=>get_interfacepool_name( ls_class-clsname ).
       ENDCASE.
 
-      lo_cross = NEW #( p_name = lv_include
-                        p_include = lv_include ).
+      CREATE OBJECT lo_cross
+        EXPORTING
+          p_name    = lv_include
+          p_include = lv_include.
 
       lo_cross->index_actualize( IMPORTING p_error = lv_error ).
 
