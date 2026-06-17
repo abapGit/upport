@@ -89,8 +89,9 @@ CLASS zcl_abapgit_flow_git IMPLEMENTATION.
       iv_url  = iv_url
       it_sha1 = lt_sha1 ).
 
-    lt_commits = zcl_abapgit_git_factory=>get_v2_porcelain( )->commits_last_year(
+    lt_commits = zcl_abapgit_git_factory=>get_v2_porcelain( )->commits_last_days(
       iv_url  = iv_url
+      iv_days = zif_abapgit_flow_logic=>c_commit_days
       it_sha1 = lt_sha1 ).
     LOOP AT lt_commits ASSIGNING <ls_commit>.
       INSERT <ls_commit> INTO TABLE lt_objects.
@@ -118,9 +119,13 @@ CLASS zcl_abapgit_flow_git IMPLEMENTATION.
     LOOP AT ct_features ASSIGNING <ls_feature> WHERE branch-display_name <> zif_abapgit_flow_logic=>c_main.
       IF lv_previous IS INITIAL OR lv_previous <> <ls_feature>-repo-key.
         IF zcl_abapgit_flow_exit=>get_instance( )->get_settings( <ls_feature>-repo-key )-allow_not_up_to_date = abap_true.
-          li_find = NEW lcl_find_changes_new( it_objects = lt_objects ).
+          CREATE OBJECT li_find TYPE lcl_find_changes_new
+            EXPORTING
+              it_objects = lt_objects.
         ELSE.
-          li_find = NEW lcl_find_changes( it_objects = lt_objects ).
+          CREATE OBJECT li_find TYPE lcl_find_changes
+            EXPORTING
+              it_objects = lt_objects.
         ENDIF.
         lv_previous = <ls_feature>-repo-key.
       ENDIF.
@@ -176,7 +181,7 @@ CLASS zcl_abapgit_flow_git IMPLEMENTATION.
     ASSERT sy-subrc = 0.
     ev_main_sha1 = ls_main-sha1.
 
-    lo_visit = NEW #( ).
+    CREATE OBJECT lo_visit.
     lo_visit->clear( )->push( ev_main_sha1 ).
     WHILE lo_visit->size( ) > 0.
       lv_current = lo_visit->pop( ).
@@ -206,7 +211,7 @@ CLASS zcl_abapgit_flow_git IMPLEMENTATION.
     FIELD-SYMBOLS <ls_commit> LIKE LINE OF it_objects.
 
 
-    lo_visit = NEW #( ).
+    CREATE OBJECT lo_visit.
 
     " find first commit and latest merge commit
     lo_visit->clear( )->push( iv_branch_sha1 ).
@@ -260,7 +265,7 @@ CLASS zcl_abapgit_flow_git IMPLEMENTATION.
         ev_main_sha1      = lv_main
         et_main_reachable = lt_main_reachable ).
 
-    lo_visit = NEW #( ).
+    CREATE OBJECT lo_visit.
 
     LOOP AT ct_features ASSIGNING <ls_branch>.
       <ls_branch>-branch-up_to_date = abap_undefined.
