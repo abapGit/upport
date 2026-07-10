@@ -141,7 +141,7 @@ CLASS zcl_abapgit_object_devc IMPLEMENTATION.
            WHERE pgmid = 'R3TR'
            AND NOT ( ( object = 'DEVC' OR object = 'SOTR' ) AND obj_name = iv_package_name )
            AND devclass = iv_package_name.
-    rv_is_empty = xsdbool( sy-subrc <> 0 ).
+    rv_is_empty = boolc( sy-subrc <> 0 ).
 
   ENDMETHOD.
 
@@ -953,9 +953,7 @@ CLASS zcl_abapgit_object_devc IMPLEMENTATION.
       APPEND ls_usage_data TO lt_usage_data.
     ENDLOOP.
 
-    IF lt_usage_data IS NOT INITIAL.
-      io_xml->add( iv_name = 'PERMISSION'
-                   ig_data = lt_usage_data ).
-    ENDIF.
+    io_xml->add( iv_name = 'PERMISSION'
+                 ig_data = lt_usage_data ).
   ENDMETHOD.
 ENDCLASS.

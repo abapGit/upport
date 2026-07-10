@@ -373,7 +373,7 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
 
   METHOD is_variant_transaction.
 
-    rv_variant_transaction = xsdbool( is_tstcp-param(1) = '@' ).
+    rv_variant_transaction = boolc( is_tstcp-param(1) = '@' ).
 
   ENDMETHOD.
 
@@ -420,11 +420,10 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
       CHANGING
         ct_tab             = lt_tpool_i18n ).
 
-    IF lines( lt_tpool_i18n ) > 0.
-      SORT lt_tpool_i18n BY sprsl ASCENDING.
-      ii_xml->add( iv_name = 'I18N_TPOOL'
-                   ig_data = lt_tpool_i18n ).
-    ENDIF.
+    SORT lt_tpool_i18n BY sprsl ASCENDING.
+
+    ii_xml->add( iv_name = 'I18N_TPOOL'
+                 ig_data = lt_tpool_i18n ).
 
   ENDMETHOD.
 
@@ -829,8 +828,10 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
           ls_item-obj_name    = ms_item-obj_name.
           ls_item-obj_name+30 = 'TR'.
 
-          lo_sush = NEW zcl_abapgit_object_sush( is_item = ls_item
-                                                 iv_language = mv_language ).
+          CREATE OBJECT lo_sush TYPE zcl_abapgit_object_sush
+            EXPORTING
+              is_item     = ls_item
+              iv_language = mv_language.
 
           lo_sush->zif_abapgit_object~deserialize(
             iv_package   = iv_package
@@ -853,7 +854,7 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
 
     SELECT SINGLE tcode FROM tstc INTO lv_tcode
       WHERE tcode = ms_item-obj_name.                   "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -966,16 +967,12 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
 
     io_xml->add( iv_name = 'TSTC'
                  ig_data = ls_tcode ).
-    IF ls_gui_attr IS NOT INITIAL.
-      io_xml->add( iv_name = 'TSTCC'
-                   ig_data = ls_gui_attr ).
-    ENDIF.
+    io_xml->add( iv_name = 'TSTCC'
+                 ig_data = ls_gui_attr ).
     io_xml->add( iv_name = 'TSTCT'
                  ig_data = ls_tstct ).
-    IF ls_tstcp IS NOT INITIAL.
-      io_xml->add( iv_name = 'TSTCP'
-                   ig_data = ls_tstcp ).
-    ENDIF.
+    io_xml->add( iv_name = 'TSTCP'
+                 ig_data = ls_tstcp ).
     io_xml->add( iv_name = 'AUTHORIZATIONS'
                  ig_data = lt_tstca ).
 
@@ -991,8 +988,10 @@ CLASS zcl_abapgit_object_tran IMPLEMENTATION.
       ls_item-obj_name+30 = 'TR'.
 
       TRY.
-          lo_sush = NEW zcl_abapgit_object_sush( is_item = ls_item
-                                                 iv_language = mv_language ).
+          CREATE OBJECT lo_sush TYPE zcl_abapgit_object_sush
+            EXPORTING
+              is_item     = ls_item
+              iv_language = mv_language.
 
           lo_sush->zif_abapgit_object~serialize( io_xml ).
         CATCH zcx_abapgit_type_not_supported.

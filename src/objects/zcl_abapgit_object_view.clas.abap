@@ -284,13 +284,11 @@ CLASS zcl_abapgit_object_view IMPLEMENTATION.
     SORT lt_i18n_langs ASCENDING.
     SORT lt_dd25_texts BY ddlanguage ASCENDING.
 
-    IF lines( lt_i18n_langs ) > 0.
-      ii_xml->add( iv_name = 'I18N_LANGS'
-                   ig_data = lt_i18n_langs ).
+    ii_xml->add( iv_name = 'I18N_LANGS'
+                 ig_data = lt_i18n_langs ).
 
-      ii_xml->add( iv_name = 'DD25_TEXTS'
-                   ig_data = lt_dd25_texts ).
-    ENDIF.
+    ii_xml->add( iv_name = 'DD25_TEXTS'
+                 ig_data = lt_dd25_texts ).
 
   ENDMETHOD.
 
@@ -451,7 +449,7 @@ CLASS zcl_abapgit_object_view IMPLEMENTATION.
 
     SELECT SINGLE viewname FROM dd25l INTO lv_viewname
       WHERE viewname = ms_item-obj_name.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
     IF rv_bool = abap_true.
       TRY.

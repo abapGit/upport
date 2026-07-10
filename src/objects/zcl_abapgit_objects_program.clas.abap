@@ -737,7 +737,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
 
 
   METHOD is_exit_include.
-    rv_is_exit_include = xsdbool(
+    rv_is_exit_include = boolc(
       iv_program CP 'LX*' OR iv_program CP 'SAPLX*' OR
       iv_program+1 CP '/LX*' OR iv_program+1 CP '/SAPLX*' ).
   ENDMETHOD.
@@ -1012,7 +1012,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
     IF io_xml IS BOUND.
       li_xml = io_xml.
     ELSE.
-      li_xml = NEW zcl_abapgit_xml_output( ).
+      CREATE OBJECT li_xml TYPE zcl_abapgit_xml_output.
     ENDIF.
 
     li_xml->add( iv_name = 'PROGDIR'
@@ -1023,10 +1023,8 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
                    ig_data = lt_dynpros ).
 
       ls_cua = serialize_cua( lv_program_name ).
-      IF NOT ls_cua IS INITIAL.
-        li_xml->add( iv_name = 'CUA'
-                     ig_data = ls_cua ).
-      ENDIF.
+      li_xml->add( iv_name = 'CUA'
+                   ig_data = ls_cua ).
     ENDIF.
 
     READ TABLE lt_tpool WITH KEY id = 'R' INTO ls_tpool.
