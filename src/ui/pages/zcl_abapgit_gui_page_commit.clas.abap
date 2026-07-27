@@ -136,8 +136,8 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
     " Get settings from DB
     mo_settings = zcl_abapgit_persist_factory=>get_settings( )->read( ).
 
-    mo_validation_log = NEW #( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_validation_log.
+    CREATE OBJECT mo_form_data.
     mo_form = get_form_schema( ).
     mo_form_util = zcl_abapgit_html_form_utils=>create( mo_form ).
 
@@ -148,9 +148,11 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_commit.
 
-    lo_component = NEW #( ii_repo_online = ii_repo_online
-                          io_stage = io_stage
-                          iv_sci_result = iv_sci_result ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo_online = ii_repo_online
+        io_stage       = io_stage
+        iv_sci_result  = iv_sci_result.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Commit'
@@ -301,7 +303,6 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
     DATA lv_commitmsg_comment_length TYPE i.
     DATA lv_button_text TYPE string.
     CONSTANTS lc_commitmsg_comment_min_len TYPE i VALUE 1.
-    CONSTANTS lc_commitmsg_comment_max_len TYPE i VALUE 255.
 
     ro_form = zcl_abapgit_html_form=>create(
       iv_form_id   = 'commit-form'
@@ -315,7 +316,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
       iv_required    = abap_true
       iv_min         = lc_commitmsg_comment_min_len
       iv_max         = lv_commitmsg_comment_length
-      iv_placeholder = |Add a mandatory comment with max { lc_commitmsg_comment_max_len } characters|
+      iv_placeholder = |Add a mandatory comment with max { lv_commitmsg_comment_length } characters|
     )->textarea(
       iv_name        = c_id-body
       iv_label       = 'Body'
@@ -371,7 +372,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_stage> LIKE LINE OF mt_stage.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<table class="stage_tab">' ).
     ri_html->add( '<thead>' ).
@@ -414,7 +415,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_stage> LIKE LINE OF mt_stage.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     LOOP AT mt_stage ASSIGNING <ls_stage>.
       ls_sum-method = <ls_stage>-method.
@@ -566,7 +567,7 @@ CLASS zcl_abapgit_gui_page_commit IMPLEMENTATION.
       get_defaults( ).
     ENDIF.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div class="repo">' ).
     ri_html->add( '<div id="top" class="paddings">' ).
