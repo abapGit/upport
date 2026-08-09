@@ -125,7 +125,7 @@ CLASS zcl_abapgit_status_calc IMPLEMENTATION.
     rs_result-path     = is_local-file-path.
     rs_result-filename = is_local-file-filename.
 
-    rs_result-match    = xsdbool( is_local-file-sha1 = is_remote-sha1 ).
+    rs_result-match    = boolc( is_local-file-sha1 = is_remote-sha1 ).
     IF rs_result-match = abap_true.
       RETURN.
     ENDIF.
@@ -284,8 +284,10 @@ CLASS zcl_abapgit_status_calc IMPLEMENTATION.
 
   METHOD get_instance.
 
-    ri_instance = NEW zcl_abapgit_status_calc( iv_root_package = iv_root_package
-                                               io_dot = io_dot ).
+    CREATE OBJECT ri_instance TYPE zcl_abapgit_status_calc
+      EXPORTING
+        iv_root_package = iv_root_package
+        io_dot          = io_dot.
 
   ENDMETHOD.
 
