@@ -77,7 +77,7 @@ CLASS zcl_abapgit_object_susc IMPLEMENTATION.
   METHOD put_delete_to_transport.
 
     DATA: lv_tr_object_name TYPE e071-obj_name,
-          lv_tr_return      TYPE char1,
+          lv_tr_return      TYPE c LENGTH 1,
           ls_package_info   TYPE tdevc.
 
 
@@ -179,7 +179,7 @@ CLASS zcl_abapgit_object_susc IMPLEMENTATION.
 
     SELECT SINGLE oclss FROM tobc INTO lv_oclss
       WHERE oclss = ms_item-obj_name.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 

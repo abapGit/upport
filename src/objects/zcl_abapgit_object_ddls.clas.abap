@@ -119,8 +119,8 @@ CLASS zcl_abapgit_object_ddls IMPLEMENTATION.
 
     DATA:
       lv_len       TYPE i,
-      lv_lastchar1 TYPE c,
-      lv_lastchar2 TYPE c.
+      lv_lastchar1 TYPE c LENGTH 1,
+      lv_lastchar2 TYPE c LENGTH 1.
 
     " New line included in 751+ by CL_DD_DDL_HANDLER=>ADD_BASEOBJS_INFO_TO_DDLS
     " Change for 750-
@@ -439,7 +439,7 @@ CLASS zcl_abapgit_object_ddls IMPLEMENTATION.
             name      = ms_item-obj_name
           IMPORTING
             got_state = lv_state.
-        rv_bool = xsdbool( NOT lv_state IS INITIAL ).
+        rv_bool = boolc( NOT lv_state IS INITIAL ).
       CATCH cx_root.
         rv_bool = abap_false.
     ENDTRY.

@@ -28,9 +28,11 @@ CLASS ltcl_test IMPLEMENTATION.
     ls_item-obj_type = 'ASFC'.
     ls_item-obj_name = 'SAP_AS_TEST_001'.
 
-    lo_cut = NEW #( is_item = ls_item ).
+    CREATE OBJECT lo_cut
+      EXPORTING
+        is_item = ls_item.
 
-    li_xml = NEW zcl_abapgit_xml_output( ).
+    CREATE OBJECT li_xml TYPE zcl_abapgit_xml_output.
 
     lo_cut->serialize( li_xml ).
 * checks that it does not dump
@@ -46,8 +48,10 @@ CLASS ltcl_test IMPLEMENTATION.
     ls_item-obj_type = 'ACGR'.
     ls_item-obj_name = 'SAP_BC_BASIS_ADMIN'.
 
-    lo_cut = NEW #( is_item = ls_item
-                    iv_language = zif_abapgit_definitions=>c_english ).
+    CREATE OBJECT lo_cut
+      EXPORTING
+        is_item     = ls_item
+        iv_language = zif_abapgit_definitions=>c_english.
 
     cl_abap_unit_assert=>assert_equals(
       exp = 'AGR_DEFINE'
@@ -66,8 +70,10 @@ CLASS ltcl_test IMPLEMENTATION.
     ls_item-obj_type = 'ACGR'.
     ls_item-obj_name = 'SAP_BC_BASIS_ADMIN'.
 
-    lo_cut = NEW #( is_item = ls_item
-                    iv_language = zif_abapgit_definitions=>c_english ).
+    CREATE OBJECT lo_cut
+      EXPORTING
+        is_item     = ls_item
+        iv_language = zif_abapgit_definitions=>c_english.
 
     lt_key_fields = lo_cut->get_key_fields( 'AGR_HIER' ).
 
@@ -92,8 +98,10 @@ CLASS ltcl_test IMPLEMENTATION.
     ls_item-obj_type = 'NSPC'.
     ls_item-obj_name = '/BIC/'.
 
-    lo_cut = NEW #( is_item = ls_item
-                    iv_language = zif_abapgit_definitions=>c_english ).
+    CREATE OBJECT lo_cut
+      EXPORTING
+        is_item     = ls_item
+        iv_language = zif_abapgit_definitions=>c_english.
 
     cl_abap_unit_assert=>assert_equals(
       exp = `NAMESPACE = '/BIC/'`
@@ -111,7 +119,7 @@ CLASS ltcl_test IMPLEMENTATION.
           ls_item          TYPE zif_abapgit_definitions=>ty_item,
           lt_objkey        TYPE zcl_abapgit_objects_generic=>ty_t_objkey,
           ls_objkey        LIKE LINE OF lt_objkey,
-          lv_non_value_pos TYPE numc3,
+          lv_non_value_pos TYPE n LENGTH 3,
           lt_key_fields    TYPE ddfields.
 
 * assumption: this object exists in all SAP systems
@@ -120,8 +128,10 @@ CLASS ltcl_test IMPLEMENTATION.
     ls_item-obj_name+32 = '09'.
     ls_item-obj_name+34 = 'TEST'.
 
-    lo_cut = NEW #( is_item = ls_item
-                    iv_language = zif_abapgit_definitions=>c_english ).
+    CREATE OBJECT lo_cut
+      EXPORTING
+        is_item     = ls_item
+        iv_language = zif_abapgit_definitions=>c_english.
 
     lt_key_fields = lo_cut->get_key_fields( 'WDY_CONFIG_DATA' ).
 
@@ -176,8 +186,10 @@ CLASS ltcl_test IMPLEMENTATION.
     ls_item-obj_type = 'ASFC'.
     ls_item-obj_name = 'SAP_AS_TEST_002'.
 
-    lo_cut = NEW #( is_item = ls_item
-                    iv_language = zif_abapgit_definitions=>c_english ).
+    CREATE OBJECT lo_cut
+      EXPORTING
+        is_item     = ls_item
+        iv_language = zif_abapgit_definitions=>c_english.
 
     lt_key_fields = lo_cut->get_key_fields( 'AIND_STR4' ).
 

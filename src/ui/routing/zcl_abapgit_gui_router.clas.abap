@@ -445,7 +445,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
   METHOD get_state_diff.
 
     " Bookmark current page before jumping to diff page
-    IF ii_event->mv_current_page_name CP 'ZCL_ABAPGIT_GUI_PAGE_DIFF'.
+    IF ii_event->current_page_name( ) CP 'ZCL_ABAPGIT_GUI_PAGE_DIFF'.
       rv_state = zcl_abapgit_gui=>c_event_state-new_page.
     ELSE.
       rv_state = zcl_abapgit_gui=>c_event_state-new_page_w_bookmark.
@@ -457,7 +457,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
   METHOD get_state_settings.
 
     " Bookmark current page before jumping to any settings page
-    IF ii_event->mv_current_page_name CP 'ZCL_ABAPGIT_GUI_PAGE_SETT_*'.
+    IF ii_event->current_page_name( ) CP 'ZCL_ABAPGIT_GUI_PAGE_SETT_*'.
       rv_state = zcl_abapgit_gui=>c_event_state-new_page_replacing.
     ELSE.
       rv_state = zcl_abapgit_gui=>c_event_state-new_page_w_bookmark.
@@ -520,7 +520,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
 
     li_repo = zcl_abapgit_repo_srv=>get_instance( )->get( iv_key ).
 
-    ro_filter = NEW #( ).
+    CREATE OBJECT ro_filter.
     ro_filter->set_filter_values( iv_package  = li_repo->get_package( )
                                   it_r_trkorr = lt_r_trkorr ).
 
@@ -600,7 +600,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
     IF iv_line CO '0123456789'.
       lv_line_number = iv_line.
     ENDIF.
-    lv_new_window = xsdbool( iv_new_window IS NOT INITIAL ).
+    lv_new_window = boolc( iv_new_window IS NOT INITIAL ).
 
     TRY.
         li_html_viewer = zcl_abapgit_ui_core_factory=>get_html_viewer( ).
@@ -845,7 +845,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
     lt_r_trkorr = zcl_abapgit_ui_factory=>get_popups( )->popup_select_wb_tc_tr_and_tsk( ).
     li_repo = zcl_abapgit_repo_srv=>get_instance( )->get( iv_key ).
     li_repo->refresh( ).
-    lo_obj_filter_trans = NEW #( ).
+    CREATE OBJECT lo_obj_filter_trans.
     lo_obj_filter_trans->set_filter_values( iv_package  = li_repo->get_package( )
                                             it_r_trkorr = lt_r_trkorr ).
 
@@ -921,7 +921,7 @@ CLASS zcl_abapgit_gui_router IMPLEMENTATION.
         li_repo->set_files_remote( zcl_abapgit_zip=>load( lv_xstr ) ).
         zcl_abapgit_services_repo=>refresh( lv_key ).
 
-        CASE ii_event->mv_current_page_name.
+        CASE ii_event->current_page_name( ).
           WHEN lc_page-repo_view.
             rs_handled-state = zcl_abapgit_gui=>c_event_state-re_render.
           WHEN lc_page-main_view.
