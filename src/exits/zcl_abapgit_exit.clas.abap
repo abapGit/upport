@@ -52,7 +52,7 @@ CLASS zcl_abapgit_exit IMPLEMENTATION.
       ENDTRY.
     ENDIF.
 
-    gi_global_exit = NEW zcl_abapgit_exit( ). " this class
+    CREATE OBJECT gi_global_exit TYPE zcl_abapgit_exit. " this class
 
     ri_exit = gi_global_exit.
 
@@ -76,7 +76,7 @@ CLASS zcl_abapgit_exit IMPLEMENTATION.
       EXCEPTIONS
         type_not_found = 1
         OTHERS         = 2 ).
-    rv_running_in_test_context = xsdbool( sy-subrc = 0 ).
+    rv_running_in_test_context = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -355,6 +355,7 @@ CLASS zcl_abapgit_exit IMPLEMENTATION.
       TRY.
           gi_exit->deserialize_postprocess(
             EXPORTING
+              iv_package       = iv_package
               it_remote        = it_remote
               is_step          = is_step
               ii_log           = ii_log
