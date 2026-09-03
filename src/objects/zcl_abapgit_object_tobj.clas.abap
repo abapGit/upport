@@ -146,11 +146,6 @@ CLASS zcl_abapgit_object_tobj IMPLEMENTATION.
     io_xml->read( EXPORTING iv_name = 'OBJM'
                   CHANGING  cg_data = lt_objm ).
 
-    ASSIGN COMPONENT 'ABAP_LANGUAGE_VERSION' OF STRUCTURE ls_objh TO <lv_abap_language_version>.
-    IF sy-subrc = 0.
-      set_abap_language_version( CHANGING cv_abap_language_version = <lv_abap_language_version> ).
-    ENDIF.
-
     CALL FUNCTION 'OBJ_GENERATE'
       EXPORTING
         iv_korrnum            = iv_transport
@@ -199,6 +194,17 @@ CLASS zcl_abapgit_object_tobj IMPLEMENTATION.
       WHERE objectname = ls_objh-objectname
       AND objecttype = ls_objh-objecttype.
 
+* fm OBJ_GENERATE does not respect ABAP language version so we set it here directly
+* update must be dynamic since field does not exist in lower releases
+    ASSIGN COMPONENT 'ABAP_LANGUAGE_VERSION' OF STRUCTURE ls_objh TO <lv_abap_language_version>.
+    IF sy-subrc = 0.
+      set_abap_language_version( CHANGING cv_abap_language_version = <lv_abap_language_version> ).
+
+      UPDATE ('OBJH') SET abap_language_version = <lv_abap_language_version>
+        WHERE objectname = ls_objh-objectname
+        AND objecttype = ls_objh-objecttype.
+    ENDIF.
+
 * fm OBJ_GENERATE ignores several fields like primary table flag
 * for Individual Transaction Objects
     IF ls_objh-objecttype = 'T'.
@@ -226,7 +232,7 @@ CLASS zcl_abapgit_object_tobj IMPLEMENTATION.
     SELECT SINGLE objectname FROM objh INTO lv_objectname
       WHERE objectname = ms_item-obj_name(lv_type_pos)
       AND objecttype = ms_item-obj_name+lv_type_pos.    "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
@@ -277,7 +283,7 @@ CLASS zcl_abapgit_object_tobj IMPLEMENTATION.
         jump_not_possible = 1
         OTHERS            = 2.
 
-    rv_exit = xsdbool( sy-subrc = 0 ).
+    rv_exit = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
