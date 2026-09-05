@@ -252,7 +252,15 @@ CLASS zcl_abapgit_object_msag IMPLEMENTATION.
       AND sprsl <> mv_language
       ORDER BY langu.                    "#EC CI_BYPASS "#EC CI_GENBUFF
 
+    SELECT DISTINCT sprsl AS langu APPENDING TABLE lt_i18n_langs
+      FROM t100
+      WHERE arbgb = lv_msg_id
+      AND sprsl IN lt_language_filter
+      AND sprsl <> mv_language
+      ORDER BY langu.                    "#EC CI_BYPASS "#EC CI_GENBUFF
+
     SORT lt_i18n_langs ASCENDING.
+    DELETE ADJACENT DUPLICATES FROM lt_i18n_langs.
 
     IF lines( lt_i18n_langs ) > 0.
 
@@ -426,7 +434,7 @@ CLASS zcl_abapgit_object_msag IMPLEMENTATION.
 
     SELECT SINGLE arbgb FROM t100a INTO lv_arbgb
       WHERE arbgb = ms_item-obj_name.                   "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
