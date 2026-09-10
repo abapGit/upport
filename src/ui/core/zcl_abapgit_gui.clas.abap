@@ -202,10 +202,19 @@ CLASS zcl_abapgit_gui IMPLEMENTATION.
 
   METHOD cache_html.
 
-    rv_url = zif_abapgit_gui_services~cache_asset(
-      iv_text    = iv_text
-      iv_type    = 'text'
-      iv_subtype = 'html' ).
+    IF zcl_abapgit_ui_factory=>get_frontend_services( )->is_sapgui_for_java( ) = abap_true.
+      "Java GUI needs the UTF-8 payload length in bytes for non-ASCII HTML.
+      rv_url = zif_abapgit_gui_services~cache_asset(
+        iv_xdata   = zcl_abapgit_convert=>string_to_xstring_utf8( iv_text )
+        iv_type    = 'text'
+        iv_subtype = 'html' ).
+    ELSE.
+      "Keep the character-based HTML processing for WebGUI and Windows.
+      rv_url = zif_abapgit_gui_services~cache_asset(
+        iv_text    = iv_text
+        iv_type    = 'text'
+        iv_subtype = 'html' ).
+    ENDIF.
 
   ENDMETHOD.
 
@@ -239,7 +248,7 @@ CLASS zcl_abapgit_gui IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    mo_html_parts = NEW #( ).
+    CREATE OBJECT mo_html_parts.
 
     mv_rollback_on_error = iv_rollback_on_error.
     mi_asset_man      = ii_asset_man.
@@ -289,10 +298,12 @@ CLASS zcl_abapgit_gui IMPLEMENTATION.
       li_event     TYPE REF TO zif_abapgit_gui_event,
       ls_handled   TYPE zif_abapgit_gui_event_handler=>ty_handling_result.
 
-    li_event = NEW zcl_abapgit_gui_event( ii_gui_services = me
-                                          iv_action = iv_action
-                                          iv_getdata = iv_getdata
-                                          it_postdata = it_postdata ).
+    CREATE OBJECT li_event TYPE zcl_abapgit_gui_event
+      EXPORTING
+        ii_gui_services = me
+        iv_action       = iv_action
+        iv_getdata      = iv_getdata
+        it_postdata     = it_postdata.
 
     TRY.
         ls_handled = zcl_abapgit_exit=>get_instance( )->on_event( li_event ).
@@ -427,7 +438,7 @@ CLASS zcl_abapgit_gui IMPLEMENTATION.
 
   METHOD is_new_page.
 
-    rv_new_page = xsdbool(
+    rv_new_page = boolc(
       iv_state = c_event_state-new_page OR
       iv_state = c_event_state-new_page_w_bookmark ).
 
@@ -664,7 +675,7 @@ CLASS zcl_abapgit_gui IMPLEMENTATION.
   METHOD zif_abapgit_gui_services~get_log.
 
     IF iv_create_new = abap_true OR mi_common_log IS NOT BOUND.
-      mi_common_log = NEW zcl_abapgit_log( ).
+      CREATE OBJECT mi_common_log TYPE zcl_abapgit_log.
     ENDIF.
 
     ri_log = mi_common_log.
