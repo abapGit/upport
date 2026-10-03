@@ -325,7 +325,7 @@ CLASS zcl_abapgit_ajson_utilities IMPLEMENTATION.
         eo_delete = li_del
         eo_change = li_mod ).
 
-    rv_yes = xsdbool(
+    rv_yes = boolc(
       li_ins->is_empty( ) = abap_true AND
       li_del->is_empty( ) = abap_true AND
       li_mod->is_empty( ) = abap_true ).
@@ -335,18 +335,22 @@ CLASS zcl_abapgit_ajson_utilities IMPLEMENTATION.
 
   METHOD iterate_array.
 
-    ri_iterator = NEW lcl_node_iterator( iv_node_type = zif_abapgit_ajson_types=>node_type-array
-                                         ii_json = ii_json
-                                         iv_path = iv_path ).
+    CREATE OBJECT ri_iterator TYPE lcl_node_iterator
+      EXPORTING
+        iv_node_type = zif_abapgit_ajson_types=>node_type-array
+        ii_json = ii_json
+        iv_path = iv_path.
 
   ENDMETHOD.
 
 
   METHOD iterate_object.
 
-    ri_iterator = NEW lcl_node_iterator( iv_node_type = zif_abapgit_ajson_types=>node_type-object
-                                         ii_json = ii_json
-                                         iv_path = iv_path ).
+    CREATE OBJECT ri_iterator TYPE lcl_node_iterator
+      EXPORTING
+        iv_node_type = zif_abapgit_ajson_types=>node_type-object
+        ii_json = ii_json
+        iv_path = iv_path.
 
   ENDMETHOD.
 
@@ -377,13 +381,13 @@ CLASS zcl_abapgit_ajson_utilities IMPLEMENTATION.
 
 
   METHOD new.
-    ro_instance = NEW #( ).
+    CREATE OBJECT ro_instance.
   ENDMETHOD.
 
 
   METHOD normalize_input.
 
-    IF xsdbool( iv_json IS INITIAL ) = xsdbool( io_json IS INITIAL ).
+    IF boolc( iv_json IS INITIAL ) = boolc( io_json IS INITIAL ).
       zcx_abapgit_ajson_error=>raise( 'Either supply JSON string or instance, but not both' ).
     ENDIF.
 
