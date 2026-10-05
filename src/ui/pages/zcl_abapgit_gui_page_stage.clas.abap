@@ -196,11 +196,13 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_stage.
 
-    lo_component = NEW #( ii_repo_online = ii_repo_online
-                          iv_seed = iv_seed
-                          iv_sci_result = iv_sci_result
-                          ii_force_refresh = ii_force_refresh
-                          ii_obj_filter = ii_obj_filter ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo_online   = ii_repo_online
+        iv_seed          = iv_seed
+        iv_sci_result    = iv_sci_result
+        ii_force_refresh = ii_force_refresh
+        ii_obj_filter    = ii_obj_filter.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title         = 'Stage'
@@ -379,7 +381,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
   METHOD render_actions.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     " Commit and Patch actions live in the page toolbar (commitBtn / patchBtn,
     " labels managed by StageHelper.updateMenu)
@@ -404,7 +406,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     DATA: lv_param    TYPE string,
           lv_filename TYPE string.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     lv_filename = is_file-path && is_file-filename.
     " make sure whitespace is preserved in the DOM
@@ -465,7 +467,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
                    <ls_status> LIKE LINE OF ms_files-status,
                    <ls_local>  LIKE LINE OF ms_files-local.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<table id="stageTab" class="stage_tab w100">' ).
 
@@ -477,7 +479,8 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     " Local changes
     LOOP AT ms_files-local ASSIGNING <ls_local>.
       AT FIRST.
-        ri_html->add( '<thead><tr class="local">' ).
+        ri_html->add( '<thead>' ).
+        ri_html->add( '<tr class="local">' ).
         ri_html->add( '<th class="stage-status"></th>' ). " Diff state
         ri_html->add( '<th class="stage-objtype">Type</th>' ).
         ri_html->add( '<th title="Click filename to see diff">File</th>' ).
@@ -487,7 +490,8 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
         ri_html->add( '<th class="cmd">' ).
         ri_html->add( '<a>add</a>&#x2193; <a>reset</a>&#x2193;' ).
         ri_html->add( '</th>' ).
-        ri_html->add( '</tr></thead>' ).
+        ri_html->add( '</tr>' ).
+        ri_html->add( '</thead>' ).
         ri_html->add( '<tbody>' ).
       ENDAT.
 
@@ -525,7 +529,8 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     " Remote changes
     LOOP AT ms_files-remote ASSIGNING <ls_remote>.
       AT FIRST.
-        ri_html->add( '<thead><tr class="remote">' ).
+        ri_html->add( '<thead>' ).
+        ri_html->add( '<tr class="remote">' ).
         ri_html->add( '<th></th>' ). " Diff state
         ri_html->add( '<th></th>' ). " Type
         ri_html->add( '<th colspan="3">Files to remove or non-code</th>' ).
@@ -533,7 +538,8 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
         ri_html->add( '<th class="cmd">' ).
         ri_html->add( '<a>ignore</a>&#x2193; <a>remove</a>&#x2193; <a>reset</a>&#x2193;' ).
         ri_html->add( '</th>' ).
-        ri_html->add( '</tr></thead>' ).
+        ri_html->add( '</tr>' ).
+        ri_html->add( '</thead>' ).
         ri_html->add( '<tbody>' ).
       ENDAT.
 
@@ -587,7 +593,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
     DATA lv_main_language TYPE spras.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     lv_main_language = mi_repo->get_dot_abapgit( )->get_main_language( ).
 
@@ -602,7 +608,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
   METHOD render_scripts.
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->set_title( cl_abap_typedescr=>describe_by_object_ref( me )->get_relative_name( ) ).
 
@@ -633,7 +639,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
     FIELD-SYMBOLS <ls_remote> LIKE LINE OF ms_files-remote.
     FIELD-SYMBOLS <ls_status> LIKE LINE OF ms_files-status.
 
-    ro_stage = NEW #( ).
+    CREATE OBJECT ro_stage.
 
     LOOP AT ms_files-local ASSIGNING <ls_local>.
       READ TABLE ms_files-status ASSIGNING <ls_status>
@@ -865,7 +871,7 @@ CLASS zcl_abapgit_gui_page_stage IMPLEMENTATION.
 
     handle_picklist_state( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( '<div class="repo">' ).
     ri_html->add( zcl_abapgit_gui_chunk_lib=>render_repo_top(
