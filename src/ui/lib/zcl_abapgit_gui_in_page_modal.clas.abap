@@ -49,9 +49,11 @@ CLASS zcl_abapgit_gui_in_page_modal IMPLEMENTATION.
 
 
   METHOD create.
-    ro_wrap = NEW #( ii_child = ii_child
-                     iv_width = iv_width
-                     iv_height = iv_height ).
+    CREATE OBJECT ro_wrap
+      EXPORTING
+        ii_child  = ii_child
+        iv_width  = iv_width
+        iv_height = iv_height.
   ENDMETHOD.
 
 
@@ -59,8 +61,8 @@ CLASS zcl_abapgit_gui_in_page_modal IMPLEMENTATION.
 
     DATA lo_style TYPE REF TO zcl_abapgit_string_buffer.
 
-    ri_html = NEW zcl_abapgit_html( ).
-    lo_style = NEW #( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
+    CREATE OBJECT lo_style.
 
     IF mi_child IS INITIAL.
       RETURN.
@@ -79,6 +81,11 @@ CLASS zcl_abapgit_gui_in_page_modal IMPLEMENTATION.
     ri_html->add( |</div>| ).
     ri_html->add( |</div>| ).
     ri_html->add( |<div class="modal-overlay"></div>| ).
+
+    " Keep Tab inside the popup
+    zcl_abapgit_ui_factory=>get_gui_services( )->get_html_parts( )->add_part(
+      iv_collection = zcl_abapgit_gui_component=>c_html_parts-scripts
+      ii_part       = zcl_abapgit_html=>create( )->set_title( 'in_page_modal' )->add( 'trapFocus();' ) ).
 
   ENDMETHOD.
 ENDCLASS.
