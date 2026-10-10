@@ -141,7 +141,7 @@ CLASS zcl_abapgit_object_devc IMPLEMENTATION.
            WHERE pgmid = 'R3TR'
            AND NOT ( ( object = 'DEVC' OR object = 'SOTR' ) AND obj_name = iv_package_name )
            AND devclass = iv_package_name.
-    rv_is_empty = boolc( sy-subrc <> 0 ).
+    rv_is_empty = xsdbool( sy-subrc <> 0 ).
 
   ENDMETHOD.
 
@@ -156,7 +156,7 @@ CLASS zcl_abapgit_object_devc IMPLEMENTATION.
     IF sy-subrc = 0.
       " Look up type of software component (typically LOCAL or ZLOCAL but others are possible)
       SELECT SINGLE comp_type FROM cvers INTO lv_comp_type WHERE component = lv_dlvunit.
-      rv_is_local = boolc( sy-subrc = 0 AND lv_comp_type CA 'LJZ' ).
+      rv_is_local = xsdbool( sy-subrc = 0 AND lv_comp_type CA 'LJZ' ).
     ENDIF.
 
   ENDMETHOD.
