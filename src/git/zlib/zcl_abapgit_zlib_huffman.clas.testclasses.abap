@@ -22,9 +22,7 @@ CLASS ltcl_test IMPLEMENTATION.
       APPEND 8 TO lt_lengths.
     ENDDO.
 
-    CREATE OBJECT lo_huffman
-      EXPORTING
-        it_lengths = lt_lengths.
+    lo_huffman = NEW #( it_lengths = lt_lengths ).
 
     cl_abap_unit_assert=>assert_equals(
       act = lo_huffman->get_count( 1 )
@@ -63,9 +61,7 @@ CLASS ltcl_test IMPLEMENTATION.
       APPEND 8 TO lt_lengths.
     ENDDO.
 
-    CREATE OBJECT lo_huffman
-      EXPORTING
-        it_lengths = lt_lengths.
+    lo_huffman = NEW #( it_lengths = lt_lengths ).
 
     cl_abap_unit_assert=>assert_equals(
       act = lo_huffman->get_count( 8 )
@@ -93,9 +89,7 @@ CLASS ltcl_test IMPLEMENTATION.
     APPEND 1 TO lt_lengths.
     APPEND 1 TO lt_lengths.
 
-    CREATE OBJECT lo_huffman
-      EXPORTING
-        it_lengths = lt_lengths.
+    lo_huffman = NEW #( it_lengths = lt_lengths ).
 
     cl_abap_unit_assert=>assert_equals(
       act = lo_huffman->get_count( 1 )
@@ -125,9 +119,7 @@ CLASS ltcl_test IMPLEMENTATION.
     APPEND 3 TO lt_lengths.
     APPEND 3 TO lt_lengths.
 
-    CREATE OBJECT lo_huffman
-      EXPORTING
-        it_lengths = lt_lengths.
+    lo_huffman = NEW #( it_lengths = lt_lengths ).
 
     cl_abap_unit_assert=>assert_equals(
       act = lo_huffman->get_count( 1 )
@@ -173,9 +165,7 @@ CLASS ltcl_test IMPLEMENTATION.
     APPEND 0 TO lt_lengths.
     APPEND 1 TO lt_lengths.
 
-    CREATE OBJECT lo_huffman
-      EXPORTING
-        it_lengths = lt_lengths.
+    lo_huffman = NEW #( it_lengths = lt_lengths ).
 
     cl_abap_unit_assert=>assert_equals(
       act = lo_huffman->get_count( 1 )
@@ -198,9 +188,7 @@ CLASS ltcl_test IMPLEMENTATION.
 
     APPEND 8 TO lt_lengths.
 
-    CREATE OBJECT lo_huffman
-      EXPORTING
-        it_lengths = lt_lengths.
+    lo_huffman = NEW #( it_lengths = lt_lengths ).
 
     cl_abap_unit_assert=>assert_equals(
       act = lo_huffman->get_count( 0 )
