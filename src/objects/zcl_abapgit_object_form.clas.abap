@@ -115,7 +115,7 @@ CLASS zcl_abapgit_object_form IMPLEMENTATION.
 
     DATA lv_tdspras TYPE laiso.
 
-    lv_tdspras = zcl_abapgit_convert=>conversion_exit_isola_output( is_header-tdspras ).
+    lv_tdspras = zcl_abapgit_convert_language=>conversion_exit_isola_output( is_header-tdspras ).
 
     " Refuse to serialize inconsistent text-header data. An empty tdspras
     " or a tdspras that ISO conversion cannot map (typically because the
@@ -148,7 +148,7 @@ CLASS zcl_abapgit_object_form IMPLEMENTATION.
     DATA lv_string TYPE string.
     DATA li_xml TYPE REF TO zif_abapgit_xml_output.
 
-    li_xml = NEW zcl_abapgit_xml_output( ).
+    CREATE OBJECT li_xml TYPE zcl_abapgit_xml_output.
     li_xml->add( iv_name = c_objectname_tdlines
                  ig_data = it_lines ).
     lv_string = li_xml->render( ).
@@ -192,7 +192,7 @@ CLASS zcl_abapgit_object_form IMPLEMENTATION.
 
     ENDTRY.
 
-    li_xml = NEW zcl_abapgit_xml_input( iv_xml = lv_string ).
+    CREATE OBJECT li_xml TYPE zcl_abapgit_xml_input EXPORTING iv_xml = lv_string.
     li_xml->read( EXPORTING iv_name = c_objectname_tdlines
                   CHANGING  cg_data = rt_lines ).
 
@@ -347,7 +347,7 @@ CLASS zcl_abapgit_object_form IMPLEMENTATION.
       IMPORTING
         olanguage        = lv_lang.
 
-    rv_bool = xsdbool( lv_lang IS NOT INITIAL ).
+    rv_bool = boolc( lv_lang IS NOT INITIAL ).
 
   ENDMETHOD.
 

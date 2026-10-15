@@ -627,7 +627,7 @@ CLASS zcl_abapgit_lxe_texts IMPLEMENTATION.
 
     TRY.
         li_cts_api = zcl_abapgit_factory=>get_cts_api( ).
-        rv_result = xsdbool( li_cts_api->is_chrec_possible_for_package( |{ iv_package }| ) = abap_false ).
+        rv_result = boolc( li_cts_api->is_chrec_possible_for_package( |{ iv_package }| ) = abap_false ).
       CATCH zcx_abapgit_exception ##NO_HANDLER.
     ENDTRY.
 
@@ -636,7 +636,7 @@ CLASS zcl_abapgit_lxe_texts IMPLEMENTATION.
 
   METHOD laiso_to_langu_safe.
 
-    zcl_abapgit_convert=>language_sap2_to_sap1(
+    zcl_abapgit_convert_language=>sap2_to_sap1(
       EXPORTING
         im_lang_sap2  = iv_laiso
       RECEIVING
@@ -653,7 +653,7 @@ CLASS zcl_abapgit_lxe_texts IMPLEMENTATION.
 
   METHOD langu_to_laiso_safe.
 
-    zcl_abapgit_convert=>language_sap1_to_sap2(
+    zcl_abapgit_convert_language=>sap1_to_sap2(
       EXPORTING
         im_lang_sap1  = iv_langu
       RECEIVING
@@ -819,8 +819,10 @@ CLASS zcl_abapgit_lxe_texts IMPLEMENTATION.
 
     LOOP AT mo_i18n_params->ms_params-translation_languages INTO lv_lang.
       lv_lang = to_lower( lv_lang ).
-      lo_po_file = NEW #( iv_suppress_comments = mo_i18n_params->ms_params-suppress_po_comments
-                          iv_lang = lv_lang ).
+      CREATE OBJECT lo_po_file
+        EXPORTING
+          iv_suppress_comments = mo_i18n_params->ms_params-suppress_po_comments
+          iv_lang              = lv_lang.
       LOOP AT lt_lxe_texts ASSIGNING <ls_translation>.
         IF iso4_to_iso2( <ls_translation>-target_lang ) = lv_lang.
           lo_po_file->push_text_pairs(
@@ -927,7 +929,7 @@ CLASS zcl_abapgit_lxe_texts IMPLEMENTATION.
     mi_xml_in      = ii_xml.
     mo_files       = io_files.
 
-    mv_local_package = xsdbool( iv_object_type = 'DEVC' AND is_local_package( iv_object_name ) = abap_true ).
+    mv_local_package = boolc( iv_object_type = 'DEVC' AND is_local_package( iv_object_name ) = abap_true ).
 
     " MAYBE TODO: see comment in serialize
 
@@ -958,7 +960,7 @@ CLASS zcl_abapgit_lxe_texts IMPLEMENTATION.
     mi_xml_out     = ii_xml.
     mo_files       = io_files.
 
-    mv_local_package = xsdbool( iv_object_type = 'DEVC' AND is_local_package( iv_object_name ) = abap_true ).
+    mv_local_package = boolc( iv_object_type = 'DEVC' AND is_local_package( iv_object_name ) = abap_true ).
 
     " MAYBE TODO
     " if other formats are needed, including the old in-XML approach
