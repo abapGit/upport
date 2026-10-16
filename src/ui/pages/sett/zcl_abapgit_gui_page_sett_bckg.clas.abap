@@ -72,7 +72,7 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
   METHOD constructor.
 
     super->constructor( ).
-    mo_form_data = NEW #( ).
+    CREATE OBJECT mo_form_data.
     mi_repo = ii_repo.
     mo_form = get_form_schema( ).
     mo_form_data = read_settings( ).
@@ -84,13 +84,17 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
 
     DATA lo_component TYPE REF TO zcl_abapgit_gui_page_sett_bckg.
 
-    lo_component = NEW #( ii_repo = ii_repo ).
+    CREATE OBJECT lo_component
+      EXPORTING
+        ii_repo = ii_repo.
 
     ri_page = zcl_abapgit_gui_page_hoc=>create(
       iv_page_title      = 'Background Mode'
       io_page_menu       = zcl_abapgit_gui_menus=>repo_settings(
                              iv_key = ii_repo->get_key( )
-                             iv_act = zif_abapgit_definitions=>c_action-repo_background )
+                             iv_act = zif_abapgit_definitions=>c_action-repo_background
+                             iv_with_back = abap_true
+                             iv_form_id   = 'repo-background-form' )
       ii_child_component = lo_component ).
 
   ENDMETHOD.
@@ -106,8 +110,8 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
     lt_methods = zcl_abapgit_background=>list_methods( ).
 
     ro_form = zcl_abapgit_html_form=>create(
-                iv_form_id   = 'repo-background-form'
-                iv_help_page = 'https://docs.abapgit.org/settings-background-mode.html' ).
+      iv_form_id   = 'repo-background-form'
+      iv_help_page = 'https://docs.abapgit.org/settings-background-mode.html' ).
 
     ro_form->start_group(
       iv_name          = c_id-mode_selection
@@ -123,8 +127,8 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
 
     LOOP AT lt_methods INTO ls_method.
       ro_form->option(
-        iv_label       = ls_method-description
-        iv_value       = ls_method-class ).
+        iv_label = ls_method-description
+        iv_value = ls_method-class ).
     ENDLOOP.
 
     ro_form->table(
@@ -190,7 +194,7 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
       ls_settings LIKE LINE OF ls_per-settings.
 
     ls_per = read_persist( ).
-    ro_form_data = NEW #( ).
+    CREATE OBJECT ro_form_data.
 
     " Mode Selection
     ro_form_data->set(
@@ -250,8 +254,8 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
   METHOD save_settings.
 
     DATA:
-      ls_per         TYPE zif_abapgit_persist_background=>ty_background,
-      lt_settings    LIKE ls_per-settings.
+      ls_per      TYPE zif_abapgit_persist_background=>ty_background,
+      lt_settings LIKE ls_per-settings.
 
     FIELD-SYMBOLS:
       <ls_settings> LIKE LINE OF ls_per-settings.
@@ -323,7 +327,7 @@ CLASS zcl_abapgit_gui_page_sett_bckg IMPLEMENTATION.
 
     register_handlers( ).
 
-    ri_html = NEW zcl_abapgit_html( ).
+    CREATE OBJECT ri_html TYPE zcl_abapgit_html.
 
     ri_html->add( `<div class="repo">` ).
 
