@@ -165,9 +165,9 @@ CLASS lcl_utils IMPLEMENTATION.
           conv = lo_conv.
         CALL METHOD lo_conv->('CONVERT')
         EXPORTING
-          data = iv_xstr
+          input = iv_xstr
         IMPORTING
-          buffer = rv_str.
+          data = rv_str.
     ENDTRY.
 
   ENDMETHOD.
@@ -570,7 +570,16 @@ CLASS lcl_json_serializer DEFINITION FINAL CREATE PRIVATE.
 
   PRIVATE SECTION.
 
+    TYPES:
+      BEGIN OF ty_control_char,
+        char    TYPE string,
+        escaped TYPE string,
+      END OF ty_control_char.
+
     CLASS-DATA gv_comma_with_lf TYPE string.
+    " U+0000 - U+001F other than LF: JSON allows them only escaped
+    CLASS-DATA gt_control_chars TYPE STANDARD TABLE OF ty_control_char WITH DEFAULT KEY.
+    CLASS-DATA gv_control_chars TYPE string.
 
     DATA mt_json_tree TYPE zif_abapgit_ajson_types=>ty_nodes_ts.
     DATA mv_keep_item_order TYPE abap_bool.
@@ -608,13 +617,42 @@ ENDCLASS.
 CLASS lcl_json_serializer IMPLEMENTATION.
 
   METHOD class_constructor.
+
+    DATA lv_code TYPE x LENGTH 1.
+    DATA lv_xstr TYPE xstring.
+    DATA ls_control_char LIKE LINE OF gt_control_chars.
+
     gv_comma_with_lf = ',' && cl_abap_char_utilities=>newline.
+
+    DO 32 TIMES.
+      lv_code = sy-index - 1.
+      IF lv_code = '0A'.
+        CONTINUE. " \n is common, it is escaped on its own
+      ENDIF.
+      lv_xstr = lv_code.
+      ls_control_char-char = lcl_utils=>xstring_to_string_utf8( lv_xstr ).
+      CASE lv_code.
+        WHEN '08'.
+          ls_control_char-escaped = '\b'.
+        WHEN '09'.
+          ls_control_char-escaped = '\t'.
+        WHEN '0C'.
+          ls_control_char-escaped = '\f'.
+        WHEN '0D'.
+          ls_control_char-escaped = '\r'.
+        WHEN OTHERS.
+          ls_control_char-escaped = to_lower( |\\u00{ lv_code }| ).
+      ENDCASE.
+      APPEND ls_control_char TO gt_control_chars.
+      gv_control_chars = gv_control_chars && ls_control_char-char.
+    ENDDO.
+
   ENDMETHOD.
 
   METHOD stringify.
 
     DATA lo TYPE REF TO lcl_json_serializer.
-    lo = NEW #( ).
+    CREATE OBJECT lo.
     lo->mt_json_tree = it_json_tree.
     lo->mv_indent_step = iv_indent.
     lo->mv_keep_item_order = iv_keep_item_order.
@@ -751,10 +789,11 @@ CLASS lcl_json_serializer IMPLEMENTATION.
 
   METHOD escape_string.
 
+    DATA ls_control_char LIKE LINE OF gt_control_chars.
+
+    " see also https://www.json.org/json-en.html
     rv_escaped = iv_unescaped.
-    IF rv_escaped CA |"\\\t\n\r|.
-      " TODO consider performance ...
-      " see also https://www.json.org/json-en.html
+    IF rv_escaped CA |"\\\n|.
       rv_escaped = replace(
         val = rv_escaped
         sub = '\'
@@ -767,20 +806,20 @@ CLASS lcl_json_serializer IMPLEMENTATION.
         occ = 0 ).
       rv_escaped = replace(
         val = rv_escaped
-        sub = |\r|
-        with = '\r'
-        occ = 0 ).
-      rv_escaped = replace(
-        val = rv_escaped
-        sub = |\t|
-        with = '\t'
-        occ = 0 ).
-      rv_escaped = replace(
-        val = rv_escaped
         sub = '"'
         with = '\"'
         occ = 0 ).
+    ENDIF.
 
+    " only after the backslash replace: these escapes bring their own backslash
+    IF rv_escaped CA gv_control_chars.
+      LOOP AT gt_control_chars INTO ls_control_char.
+        rv_escaped = replace(
+          val = rv_escaped
+          sub = ls_control_char-char
+          with = ls_control_char-escaped
+          occ = 0 ).
+      ENDLOOP.
     ENDIF.
 
   ENDMETHOD.
@@ -1184,7 +1223,7 @@ CLASS lcl_json_to_abap IMPLEMENTATION.
         " Do nothing
       WHEN zif_abapgit_ajson_types=>node_type-boolean.
         " TODO: check type ?
-        <container> = xsdbool( is_node-value = 'true' ).
+        <container> = boolc( is_node-value = 'true' ).
       WHEN zif_abapgit_ajson_types=>node_type-number.
         " TODO: check type ?
         <container> = is_node-value.
@@ -1522,7 +1561,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lo_type = cl_abap_typedescr=>describe_by_data( iv_data ).
 
-    lo_converter = NEW #( ).
+    CREATE OBJECT lo_converter.
     lo_converter->mi_custom_mapping  = ii_custom_mapping.
     lo_converter->mv_keep_item_order = is_opts-keep_item_order.
     lo_converter->mv_format_datetime = is_opts-format_datetime.
@@ -1958,7 +1997,7 @@ CLASS lcl_abap_to_json IMPLEMENTATION.
 
     lo_type = cl_abap_typedescr=>describe_by_data( iv_data ).
 
-    lo_converter = NEW #( ).
+    CREATE OBJECT lo_converter.
     lo_converter->mi_custom_mapping  = ii_custom_mapping.
     lo_converter->mv_keep_item_order = is_opts-keep_item_order.
     lo_converter->mv_format_datetime = is_opts-format_datetime.
@@ -2074,7 +2113,7 @@ ENDCLASS.
 CLASS lcl_filter_runner IMPLEMENTATION.
 
   METHOD new.
-    ro_instance = NEW #( ii_filter = ii_filter ).
+    CREATE OBJECT ro_instance EXPORTING ii_filter = ii_filter.
   ENDMETHOD.
 
   METHOD constructor.
@@ -2186,7 +2225,7 @@ ENDCLASS.
 CLASS lcl_mapper_runner IMPLEMENTATION.
 
   METHOD new.
-    ro_instance = NEW #( ii_mapper = ii_mapper ).
+    CREATE OBJECT ro_instance EXPORTING ii_mapper = ii_mapper.
   ENDMETHOD.
 
   METHOD constructor.
@@ -2294,7 +2333,7 @@ CLASS lcl_mutator_queue IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD new.
-    ro_instance = NEW #( ).
+    CREATE OBJECT ro_instance.
   ENDMETHOD.
 
   METHOD lif_mutator_runner~run.
