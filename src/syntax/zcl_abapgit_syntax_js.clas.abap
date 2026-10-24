@@ -208,7 +208,7 @@ CLASS zcl_abapgit_syntax_js IMPLEMENTATION.
   METHOD is_keyword.
 
     READ TABLE gt_keywords WITH TABLE KEY keyword = iv_chunk TRANSPORTING NO FIELDS.
-    rv_yes = boolc( sy-subrc = 0 ).
+    rv_yes = xsdbool( sy-subrc = 0 ).
 
   ENDMETHOD.
 
