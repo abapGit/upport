@@ -84,6 +84,8 @@ CLASS ltd_exit IMPLEMENTATION.
   ENDMETHOD.
   METHOD zif_abapgit_exit~deserialize_postprocess.
   ENDMETHOD.
+  METHOD zif_abapgit_exit~post_pull.
+  ENDMETHOD.
   METHOD zif_abapgit_exit~determine_transport_request.
   ENDMETHOD.
   METHOD zif_abapgit_exit~enable_adjust_commit_message.
@@ -248,13 +250,15 @@ CLASS ltcl_push IMPLEMENTATION.
 
     CLEAR ltd_calls=>gv_calls.
 
-    mo_exit = NEW #( ).
+    CREATE OBJECT mo_exit.
     zcl_abapgit_injector=>set_exit( mo_exit ).
 
-    mo_repo = NEW #( ).
-    mi_cut = NEW zcl_abapgit_repo_push( ii_repo_online = mo_repo ).
+    CREATE OBJECT mo_repo.
+    CREATE OBJECT mi_cut TYPE zcl_abapgit_repo_push
+      EXPORTING
+        ii_repo_online = mo_repo.
 
-    mo_stage = NEW #( ).
+    CREATE OBJECT mo_stage.
     ms_comment-committer-name  = 'Tester'.
     ms_comment-committer-email = 'tester@localhost'.
     ms_comment-comment         = 'Test commit'.
@@ -295,7 +299,7 @@ CLASS ltcl_push IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
       act = mo_repo->ms_comment
       exp = ms_comment ).
-    lv_same = xsdbool( mo_repo->mo_stage = mo_stage ).
+    lv_same = boolc( mo_repo->mo_stage = mo_stage ).
     cl_abap_unit_assert=>assert_equals(
       act = lv_same
       exp = abap_true ).
@@ -368,7 +372,7 @@ CLASS ltcl_push IMPLEMENTATION.
     DATA li_first TYPE REF TO zif_abapgit_repo_push.
     DATA li_second TYPE REF TO zif_abapgit_repo_push.
 
-    lo_other = NEW #( ).
+    CREATE OBJECT lo_other.
     li_first = zcl_abapgit_repo_factory=>get_repo_push( mo_repo ).
     li_second = zcl_abapgit_repo_factory=>get_repo_push( lo_other ).
     li_first->push( is_comment = ms_comment
@@ -395,10 +399,10 @@ CLASS ltcl_push IMPLEMENTATION.
     DATA li_push TYPE REF TO zif_abapgit_repo_push.
     DATA lv_same TYPE abap_bool.
 
-    lo_other = NEW #( ).
+    CREATE OBJECT lo_other.
     zcl_abapgit_repo_injector=>set_repo_push( mi_cut ).
     li_push = zcl_abapgit_repo_factory=>get_repo_push( lo_other ).
-    lv_same = xsdbool( li_push = mi_cut ).
+    lv_same = boolc( li_push = mi_cut ).
     cl_abap_unit_assert=>assert_equals(
       act = lv_same
       exp = abap_true ).
