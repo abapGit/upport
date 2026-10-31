@@ -332,7 +332,7 @@ CLASS zcl_abapgit_object_dtel IMPLEMENTATION.
       SELECT SINGLE rollname FROM dd04l INTO lv_rollname
         WHERE rollname = lv_rollname. "#EC CI_NOORDER
     ENDIF.
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 

@@ -248,7 +248,7 @@ CLASS zcl_abapgit_gui IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    mo_html_parts = NEW #( ).
+    CREATE OBJECT mo_html_parts.
 
     mv_rollback_on_error = iv_rollback_on_error.
     mi_asset_man      = ii_asset_man.
@@ -298,10 +298,12 @@ CLASS zcl_abapgit_gui IMPLEMENTATION.
       li_event     TYPE REF TO zif_abapgit_gui_event,
       ls_handled   TYPE zif_abapgit_gui_event_handler=>ty_handling_result.
 
-    li_event = NEW zcl_abapgit_gui_event( ii_gui_services = me
-                                          iv_action = iv_action
-                                          iv_getdata = iv_getdata
-                                          it_postdata = it_postdata ).
+    CREATE OBJECT li_event TYPE zcl_abapgit_gui_event
+      EXPORTING
+        ii_gui_services = me
+        iv_action       = iv_action
+        iv_getdata      = iv_getdata
+        it_postdata     = it_postdata.
 
     TRY.
         ls_handled = zcl_abapgit_exit=>get_instance( )->on_event( li_event ).
@@ -337,7 +339,13 @@ CLASS zcl_abapgit_gui IMPLEMENTATION.
               ii_page = ls_handled-page
               iv_replacing = abap_true ).
           WHEN c_event_state-go_back.
-            back( ).
+            IF back( ) = abap_true.
+              " Back on the start page leaves abapGit, as F3 and Escape do in SAP GUI.
+              " A go_back sapevent (Escape or the browser Back on the Edge control
+              " and WebGUI) ends up here, those keys never reach the screen
+              free( ).
+              SET SCREEN 0.
+            ENDIF.
           WHEN c_event_state-go_back_to_bookmark.
             back( iv_to_bookmark = abap_true ).
           WHEN c_event_state-no_more_act.
@@ -436,7 +444,7 @@ CLASS zcl_abapgit_gui IMPLEMENTATION.
 
   METHOD is_new_page.
 
-    rv_new_page = xsdbool(
+    rv_new_page = boolc(
       iv_state = c_event_state-new_page OR
       iv_state = c_event_state-new_page_w_bookmark ).
 
@@ -673,7 +681,7 @@ CLASS zcl_abapgit_gui IMPLEMENTATION.
   METHOD zif_abapgit_gui_services~get_log.
 
     IF iv_create_new = abap_true OR mi_common_log IS NOT BOUND.
-      mi_common_log = NEW zcl_abapgit_log( ).
+      CREATE OBJECT mi_common_log TYPE zcl_abapgit_log.
     ENDIF.
 
     ri_log = mi_common_log.
