@@ -800,7 +800,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
       ls_varikey-variant = <ls_vari>-variant.
 
       DELETE lt_local_varis WHERE variant = <ls_vari>-variant.
-      lv_exists_locally = xsdbool( sy-subrc = 0 ).
+      lv_exists_locally = boolc( sy-subrc = 0 ).
 
       lv_was_protected = set_vari_protection( is_vari    = ls_varikey
                                               iv_protect = abap_false ).
@@ -1106,7 +1106,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
 
 
   METHOD is_exit_include.
-    rv_is_exit_include = xsdbool(
+    rv_is_exit_include = boolc(
       iv_program CP 'LX*' OR iv_program CP 'SAPLX*' OR
       iv_program+1 CP '/LX*' OR iv_program+1 CP '/SAPLX*' ).
   ENDMETHOD.
@@ -1382,7 +1382,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
     IF io_xml IS BOUND.
       li_xml = io_xml.
     ELSE.
-      li_xml = NEW zcl_abapgit_xml_output( ).
+      CREATE OBJECT li_xml TYPE zcl_abapgit_xml_output.
     ENDIF.
 
     li_xml->add( iv_name = 'PROGDIR'
