@@ -320,7 +320,7 @@ CLASS zcl_abapgit_object_sprx IMPLEMENTATION.
       IMPORTING
         status   = lv_status ).
 
-    rv_bool = xsdbool( lv_status = if_proxy=>c_state_active OR lv_status = if_proxy=>c_state_inactive ).
+    rv_bool = boolc( lv_status = if_proxy=>c_state_active OR lv_status = if_proxy=>c_state_inactive ).
 
   ENDMETHOD.
 
@@ -356,7 +356,7 @@ CLASS zcl_abapgit_object_sprx IMPLEMENTATION.
       IMPORTING
         status   = lv_status ).
 
-    rv_active = xsdbool( lv_status = if_proxy=>c_state_active ).
+    rv_active = boolc( lv_status = if_proxy=>c_state_active ).
 
   ENDMETHOD.
 
