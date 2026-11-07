@@ -102,7 +102,7 @@ CLASS lcl_node_iterator IMPLEMENTATION.
       WHEN OTHERS.
         ASSERT 1 = 0.
     ENDCASE.
-    mv_has_next = boolc( sy-subrc = 0 AND mr_cursor->path = mv_base_path ).
+    mv_has_next = xsdbool( sy-subrc = 0 AND mr_cursor->path = mv_base_path ).
 
   ENDMETHOD.
 
