@@ -71,7 +71,7 @@ CLASS zcl_abapgit_object_smim IMPLEMENTATION.
   METHOD build_filename.
 
     CONCATENATE ms_item-obj_name ms_item-obj_type iv_filename INTO rv_filename SEPARATED BY '.'.
-    TRANSLATE rv_filename TO LOWER CASE.
+    rv_filename = to_lower( rv_filename ).
 
   ENDMETHOD.
 
@@ -403,7 +403,7 @@ CLASS zcl_abapgit_object_smim IMPLEMENTATION.
 
     SELECT SINGLE loio_id FROM smimloio INTO lv_loio
       WHERE loio_id = lv_loio.                          "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
