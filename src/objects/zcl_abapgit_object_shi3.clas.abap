@@ -364,7 +364,7 @@ CLASS ZCL_ABAPGIT_OBJECT_SHI3 IMPLEMENTATION.
         structure_header     = ls_header
         structure_tadir      = ls_tadir.
 
-    rv_bool = xsdbool( ls_header-id IS NOT INITIAL ).
+    rv_bool = boolc( ls_header-id IS NOT INITIAL ).
 
   ENDMETHOD.
 
@@ -481,7 +481,7 @@ CLASS ZCL_ABAPGIT_OBJECT_SHI3 IMPLEMENTATION.
     clear_fields( CHANGING cs_head  = ls_head
                            ct_nodes = lt_nodes ).
 
-    SORT lt_titles BY id.
+    SORT lt_titles BY id spras.
     DELETE ADJACENT DUPLICATES FROM lt_titles COMPARING spras id.
 
     SORT lt_texts BY spras node_id.
