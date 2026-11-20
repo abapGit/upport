@@ -131,7 +131,7 @@ CLASS zcl_abapgit_persistence_repo IMPLEMENTATION.
     ENDLOOP.
 
     SHIFT rv_next_repo_id RIGHT DELETING TRAILING space.
-    TRANSLATE rv_next_repo_id USING ' 0'.
+    OVERLAY rv_next_repo_id WITH '000000000000'.
 
   ENDMETHOD.
 
@@ -288,7 +288,7 @@ CLASS zcl_abapgit_persistence_repo IMPLEMENTATION.
       it_keys = lt_keys
       iv_type = zcl_abapgit_persistence_db=>c_type_repo ).
 
-    rv_yes = xsdbool( lines( lt_content ) > 0 ).
+    rv_yes = boolc( lines( lt_content ) > 0 ).
 
   ENDMETHOD.
 

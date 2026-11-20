@@ -255,7 +255,8 @@ CLASS zcl_abapgit_object_wdyn IMPLEMENTATION.
       CHANGING
         delta                = rs_delta
       EXCEPTIONS
-        inconsistent_objects = 1.
+        inconsistent_objects = 1
+        OTHERS               = 2.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise( 'error from SVRS_MAKE_OBJECT_DELTA' ).
     ENDIF.
@@ -313,7 +314,8 @@ CLASS zcl_abapgit_object_wdyn IMPLEMENTATION.
       CHANGING
         delta                = rs_delta
       EXCEPTIONS
-        inconsistent_objects = 1.
+        inconsistent_objects = 1
+        OTHERS               = 2.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise( 'error from SVRS_MAKE_OBJECT_DELTA' ).
     ENDIF.
@@ -386,7 +388,8 @@ CLASS zcl_abapgit_object_wdyn IMPLEMENTATION.
       CHANGING
         delta                = rs_delta
       EXCEPTIONS
-        inconsistent_objects = 1.
+        inconsistent_objects = 1
+        OTHERS               = 2.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise( 'error from SVRS_MAKE_OBJECT_DELTA' ).
     ENDIF.
@@ -973,12 +976,14 @@ CLASS zcl_abapgit_object_wdyn IMPLEMENTATION.
           lv_object_name TYPE seu_objkey.
 
 
-    lo_component = NEW #( ).
+    CREATE OBJECT lo_component.
 
     lv_object_name = ms_item-obj_name.
-    lo_request = NEW #( p_object_type = 'YC'
-                        p_object_name = lv_object_name
-                        p_operation = swbm_c_op_delete_no_dialog ).
+    CREATE OBJECT lo_request
+      EXPORTING
+        p_object_type = 'YC'
+        p_object_name = lv_object_name
+        p_operation   = swbm_c_op_delete_no_dialog.
 
     lo_component->if_wb_program~process_wb_request(
       p_wb_request       = lo_request
@@ -1047,7 +1052,7 @@ CLASS zcl_abapgit_object_wdyn IMPLEMENTATION.
     SELECT SINGLE component_name FROM wdy_component
       INTO lv_component_name
       WHERE component_name = ms_item-obj_name.          "#EC CI_GENBUFF
-    rv_bool = xsdbool( sy-subrc = 0 ).
+    rv_bool = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 
