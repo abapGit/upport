@@ -158,31 +158,31 @@ CLASS zcl_abapgit_gui_menus IMPLEMENTATION.
       iv_title = `Repository Settings`
       iv_class = iv_class
       iv_act   = |{ zif_abapgit_definitions=>c_action-repo_settings }?key={ iv_key }|
-      iv_cur   = boolc( iv_act = zif_abapgit_definitions=>c_action-repo_settings )
+      iv_cur   = xsdbool( iv_act = zif_abapgit_definitions=>c_action-repo_settings )
     )->add(
       iv_txt   = 'Local'
       iv_title = `Local Settings`
       iv_class = iv_class
       iv_act   = |{ zif_abapgit_definitions=>c_action-repo_local_settings }?key={ iv_key }|
-      iv_cur   = boolc( iv_act = zif_abapgit_definitions=>c_action-repo_local_settings )
+      iv_cur   = xsdbool( iv_act = zif_abapgit_definitions=>c_action-repo_local_settings )
     )->add(
       iv_txt   = 'Remote'
       iv_title = `Remote Settings`
       iv_class = iv_class
       iv_act   = |{ zif_abapgit_definitions=>c_action-repo_remote_settings }?key={ iv_key }|
-      iv_cur   = boolc( iv_act = zif_abapgit_definitions=>c_action-repo_remote_settings )
+      iv_cur   = xsdbool( iv_act = zif_abapgit_definitions=>c_action-repo_remote_settings )
     )->add(
       iv_txt   = 'Background'
       iv_title = `Background Settings`
       iv_class = iv_class
       iv_act   = |{ zif_abapgit_definitions=>c_action-repo_background }?key={ iv_key }|
-      iv_cur   = boolc( iv_act = zif_abapgit_definitions=>c_action-repo_background )
+      iv_cur   = xsdbool( iv_act = zif_abapgit_definitions=>c_action-repo_background )
     )->add(
       iv_txt   = 'Stats'
       iv_title = `Statistics`
       iv_class = iv_class
       iv_act   = |{ zif_abapgit_definitions=>c_action-repo_infos }?key={ iv_key }|
-      iv_cur   = boolc( iv_act = zif_abapgit_definitions=>c_action-repo_infos ) ).
+      iv_cur   = xsdbool( iv_act = zif_abapgit_definitions=>c_action-repo_infos ) ).
 
     IF iv_act IS NOT INITIAL.
       zcl_abapgit_exit=>get_instance( )->enhance_repo_toolbar(
@@ -206,11 +206,11 @@ CLASS zcl_abapgit_gui_menus IMPLEMENTATION.
     ro_menu->add(
       iv_txt = 'Global'
       iv_act = zif_abapgit_definitions=>c_action-go_settings
-      iv_cur = boolc( iv_act = zif_abapgit_definitions=>c_action-go_settings )
+      iv_cur = xsdbool( iv_act = zif_abapgit_definitions=>c_action-go_settings )
     )->add(
       iv_txt = 'Personal'
       iv_act = zif_abapgit_definitions=>c_action-go_settings_personal
-      iv_cur = boolc( iv_act = zif_abapgit_definitions=>c_action-go_settings_personal ) ).
+      iv_cur = xsdbool( iv_act = zif_abapgit_definitions=>c_action-go_settings_personal ) ).
 
     add_back(
       io_menu      = ro_menu
