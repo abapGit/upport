@@ -813,7 +813,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
       ls_varikey-variant = <ls_vari>-variant.
 
       DELETE lt_local_varis WHERE variant = <ls_vari>-variant.
-      lv_exists_locally = xsdbool( sy-subrc = 0 ).
+      lv_exists_locally = boolc( sy-subrc = 0 ).
 
       lv_was_protected = set_vari_protection( is_vari    = ls_varikey
                                               iv_protect = abap_false ).
@@ -1157,7 +1157,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
 
 
   METHOD is_exit_include.
-    rv_is_exit_include = xsdbool(
+    rv_is_exit_include = boolc(
       iv_program CP 'LX*' OR iv_program CP 'SAPLX*' OR
       iv_program+1 CP '/LX*' OR iv_program+1 CP '/SAPLX*' ).
   ENDMETHOD.
@@ -1408,7 +1408,7 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
     IF io_xml IS BOUND.
       li_xml = io_xml.
     ELSE.
-      li_xml = NEW zcl_abapgit_xml_output( ).
+      CREATE OBJECT li_xml TYPE zcl_abapgit_xml_output.
     ENDIF.
 
     li_xml->add( iv_name = 'PROGDIR'
@@ -1452,12 +1452,37 @@ CLASS zcl_abapgit_objects_program IMPLEMENTATION.
 
     DATA: ls_vari  TYPE ty_vari,
           ls_varid TYPE varid,
-          lt_varis TYPE ty_varikey_tt.
+          lt_varis TYPE ty_varikey_tt,
+          lt_dynnr TYPE ty_vari_dynnr_tt.
 
     FIELD-SYMBOLS: <ls_varikey> LIKE LINE OF lt_varis,
                    <ls_object>  LIKE LINE OF ls_vari-objects.
 
     lt_varis = get_varis_for_report( iv_program_name ).
+
+    IF lt_varis IS NOT INITIAL.
+      " RS_VARIANT_CONTENTS_255 can trigger message A093 in RSDBRUNT
+      " when the selection screen cannot be loaded or generated.
+      CLEAR lt_dynnr.
+
+      CALL FUNCTION 'RS_ALL_SELECTIONSCREENS'
+        EXPORTING
+          program             = iv_program_name
+        TABLES
+          dynnr               = lt_dynnr
+        EXCEPTIONS
+          type_s              = 1
+          load_sscr_error     = 2
+          no_selectionscreens = 3
+          not_existent        = 4
+          read_header_error   = 5
+          OTHERS              = 6.
+      IF sy-subrc <> 0.
+        zcx_abapgit_exception=>raise(
+          |Cannot serialize variants for report { iv_program_name }: | &&
+          |selection screen check failed ({ sy-msgid } { sy-msgno }, RC { sy-subrc })| ).
+      ENDIF.
+    ENDIF.
 
     LOOP AT lt_varis ASSIGNING <ls_varikey>.
       CLEAR: ls_vari,
