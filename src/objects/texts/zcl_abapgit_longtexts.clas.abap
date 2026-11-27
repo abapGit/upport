@@ -227,7 +227,7 @@ CLASS zcl_abapgit_longtexts IMPLEMENTATION.
         iv_extra = 'docu'
         iv_ext   = 'json' ).
 
-      CREATE OBJECT lo_json_handler.
+      lo_json_handler = NEW #( ).
 
       TRY.
           lo_json_handler->deserialize(
@@ -349,7 +349,7 @@ CLASS zcl_abapgit_longtexts IMPLEMENTATION.
 
     LOOP AT lt_longtexts ASSIGNING <ls_longtext>.
 
-      lv_no_main_lang = boolc( <ls_longtext>-dokil-masterlang IS INITIAL ).
+      lv_no_main_lang = xsdbool( <ls_longtext>-dokil-masterlang IS INITIAL ).
 
       CALL FUNCTION 'DOCU_UPDATE'
         EXPORTING
@@ -447,7 +447,7 @@ CLASS zcl_abapgit_longtexts IMPLEMENTATION.
       INSERT ls_line INTO TABLE ls_docu-lines.
     ENDLOOP.
 
-    CREATE OBJECT lo_json_handler.
+    lo_json_handler = NEW #( ).
 
     TRY.
         lv_xstr = lo_json_handler->serialize( ls_docu ).
