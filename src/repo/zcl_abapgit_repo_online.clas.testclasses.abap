@@ -20,9 +20,7 @@ CLASS ltcl_create_branch IMPLEMENTATION.
     ls_data-key = '1'.
     ls_data-url = 'https://github.com/abapGit/abapGit.git'.
 
-    CREATE OBJECT mi_cut TYPE zcl_abapgit_repo_online
-      EXPORTING
-        is_data = ls_data.
+    mi_cut = NEW zcl_abapgit_repo_online( is_data = ls_data ).
 
   ENDMETHOD.
 
@@ -148,7 +146,7 @@ CLASS ltcl_fetch_remote IMPLEMENTATION.
 
     mv_commit = ls_object-sha1.
 
-    CREATE OBJECT mo_transport.
+    mo_transport = NEW #( ).
     zcl_abapgit_git_injector=>set_git_transport( mo_transport ).
 
   ENDMETHOD.
@@ -167,9 +165,7 @@ CLASS ltcl_fetch_remote IMPLEMENTATION.
     ls_data-branch_name     = 'refs/heads/main'.
     ls_data-selected_commit = iv_selected_commit.
 
-    CREATE OBJECT ro_repo
-      EXPORTING
-        is_data = ls_data.
+    ro_repo = NEW #( is_data = ls_data ).
 
     ro_repo->set_objects( mt_objects ).
     ro_repo->mv_current_commit = mv_commit.
